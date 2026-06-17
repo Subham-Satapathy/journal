@@ -1,0 +1,175 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { CalendarHeatmap } from "@/components/analytics/CalendarHeatmap";
+import { HourDayHeatmap } from "@/components/analytics/HourDayHeatmap";
+import { DistributionCharts } from "@/components/analytics/DistributionCharts";
+import { MentalStateCard } from "@/components/analytics/MentalStateCard";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { HeatmapCell, MentalStateMetrics } from "@/lib/analytics";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from "recharts";
+import { Flame, TrendingUp } from "lucide-react";
+import { useCurrency } from "@/lib/currency-context";
+
+interface AnalyticsData {
+  heatmap: HeatmapCell[];
+  mental: MentalStateMetrics;
+  calendar: Array<{ date: string; count: number; pnl: number }>;
+  distribution: Array<{ symbol: string; count: number; pnl: number }>;
+  weekly: Array<{ week: string; pnl: number; trades: number; cumulative: number }>;
+  monthly: Array<{ month: string; pnl: number; trades: number; cumulative: number }>;
+  overview: { longWinRate: number; shortWinRate: number; totalTrades: number; currentStreak: number; currentStreakType: string };
+}
+
+export default function AnalyticsPage() {
+  const [data, setData] = useState<AnalyticsData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { fmt, convert, symbol } = useCurrency();
+
+  useEffect(() => {
+    const fetchAll = async () => {
+      const [heatmapRes, mentalRes, calendarRes, distRes, weeklyRes, monthlyRes, overviewRes] = await Promise.all([
+        fetch("/api/analytics?type=heatmap"),
+        fetch("/api/analytics?type=mental"),
+        fetch("/api/analytics?type=calendar"),
+        fetch("/api/analytics?type=distribution"),
+        fetch("/api/analytics?type=weekly"),
+        fetch("/api/analytics?type=monthly"),
+        fetch("/api/analytics?type=overview"),
+      ]);
+      const [heatmap, mental, calendar, distribution, weekly, monthly, overview] = await Promise.all([
+        heatmapRes.json(), mentalRes.json(), calendarRes.json(),
+        distRes.json(), weeklyRes.json(), monthlyRes.json(), overviewRes.json(),
+      ]);
+      setData({
+        heatmap: Array.isArray(heatmap) ? heatmap : [],
+        mental: mental && typeof mental.psychologyScore === "number" ? mental : {
+          revengeTradingInstances: 0, overtradingDays: 0, avgTradesPerDay: 0,
+          maxTradesInDay: 0, profitableHours: [], worstHours: [],
+          bestDayOfWeek: "N/A", worstDayOfWeek: "N/A", psychologyScore: 0, alerts: [],
+        },
+        calendar: Array.isArray(calendar) ? calendar : [],
+        distribution: Array.isArray(distribution) ? distribution : [],
+        weekly: Array.isArray(weekly) ? weekly : [],
+        monthly: Array.isArray(monthly) ? monthly : [],
+        overview: overview && typeof overview.totalTrades === "number" ? overview : {
+          longWinRate: 0, shortWinRate: 0, totalTrades: 0, currentStreak: 0, currentStreakType: "none",
+        },
+      });
+      setLoading(false);
+    };
+    fetchAll();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        <div className="h-8 w-48 bg-zinc-800 rounded" />
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="h-64 bg-zinc-900 rounded-xl border border-zinc-800" />
+        ))}
+      </div>
+    );
+  }
+
+  const { heatmap, mental, calendar, distribution, weekly, monthly, overview } = data!;
+
+  const convertedMonthly = monthly.map((d) => ({ ...d, pnl: convert(d.pnl) }));
+
+  const longShortRatio = {
+    long: overview.totalTrades > 0 ? Math.round(overview.totalTrades * (overview.longWinRate / 100)) : 0,
+    short: overview.totalTrades > 0 ? Math.round(overview.totalTrades * (overview.shortWinRate / 100)) : 0,
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-white">Analytics</h1>
+        <p className="text-sm text-zinc-500 mt-0.5">Deep dive into your trading patterns</p>
+      </div>
+
+      {/* Calendar Heatmap */}
+      <CalendarHeatmap data={calendar} />
+
+      {/* Streak Card */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Flame className="w-4 h-4 text-orange-400" />
+            <CardTitle className="text-base font-semibold text-white">Streak Analysis</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-6">
+            <div className="text-center">
+              <div className="text-4xl font-black" style={{ color: overview.currentStreakType === "win" ? "#10b981" : "#ef4444" }}>
+                {overview.currentStreak}
+              </div>
+              <div className="text-xs text-zinc-500 mt-1">
+                {overview.currentStreakType === "win" ? "🔥 Win streak" : overview.currentStreakType === "loss" ? "❄️ Loss streak" : "No streak"}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Monthly P&L Bar Chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base font-semibold text-white">Monthly P&L Breakdown</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-2">
+          {monthly.length === 0 ? (
+            <div className="h-40 flex items-center justify-center text-zinc-600 text-sm">No data</div>
+          ) : (() => {
+            const minPnl = Math.min(...convertedMonthly.map((d) => d.pnl));
+            const maxPnl = Math.max(...convertedMonthly.map((d) => d.pnl));
+            const yMin = Math.min(minPnl * 1.1, 0);
+            const yMax = Math.max(maxPnl * 1.1, 0);
+
+            const MonthlyTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number }>; label?: string }) => {
+              if (!active || !payload?.length) return null;
+              const val = payload[0].value;
+              return (
+                <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-2.5 text-xs">
+                  <div className="text-zinc-400 mb-1">{label}</div>
+                  <div className={val >= 0 ? "text-emerald-400 font-bold" : "text-red-400 font-bold"}>
+                    P&L: {fmt(val)}
+                  </div>
+                </div>
+              );
+            };
+
+            return (
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={convertedMonthly} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+                  <XAxis dataKey="month" tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <YAxis
+                    domain={[yMin, yMax]}
+                    tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} width={70}
+                    tickFormatter={(v) => `${symbol}${Math.abs(v) >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`}
+                  />
+                  <ReferenceLine y={0} stroke="#52525b" strokeDasharray="3 3" />
+                  <Tooltip content={<MonthlyTooltip />} />
+                  <Bar dataKey="pnl" radius={[4, 4, 0, 0]} maxBarSize={80}>
+                    {convertedMonthly.map((d, i) => <Cell key={i} fill={d.pnl >= 0 ? "#10b981" : "#ef4444"} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            );
+          })()}
+        </CardContent>
+      </Card>
+
+      {/* Hour × Day Heatmap */}
+      <HourDayHeatmap data={heatmap} />
+
+      {/* Distribution Charts */}
+      <DistributionCharts data={distribution} longShortRatio={longShortRatio} />
+
+      {/* Mental State */}
+      <MentalStateCard data={mental} />
+    </div>
+  );
+}

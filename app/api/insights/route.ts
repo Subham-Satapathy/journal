@@ -1,0 +1,71 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { generateInsights } from "@/lib/gemini";
+import { computeOverviewStats, computeMentalStateMetrics } from "@/lib/analytics";
+import { subDays, subWeeks, subMonths } from "date-fns";
+
+export async function POST(req: NextRequest) {
+  try {
+    if (!process.env.GEMINI_API_KEY) {
+      return NextResponse.json({ error: "GEMINI_API_KEY not configured" }, { status: 503 });
+    }
+
+    const { period = "month" } = await req.json();
+
+    let from: Date;
+    const to = new Date();
+    if (period === "week") from = subWeeks(to, 1);
+    else if (period === "month") from = subMonths(to, 1);
+    else if (period === "quarter") from = subMonths(to, 3);
+    else from = subDays(to, 30);
+
+    const trades = await prisma.trade.findMany({
+      where: { date: { gte: from, lte: to } },
+      orderBy: { date: "asc" },
+    });
+
+    if (trades.length === 0) {
+      return NextResponse.json({ insights: "No trades found for the selected period. Add some trades first!" });
+    }
+
+    // Detect currency from trade records
+    const currency = trades.find((t) => t.currency)?.currency ?? "USDT";
+    const currencySymbol = currency === "INR" ? "₹" : "$";
+
+    const overview = computeOverviewStats(trades);
+    const mental = computeMentalStateMetrics(trades);
+
+    const summary = {
+      period,
+      currency,
+      currencySymbol,
+      totalTrades: overview.totalTrades,
+      totalPnl: `${currencySymbol}${overview.totalPnl.toFixed(2)}`,
+      winRate: `${overview.winRate.toFixed(2)}%`,
+      profitFactor: overview.profitFactor.toFixed(4),
+      maxDrawdown: `${currencySymbol}${overview.maxDrawdown.toFixed(2)}`,
+      avgRiskReward: overview.avgRiskReward.toFixed(4),
+      avgWin: `${currencySymbol}${overview.avgWin.toFixed(2)}`,
+      avgLoss: `${currencySymbol}${overview.avgLoss.toFixed(2)}`,
+      disciplineScore: overview.disciplineScore,
+      revengeTradingInstances: mental.revengeTradingInstances,
+      overtradingDays: mental.overtradingDays,
+      bestDayOfWeek: mental.bestDayOfWeek,
+      worstDayOfWeek: mental.worstDayOfWeek,
+      profitableHours: mental.profitableHours,
+      worstHours: mental.worstHours,
+      psychologyScore: mental.psychologyScore,
+      topTrades: trades
+        .filter((t) => t.pnl !== null)
+        .sort((a, b) => (b.pnl ?? 0) - (a.pnl ?? 0))
+        .slice(0, 5)
+        .map((t) => ({ symbol: t.symbol, side: t.side, pnl: `${currencySymbol}${t.pnl?.toFixed(2)}`, date: t.date })),
+    };
+
+    const insights = await generateInsights(JSON.stringify(summary, null, 2), period);
+    return NextResponse.json({ insights });
+  } catch (error) {
+    console.error("POST /api/insights error:", error);
+    return NextResponse.json({ error: "Insights generation failed" }, { status: 500 });
+  }
+}

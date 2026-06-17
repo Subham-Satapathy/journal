@@ -1,26 +1,49 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #09090b;
+  --foreground: #fafafa;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #18181b;
+}
+::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #52525b;
+}
+
+/* Recharts tooltip dark overrides */
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  background: #18181b !important;
+  border: 1px solid #3f3f46 !important;
+  border-radius: 8px !important;
+}
+
+/* Prose styles for AI insights markdown */
+.prose-dark h1, .prose-dark h2, .prose-dark h3 { color: #f4f4f5; margin-top: 1.25em; margin-bottom: 0.5em; }
+.prose-dark h1 { font-size: 1.25rem; font-weight: 700; }
+.prose-dark h2 { font-size: 1.1rem; font-weight: 600; border-bottom: 1px solid #27272a; padding-bottom: 0.25rem; }
+.prose-dark h3 { font-size: 1rem; font-weight: 600; color: #a78bfa; }
+.prose-dark p { color: #a1a1aa; line-height: 1.7; margin-bottom: 0.75em; font-size: 0.875rem; }
+.prose-dark ul, .prose-dark ol { color: #a1a1aa; padding-left: 1.5rem; margin-bottom: 0.75em; font-size: 0.875rem; }
+.prose-dark li { margin-bottom: 0.3em; line-height: 1.6; }
+.prose-dark strong { color: #e4e4e7; font-weight: 600; }
+.prose-dark code { background: #27272a; color: #a78bfa; padding: 0.1em 0.4em; border-radius: 4px; font-size: 0.8em; }
+.prose-dark blockquote { border-left: 3px solid #6366f1; padding-left: 1rem; color: #71717a; margin: 0.75em 0; font-style: italic; }

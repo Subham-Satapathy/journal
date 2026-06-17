@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Trade {
+  id           String   @id @default(cuid())
+  symbol       String
+  side         String   // "LONG" | "SHORT" | "BUY" | "SELL"
+  entryPrice   Float
+  exitPrice    Float?
+  quantity     Float
+  pnl          Float?
+  pnlPercent   Float?
+  fees         Float    @default(0)
+  date         DateTime
+  closeDate    DateTime?
+  exchange     String?
+  notes        String?
+  tags         String?
+  importSource String?  // "csv" | "excel" | "screenshot" | "manual"
+  currency     String   @default("USDT")  // "USDT" | "INR"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
