@@ -94,10 +94,10 @@ export function TradesTable() {
           className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-300 outline-none cursor-pointer"
         >
           <option value="">All sides</option>
-          <option value="LONG">Long</option>
-          <option value="SHORT">Short</option>
-          <option value="BUY">Buy</option>
-          <option value="SELL">Sell</option>
+          <option value="CALL">Call</option>
+          <option value="PUT">Put</option>
+          <option value="BUY">Buy / Long</option>
+          <option value="SELL">Sell / Short</option>
         </select>
         {selected.size > 0 && (
           <Button variant="danger" size="sm" onClick={deleteSelected}>
@@ -173,7 +173,7 @@ export function TradesTable() {
                     <td className="px-3 py-3">
                       <span className={cn(
                         "px-2 py-0.5 rounded-full text-xs font-medium",
-                        ["LONG", "BUY"].includes(t.side.toUpperCase())
+                        ["LONG", "BUY", "CALL"].includes(t.side.toUpperCase())
                           ? "bg-emerald-500/15 text-emerald-400"
                           : "bg-red-500/15 text-red-400"
                       )}>

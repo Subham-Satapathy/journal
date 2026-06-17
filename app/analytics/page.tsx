@@ -11,6 +11,47 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Flame, TrendingUp } from "lucide-react";
 import { useCurrency } from "@/lib/currency-context";
 
+// Stable top-level component — avoids white-screen crash from defining
+// components inside render (IIFE pattern breaks React's rules of hooks).
+function MonthlyBarChart({
+  data,
+  fmt,
+  symbol,
+}: {
+  data: Array<{ month: string; pnl: number }>;
+  fmt: (v: number) => string;
+  symbol: string;
+}) {
+  const minPnl = Math.min(...data.map((d) => d.pnl));
+  const maxPnl = Math.max(...data.map((d) => d.pnl));
+  const yMin = Math.min(minPnl * 1.1, 0);
+  const yMax = Math.max(maxPnl * 1.1, 0);
+
+  return (
+    <ResponsiveContainer width="100%" height={200}>
+      <BarChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+        <XAxis dataKey="month" tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} />
+        <YAxis
+          domain={[yMin, yMax]}
+          tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} width={70}
+          tickFormatter={(v) => `${symbol}${Math.abs(v) >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`}
+        />
+        <ReferenceLine y={0} stroke="#52525b" strokeDasharray="3 3" />
+        <Tooltip
+          formatter={(v: number) => [fmt(v), "P&L"]}
+          labelStyle={{ color: "#a1a1aa", fontSize: 11 }}
+          contentStyle={{ background: "#18181b", border: "1px solid #3f3f46", borderRadius: 8, fontSize: 12 }}
+          itemStyle={{ color: "#f4f4f5" }}
+        />
+        <Bar dataKey="pnl" radius={[4, 4, 0, 0]} maxBarSize={80}>
+          {data.map((d, i) => <Cell key={i} fill={d.pnl >= 0 ? "#10b981" : "#ef4444"} />)}
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
 interface AnalyticsData {
   heatmap: HeatmapCell[];
   mental: MentalStateMetrics;
@@ -121,44 +162,9 @@ export default function AnalyticsPage() {
         <CardContent className="pt-2">
           {monthly.length === 0 ? (
             <div className="h-40 flex items-center justify-center text-zinc-600 text-sm">No data</div>
-          ) : (() => {
-            const minPnl = Math.min(...convertedMonthly.map((d) => d.pnl));
-            const maxPnl = Math.max(...convertedMonthly.map((d) => d.pnl));
-            const yMin = Math.min(minPnl * 1.1, 0);
-            const yMax = Math.max(maxPnl * 1.1, 0);
-
-            const MonthlyTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number }>; label?: string }) => {
-              if (!active || !payload?.length) return null;
-              const val = payload[0].value;
-              return (
-                <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-2.5 text-xs">
-                  <div className="text-zinc-400 mb-1">{label}</div>
-                  <div className={val >= 0 ? "text-emerald-400 font-bold" : "text-red-400 font-bold"}>
-                    P&L: {fmt(val)}
-                  </div>
-                </div>
-              );
-            };
-
-            return (
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={convertedMonthly} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-                  <XAxis dataKey="month" tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <YAxis
-                    domain={[yMin, yMax]}
-                    tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} width={70}
-                    tickFormatter={(v) => `${symbol}${Math.abs(v) >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`}
-                  />
-                  <ReferenceLine y={0} stroke="#52525b" strokeDasharray="3 3" />
-                  <Tooltip content={<MonthlyTooltip />} />
-                  <Bar dataKey="pnl" radius={[4, 4, 0, 0]} maxBarSize={80}>
-                    {convertedMonthly.map((d, i) => <Cell key={i} fill={d.pnl >= 0 ? "#10b981" : "#ef4444"} />)}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            );
-          })()}
+          ) : (
+            <MonthlyBarChart data={convertedMonthly} fmt={fmt} symbol={symbol} />
+          )}
         </CardContent>
       </Card>
 

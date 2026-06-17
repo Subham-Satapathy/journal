@@ -127,8 +127,8 @@ export function computeOverviewStats(trades: Trade[]): OverviewStats {
   const avgRiskReward = avgLoss > 0 ? avgWin / avgLoss : 0;
 
   // Long/Short win rates
-  const longs = closedTrades.filter((t) => ["LONG", "BUY"].includes(t.side.toUpperCase()));
-  const shorts = closedTrades.filter((t) => ["SHORT", "SELL"].includes(t.side.toUpperCase()));
+  const longs = closedTrades.filter((t) => ["LONG", "BUY", "CALL"].includes(t.side.toUpperCase()));
+  const shorts = closedTrades.filter((t) => ["SHORT", "SELL", "PUT"].includes(t.side.toUpperCase()));
   const longWinRate = longs.length > 0 ? (longs.filter((t) => t.pnl! > 0).length / longs.length) * 100 : 0;
   const shortWinRate = shorts.length > 0 ? (shorts.filter((t) => t.pnl! > 0).length / shorts.length) * 100 : 0;
 
