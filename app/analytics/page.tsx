@@ -40,7 +40,7 @@ function MonthlyBarChart({
         <ReferenceLine y={0} stroke="#52525b" strokeDasharray="3 3" />
         <Tooltip
           cursor={{ fill: "rgba(255,255,255,0.04)" }}
-          formatter={(v: number) => [fmt(v), "P&L"]}
+          formatter={(v) => [fmt(Number(v ?? 0)), "P&L"]}
           labelStyle={{ color: "#a1a1aa", fontSize: 11 }}
           contentStyle={{ background: "#18181b", border: "1px solid #3f3f46", borderRadius: 8, fontSize: 12 }}
           itemStyle={{ color: "#f4f4f5" }}
