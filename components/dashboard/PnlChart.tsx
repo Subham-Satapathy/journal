@@ -102,7 +102,7 @@ export function PnlChart({ daily, weekly, monthly }: PnlChartProps) {
               tickLine={false}
               width={60}
             />
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip content={<CustomTooltip />} cursor={{ stroke: "#52525b", strokeWidth: 1 }} />
             <ReferenceLine y={0} stroke="#52525b" strokeDasharray="3 3" />
             <Area
               type="monotone"

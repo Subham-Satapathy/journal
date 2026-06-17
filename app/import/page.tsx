@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { FileUpload } from "@/components/import/FileUpload";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +28,7 @@ const TRADE_FIELDS = [
 ];
 
 export default function ImportPage() {
+  const router = useRouter();
   const [mode, setMode] = useState<ImportMode | null>(null);
 
   // CSV state
@@ -118,8 +120,11 @@ export default function ImportPage() {
       fd.append("mapping", JSON.stringify(csvMapping));
       const res = await fetch("/api/import/csv", { method: "POST", body: fd });
       const data = await res.json();
+      if (data.error) { alert(data.error); return; }
       setCsvResult(data);
       setCsvStep("done");
+      // Auto-redirect to dashboard after 2 seconds
+      setTimeout(() => router.push("/"), 2000);
     } catch (e) {
       alert("Import failed");
     } finally {
@@ -161,6 +166,7 @@ export default function ImportPage() {
       if (data.error) { alert(data.error); return; }
       setSsSaved(true);
       setSsStep("done");
+      setTimeout(() => router.push("/"), 2000);
     } catch (e) {
       alert("Save failed");
     } finally {
@@ -317,7 +323,8 @@ export default function ImportPage() {
                     <span className="text-zinc-600">— already in your journal</span>
                   </div>
                 )}
-                <div className="flex gap-3 mt-2">
+                <p className="text-xs text-zinc-600">Redirecting to dashboard...</p>
+                <div className="flex gap-3 mt-1">
                   <Button variant="outline" onClick={() => { setCsvStep("upload"); setCsvFile(null); }}>Import More</Button>
                   <a href="/trades" className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm rounded-lg transition-colors">
                     View Trades

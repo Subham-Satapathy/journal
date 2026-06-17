@@ -98,7 +98,7 @@ function DayTradesModal({ dateStr, summary, onClose }: { dateStr: string; summar
         </div>
 
         {/* Scrollable body */}
-        <div className="overflow-y-auto flex-1 p-3">
+        <div className="overflow-y-auto flex-1">
           {loading ? (
             <div className="flex items-center justify-center py-12 gap-2 text-zinc-500">
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -107,15 +107,23 @@ function DayTradesModal({ dateStr, summary, onClose }: { dateStr: string; summar
           ) : trades.length === 0 ? (
             <div className="text-center py-12 text-sm text-zinc-600">No trades found for this day</div>
           ) : (
-            <table className="w-full text-xs">
-              <thead className="sticky top-0 bg-zinc-950">
+            <table className="w-full text-xs table-fixed">
+              <colgroup>
+                <col className="w-8" />
+                <col className="w-[28%]" />
+                <col className="w-[15%]" />
+                <col className="w-[18%]" />
+                <col className="w-[18%]" />
+                <col className="w-[14%]" />
+              </colgroup>
+              <thead className="sticky top-0 z-10 bg-zinc-950">
                 <tr className="text-zinc-600 border-b border-zinc-800/60">
-                  <th className="text-left py-2 px-2 font-medium">#</th>
-                  <th className="text-left py-2 px-2 font-medium">Symbol</th>
-                  <th className="text-left py-2 px-2 font-medium">Side</th>
-                  <th className="text-right py-2 px-2 font-medium">Amount</th>
-                  <th className="text-right py-2 px-2 font-medium">P&L</th>
-                  <th className="text-right py-2 px-2 font-medium">Time</th>
+                  <th className="text-left py-2 px-3 font-medium">#</th>
+                  <th className="text-left py-2 px-3 font-medium">Symbol</th>
+                  <th className="text-left py-2 px-3 font-medium">Side</th>
+                  <th className="text-right py-2 px-3 font-medium">Amount</th>
+                  <th className="text-right py-2 px-3 font-medium">P&L</th>
+                  <th className="text-right py-2 px-3 font-medium">Time</th>
                 </tr>
               </thead>
               <tbody>
@@ -124,9 +132,9 @@ function DayTradesModal({ dateStr, summary, onClose }: { dateStr: string; summar
                   const isCall = ["BUY", "CALL", "LONG"].includes(t.side.toUpperCase());
                   return (
                     <tr key={t.id} className="border-b border-zinc-900/60 hover:bg-zinc-900/40 transition-colors">
-                      <td className="py-2 px-2 text-zinc-700">{idx + 1}</td>
-                      <td className="py-2 px-2 font-medium text-white">{t.symbol}</td>
-                      <td className="py-2 px-2">
+                      <td className="py-2 px-3 text-zinc-700">{idx + 1}</td>
+                      <td className="py-2 px-3 font-medium text-white">{t.symbol}</td>
+                      <td className="py-2 px-3">
                         <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold ${
                           isCall ? "bg-emerald-500/15 text-emerald-400" : "bg-red-500/15 text-red-400"
                         }`}>
@@ -134,11 +142,11 @@ function DayTradesModal({ dateStr, summary, onClose }: { dateStr: string; summar
                           {t.side}
                         </span>
                       </td>
-                      <td className="py-2 px-2 text-right text-zinc-400">{fmt(t.quantity)}</td>
-                      <td className={`py-2 px-2 text-right font-semibold ${win ? "text-emerald-400" : "text-red-400"}`}>
+                      <td className="py-2 px-3 text-right text-zinc-400">{fmt(t.quantity)}</td>
+                      <td className={`py-2 px-3 text-right font-semibold ${win ? "text-emerald-400" : "text-red-400"}`}>
                         {t.pnl !== null ? fmt(t.pnl) : "—"}
                       </td>
-                      <td className="py-2 px-2 text-right text-zinc-600">
+                      <td className="py-2 px-3 text-right text-zinc-600">
                         {new Date(t.date).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
                       </td>
                     </tr>
@@ -146,10 +154,11 @@ function DayTradesModal({ dateStr, summary, onClose }: { dateStr: string; summar
                 })}
               </tbody>
               {trades.length > 1 && (
-                <tfoot className="sticky bottom-0 bg-zinc-950">
-                  <tr className="border-t border-zinc-800">
-                    <td colSpan={4} className="py-2 px-2 text-zinc-600 text-xs">Total</td>
-                    <td className={`py-2 px-2 text-right font-bold text-xs ${totalPnl >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                <tfoot className="sticky bottom-0 z-10 bg-zinc-950">
+                  <tr className="border-t border-zinc-700">
+                    <td />
+                    <td colSpan={3} className="py-2.5 px-3 text-zinc-500 text-xs text-right">Total</td>
+                    <td className={`py-2.5 px-3 text-right font-bold text-xs ${totalPnl >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                       {fmt(totalPnl)}
                     </td>
                     <td />

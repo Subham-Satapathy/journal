@@ -91,7 +91,7 @@ function TradesModal({ slot, onClose }: { slot: SlotInfo; onClose: () => void })
         </div>
 
         {/* Body */}
-        <div className="overflow-y-auto flex-1 p-3">
+        <div className="overflow-y-auto flex-1">
           {loading ? (
             <div className="flex items-center justify-center py-12 gap-2 text-zinc-500">
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -100,15 +100,23 @@ function TradesModal({ slot, onClose }: { slot: SlotInfo; onClose: () => void })
           ) : trades.length === 0 ? (
             <div className="text-center py-12 text-sm text-zinc-600">No trades found for this slot</div>
           ) : (
-            <table className="w-full text-xs">
-              <thead>
+            <table className="w-full text-xs table-fixed">
+              <colgroup>
+                <col className="w-[28%]" />
+                <col className="w-[15%]" />
+                <col className="w-[15%]" />
+                <col className="w-[14%]" />
+                <col className="w-[15%]" />
+                <col className="w-[13%]" />
+              </colgroup>
+              <thead className="sticky top-0 z-10 bg-zinc-950">
                 <tr className="text-zinc-600 border-b border-zinc-800/60">
-                  <th className="text-left py-2 px-2 font-medium">Symbol</th>
-                  <th className="text-left py-2 px-2 font-medium">Side</th>
-                  <th className="text-right py-2 px-2 font-medium">Qty</th>
-                  <th className="text-right py-2 px-2 font-medium">Entry</th>
-                  <th className="text-right py-2 px-2 font-medium">P&L</th>
-                  <th className="text-right py-2 px-2 font-medium">Time</th>
+                  <th className="text-left py-2 px-3 font-medium">Symbol</th>
+                  <th className="text-left py-2 px-3 font-medium">Side</th>
+                  <th className="text-right py-2 px-3 font-medium">Qty</th>
+                  <th className="text-right py-2 px-3 font-medium">Entry</th>
+                  <th className="text-right py-2 px-3 font-medium">P&L</th>
+                  <th className="text-right py-2 px-3 font-medium">Time</th>
                 </tr>
               </thead>
               <tbody>
@@ -116,8 +124,8 @@ function TradesModal({ slot, onClose }: { slot: SlotInfo; onClose: () => void })
                   const win = (t.pnl ?? 0) >= 0;
                   return (
                     <tr key={t.id} className="border-b border-zinc-900 hover:bg-zinc-900/50 transition-colors">
-                      <td className="py-2 px-2 font-medium text-white">{t.symbol}</td>
-                      <td className="py-2 px-2">
+                      <td className="py-2 px-3 font-medium text-white">{t.symbol}</td>
+                      <td className="py-2 px-3">
                         <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold ${
                           t.side === "BUY" || t.side === "CALL" || t.side === "LONG"
                             ? "bg-emerald-500/15 text-emerald-400"
@@ -129,12 +137,12 @@ function TradesModal({ slot, onClose }: { slot: SlotInfo; onClose: () => void })
                           {t.side}
                         </span>
                       </td>
-                      <td className="py-2 px-2 text-right text-zinc-400">{t.quantity}</td>
-                      <td className="py-2 px-2 text-right text-zinc-400">{t.entryPrice}</td>
-                      <td className={`py-2 px-2 text-right font-semibold ${win ? "text-emerald-400" : "text-red-400"}`}>
+                      <td className="py-2 px-3 text-right text-zinc-400">{t.quantity}</td>
+                      <td className="py-2 px-3 text-right text-zinc-400">{t.entryPrice}</td>
+                      <td className={`py-2 px-3 text-right font-semibold ${win ? "text-emerald-400" : "text-red-400"}`}>
                         {t.pnl !== null ? fmt(t.pnl) : "—"}
                       </td>
-                      <td className="py-2 px-2 text-right text-zinc-600">
+                      <td className="py-2 px-3 text-right text-zinc-600">
                         {new Date(t.date).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
                       </td>
                     </tr>

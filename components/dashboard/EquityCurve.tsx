@@ -54,7 +54,7 @@ export function EquityCurve({ data }: { data: EquityPoint[] }) {
               tickFormatter={(v) => `${symbol}${Math.abs(v) >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`} />
             <YAxis yAxisId="dd" orientation="right" tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} width={40}
               tickFormatter={(v) => `-${v.toFixed(0)}%`} />
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip content={<CustomTooltip />} cursor={{ stroke: "#52525b", strokeWidth: 1 }} />
             <ReferenceLine yAxisId="equity" y={0} stroke="#52525b" strokeDasharray="3 3" />
             <Bar yAxisId="dd" dataKey="drawdown" fill="#ef4444" opacity={0.25} name="drawdown" />
             <Line yAxisId="equity" type="monotone" dataKey="equity" stroke="#10b981" strokeWidth={2} dot={false} name="equity" />
