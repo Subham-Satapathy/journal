@@ -123,13 +123,20 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "No valid trades found in file" }, { status: 400 });
       }
 
-      await prisma.trade.createMany({
+      const result = await prisma.trade.createMany({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data: trades as any[],
         skipDuplicates: true,
       });
 
-      return NextResponse.json({ imported: trades.length });
+      const skipped = trades.length - result.count;
+      return NextResponse.json({
+        imported: result.count,
+        skipped,
+        message: skipped > 0
+          ? `${result.count} new trades imported, ${skipped} duplicates skipped`
+          : `${result.count} trades imported successfully`,
+      });
     }
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });

@@ -26,4 +26,7 @@ model Trade {
   currency     String   @default("USDT")  // "USDT" | "INR"
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  // Deduplication: same symbol+side+date+quantity+pnl = same trade
+  @@unique([symbol, side, date, quantity, pnl])
 }

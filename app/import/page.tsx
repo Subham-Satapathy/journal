@@ -37,7 +37,7 @@ export default function ImportPage() {
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [csvTotal, setCsvTotal] = useState(0);
   const [csvLoading, setCsvLoading] = useState(false);
-  const [csvResult, setCsvResult] = useState<{ imported: number } | null>(null);
+  const [csvResult, setCsvResult] = useState<{ imported: number; skipped?: number; message?: string } | null>(null);
   const [csvAiMapped, setCsvAiMapped] = useState(false);
 
   // Screenshot state
@@ -308,7 +308,15 @@ export default function ImportPage() {
             {csvStep === "done" && csvResult && (
               <div className="flex flex-col items-center py-8 text-center gap-3">
                 <CheckCircle2 className="w-12 h-12 text-emerald-400" />
-                <div className="text-xl font-bold text-white">{csvResult.imported} trades imported!</div>
+                <div className="text-xl font-bold text-white">
+                  {csvResult.imported > 0 ? `${csvResult.imported} new trades imported!` : "No new trades"}
+                </div>
+                {csvResult.skipped != null && csvResult.skipped > 0 && (
+                  <div className="text-sm text-zinc-500 flex items-center gap-1.5">
+                    <span className="px-2 py-0.5 bg-zinc-800 rounded-full text-xs">{csvResult.skipped} duplicates skipped</span>
+                    <span className="text-zinc-600">— already in your journal</span>
+                  </div>
+                )}
                 <div className="flex gap-3 mt-2">
                   <Button variant="outline" onClick={() => { setCsvStep("upload"); setCsvFile(null); }}>Import More</Button>
                   <a href="/trades" className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm rounded-lg transition-colors">

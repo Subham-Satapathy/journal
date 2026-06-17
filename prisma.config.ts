@@ -7,6 +7,9 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   engine: "classic",
-  // Don't use env() here — it throws if DATABASE_URL is missing during CI/build.
-  // The datasource url is already declared in schema.prisma via env("DATABASE_URL").
+  datasource: {
+    // Use a dummy fallback so `prisma generate` doesn't throw during CI/Vercel install.
+    // The real DATABASE_URL from env is used at runtime via schema.prisma.
+    url: process.env.DATABASE_URL ?? "postgresql://placeholder:placeholder@localhost/placeholder",
+  },
 });
