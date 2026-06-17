@@ -23,10 +23,11 @@ model Trade {
   notes        String?
   tags         String?
   importSource String?  // "csv" | "excel" | "screenshot" | "manual"
+  orderId      String?  // Platform order/trade ID (UUID from broker) — used for deduplication
   currency     String   @default("USDT")  // "USDT" | "INR"
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  // Deduplication: same symbol+side+date+quantity+pnl = same trade
-  @@unique([symbol, side, date, quantity, pnl])
+  // Deduplicate by broker order ID when present
+  @@unique([orderId])
 }

@@ -87,6 +87,20 @@ export async function POST(req: NextRequest) {
         return isNaN(d.getTime()) ? new Date() : d;
       };
 
+      // Auto-detect orderId column if Gemini didn't map it:
+      // look for a header whose sample values look like UUIDs or long numeric IDs
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const longIdRegex = /^[a-zA-Z0-9_-]{12,}$/;
+      if (!mapping.orderId) {
+        for (let i = 0; i < headers.length; i++) {
+          const sampleVals = rows.slice(0, 5).map((r) => String(r[i] ?? "").trim()).filter(Boolean);
+          if (sampleVals.length > 0 && sampleVals.every((v) => uuidRegex.test(v) || longIdRegex.test(v))) {
+            mapping.orderId = headers[i];
+            break;
+          }
+        }
+      }
+
       const trades = rows
         .filter((row) => row.some((cell) => cell !== null && cell !== undefined && String(cell).trim()))
         .map((row) => {
@@ -102,6 +116,8 @@ export async function POST(req: NextRequest) {
           const quantity = parseNum(quantityStr) ?? 1;
           if (entryPrice === null || isNaN(quantity)) return null;
 
+          const orderIdVal = getVal(row, "orderId");
+
           return {
             symbol: symbol.toUpperCase().trim(),
             side: side.toUpperCase().trim(),
@@ -114,6 +130,7 @@ export async function POST(req: NextRequest) {
             date: parseDate(dateStr),
             closeDate: getVal(row, "closeDate") ? parseDate(getVal(row, "closeDate")) : null,
             exchange: getVal(row, "exchange") || null,
+            orderId: orderIdVal || null,
             importSource: fileName.endsWith(".csv") ? "csv" : "excel",
           };
         })
