@@ -25,7 +25,7 @@ export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [detectedCurrency, setDetectedCurrency] = useState<string | null>(null);
-  const { fmt, convert, displayCurrency: currency, baseCurrency, setBaseCurrency, setDisplayCurrency } = useCurrency();
+  const { fmt, convert, symbol, displayCurrency: currency, baseCurrency, setBaseCurrency, setDisplayCurrency } = useCurrency();
 
   useEffect(() => {
     const fetchAll = async () => {
