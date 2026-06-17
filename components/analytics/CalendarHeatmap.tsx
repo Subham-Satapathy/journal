@@ -28,7 +28,7 @@ interface Trade {
 }
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const DAYS = ["", "M", "", "W", "", "F", ""];
+const DAY_LABELS = ["M", "T", "W", "T", "F", "S", "S"];
 
 function getCellColor(pnl: number, hasTrades: boolean): string {
   if (!hasTrades) return "bg-zinc-800/50";
@@ -225,34 +225,38 @@ export function CalendarHeatmap({ data }: CalendarHeatmapProps) {
             <span className="text-zinc-600 font-normal text-sm">(last 12 months · click a day)</span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-2 overflow-x-auto">
-          <div className="min-w-[600px]">
+        <CardContent className="pt-2 pb-4">
+          <div className="w-full">
             {/* Month labels */}
-            <div className="flex mb-1 ml-6">
+            <div className="relative flex mb-2 ml-9" style={{ height: 16 }}>
               {monthLabels.map(({ month, col }, idx) => (
                 <div
                   key={`${month}-${idx}`}
-                  className="text-[10px] text-zinc-500 absolute"
-                  style={{ left: `${col * 14 + 24}px`, position: "relative", minWidth: 0 }}
+                  className="absolute text-[11px] text-zinc-500 font-medium"
+                  style={{ left: `calc(36px + ${col} * ((100% - 36px) / ${weeks.length}))` }}
                 >
                   {month}
                 </div>
               ))}
             </div>
 
-            <div className="flex gap-0.5">
+            <div className="flex gap-1 w-full">
               {/* Day labels */}
-              <div className="flex flex-col gap-0.5 mr-1">
-                {DAYS.map((d, i) => (
-                  <div key={i} className="w-3 h-3 flex items-center justify-center text-[9px] text-zinc-600">{d}</div>
+              <div className="flex flex-col gap-1 w-8 shrink-0">
+                {DAY_LABELS.map((d, i) => (
+                  <div key={i} className="flex-1 min-h-[16px] flex items-center justify-end pr-1 text-[10px] text-zinc-600 font-medium">
+                    {d}
+                  </div>
                 ))}
               </div>
 
-              {/* Weeks */}
+              {/* Weeks — flex to fill full card width */}
               {weeks.map((week, wi) => (
-                <div key={wi} className="flex flex-col gap-0.5">
+                <div key={wi} className="flex flex-col gap-1 flex-1 min-w-[8px]">
                   {week.map((day, di) => {
-                    if (!day) return <div key={di} className="w-3 h-3" />;
+                    if (!day) {
+                      return <div key={di} className="w-full aspect-square min-h-[14px] max-h-[28px]" />;
+                    }
                     const d = dataMap.get(day.dayStr);
                     const hasTrades = !!d && d.count > 0;
                     const color = getCellColor(d?.pnl ?? 0, hasTrades);
@@ -260,8 +264,10 @@ export function CalendarHeatmap({ data }: CalendarHeatmapProps) {
                       <div
                         key={di}
                         onClick={() => hasTrades && d && setSelectedDay({ dateStr: day.dayStr, summary: d })}
-                        className={`w-3 h-3 rounded-sm ${color} transition-transform hover:scale-125 ${
-                          hasTrades ? "cursor-pointer ring-0 hover:ring-1 hover:ring-white/40" : "cursor-default"
+                        className={`w-full aspect-square min-h-[14px] max-h-[28px] rounded-sm ${color} transition-all ${
+                          hasTrades
+                            ? "cursor-pointer hover:scale-110 hover:ring-2 hover:ring-white/30 hover:z-10"
+                            : "cursor-default"
                         }`}
                         title={`${day.dayStr}: ${d && hasTrades ? `${d.count} trade(s), ${fmt(d.pnl)}` : "No trades"}`}
                       />
@@ -272,10 +278,10 @@ export function CalendarHeatmap({ data }: CalendarHeatmapProps) {
             </div>
 
             {/* Legend */}
-            <div className="flex items-center gap-3 mt-3 text-[10px] text-zinc-500">
+            <div className="flex items-center gap-3 mt-4 ml-9 text-[11px] text-zinc-500">
               <span>Less</span>
               {["bg-zinc-800/50", "bg-red-500/40", "bg-red-500/80", "bg-emerald-500/40", "bg-emerald-500/80", "bg-emerald-500"].map((c, i) => (
-                <div key={i} className={`w-3 h-3 rounded-sm ${c}`} />
+                <div key={i} className={`w-4 h-4 rounded-sm ${c}`} />
               ))}
               <span>More</span>
             </div>
