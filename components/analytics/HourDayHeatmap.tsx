@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HeatmapCell } from "@/lib/analytics";
 import { useCurrency } from "@/lib/currency-context";
+import { formatTimeIST } from "@/lib/datetime";
 import { X, TrendingUp, TrendingDown, Loader2 } from "lucide-react";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -116,7 +117,7 @@ function TradesModal({ slot, onClose }: { slot: SlotInfo; onClose: () => void })
                   <th className="text-right py-2 px-3 font-medium">Qty</th>
                   <th className="text-right py-2 px-3 font-medium">Entry</th>
                   <th className="text-right py-2 px-3 font-medium">P&L</th>
-                  <th className="text-right py-2 px-3 font-medium">Time</th>
+                  <th className="text-right py-2 px-3 font-medium">Time (IST)</th>
                 </tr>
               </thead>
               <tbody>
@@ -143,7 +144,7 @@ function TradesModal({ slot, onClose }: { slot: SlotInfo; onClose: () => void })
                         {t.pnl !== null ? fmt(t.pnl) : "—"}
                       </td>
                       <td className="py-2 px-3 text-right text-zinc-600">
-                        {new Date(t.date).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
+                        {formatTimeIST(t.date)}
                       </td>
                     </tr>
                   );

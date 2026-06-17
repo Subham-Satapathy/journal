@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState, useEffect, useCallback } from "react";
-import { format, eachDayOfInterval, getDay, startOfWeek } from "date-fns";
+import { eachDayOfInterval, getDay, startOfWeek } from "date-fns";
+import { formatISTDateKey, formatTimeIST, istDayRangeUTC, getISTDateKey } from "@/lib/datetime";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCurrency } from "@/lib/currency-context";
 import { X, TrendingUp, TrendingDown, Loader2 } from "lucide-react";
@@ -50,9 +51,8 @@ function DayTradesModal({ dateStr, summary, onClose }: { dateStr: string; summar
     setLoading(true);
     try {
       // Fetch trades for this specific day (from start to end of day)
-      const from = `${dateStr}T00:00:00.000Z`;
-      const to = `${dateStr}T23:59:59.999Z`;
-      const res = await fetch(`/api/trades?from=${from}&to=${to}&limit=200`);
+      const { from, to } = istDayRangeUTC(dateStr);
+      const res = await fetch(`/api/trades?from=${from.toISOString()}&to=${to.toISOString()}&limit=200`);
       const data = await res.json();
       setTrades(data.trades ?? []);
     } finally {
@@ -66,9 +66,7 @@ function DayTradesModal({ dateStr, summary, onClose }: { dateStr: string; summar
   const totalPnl = trades.reduce((s, t) => s + (t.pnl ?? 0), 0);
 
   // Format date nicely
-  const displayDate = new Date(dateStr + "T12:00:00").toLocaleDateString("en-IN", {
-    weekday: "long", day: "numeric", month: "long", year: "numeric",
-  });
+  const displayDate = formatISTDateKey(dateStr);
 
   return (
     <div
@@ -123,7 +121,7 @@ function DayTradesModal({ dateStr, summary, onClose }: { dateStr: string; summar
                   <th className="text-left py-2 px-3 font-medium">Side</th>
                   <th className="text-right py-2 px-3 font-medium">Amount</th>
                   <th className="text-right py-2 px-3 font-medium">P&L</th>
-                  <th className="text-right py-2 px-3 font-medium">Time</th>
+                  <th className="text-right py-2 px-3 font-medium">Time (IST)</th>
                 </tr>
               </thead>
               <tbody>
@@ -147,7 +145,7 @@ function DayTradesModal({ dateStr, summary, onClose }: { dateStr: string; summar
                         {t.pnl !== null ? fmt(t.pnl) : "—"}
                       </td>
                       <td className="py-2 px-3 text-right text-zinc-600">
-                        {new Date(t.date).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
+                        {formatTimeIST(t.date)}
                       </td>
                     </tr>
                   );
@@ -195,7 +193,7 @@ export function CalendarHeatmap({ data }: CalendarHeatmapProps) {
     for (let i = 0; i < mondayAdj; i++) week.push(null);
 
     for (const day of days) {
-      week.push({ date: day, dayStr: format(day, "yyyy-MM-dd") });
+      week.push({ date: day, dayStr: getISTDateKey(day) });
       if (week.length === 7) { weeksArr.push(week); week = []; }
     }
     if (week.length > 0) {

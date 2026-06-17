@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { mapCsvColumns, ColumnMapping } from "@/lib/gemini";
+import { parseTradeDate } from "@/lib/datetime";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 
@@ -75,17 +76,8 @@ export async function POST(req: NextRequest) {
         return isNaN(n) ? null : n;
       };
 
-      // Parse Excel serial date numbers (days since 1899-12-30) or normal date strings
-      const parseDate = (val: string | null): Date => {
-        if (!val) return new Date();
-        const num = Number(val);
-        if (!isNaN(num) && num > 1000 && num < 100000) {
-          // Excel serial date
-          return new Date((num - 25569) * 86400 * 1000);
-        }
-        const d = new Date(val);
-        return isNaN(d.getTime()) ? new Date() : d;
-      };
+      // Parse dates — timezone in sheet is respected; plain datetimes treated as UTC
+      const parseDate = parseTradeDate;
 
       // Auto-detect orderId column if Gemini didn't map it:
       // look for a header whose sample values look like UUIDs or long numeric IDs

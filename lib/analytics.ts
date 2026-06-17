@@ -1,19 +1,12 @@
 import { Trade } from "@prisma/client";
 import {
-  format,
-  startOfDay,
-  startOfWeek,
-  startOfMonth,
-  eachDayOfInterval,
-  eachWeekOfInterval,
-  eachMonthOfInterval,
-  parseISO,
-  getHours,
-  getDay,
-  subDays,
-  isAfter,
-  isBefore,
-} from "date-fns";
+  getISTDateKey,
+  getISTWeekKey,
+  getISTMonthKey,
+  getISTHour,
+  getISTDay,
+  formatDateTimeISTExport,
+} from "@/lib/datetime";
 
 export interface DailyPnl {
   date: string;
@@ -108,15 +101,14 @@ export function computeOverviewStats(trades: Trade[]): OverviewStats {
   const bestTrade = pnls.length > 0 ? Math.max(...pnls) : 0;
   const worstTrade = pnls.length > 0 ? Math.min(...pnls) : 0;
 
-  // Best day
+  // Best day & max drawdown — use IST daily equity (not per-trade, which inflates drawdown)
   const dailyPnl = groupByDay(closedTrades);
-  const dailyTotals = Object.values(dailyPnl).map((ts) =>
-    ts.reduce((a, t) => a + t.pnl!, 0)
-  );
+  const dailyEntries = Object.entries(dailyPnl)
+    .map(([date, ts]) => ({ date, pnl: ts.reduce((a, t) => a + t.pnl!, 0) }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+  const dailyTotals = dailyEntries.map((d) => d.pnl);
   const bestDay = dailyTotals.length > 0 ? Math.max(...dailyTotals) : 0;
-
-  // Max drawdown
-  const maxDrawdown = computeMaxDrawdown(pnls);
+  const maxDrawdown = computeMaxDrawdownDaily(dailyEntries);
 
   // Profit factor
   const grossProfit = wins.reduce((a, b) => a + b, 0);
@@ -151,12 +143,13 @@ export function computeOverviewStats(trades: Trade[]): OverviewStats {
   };
 }
 
-function computeMaxDrawdown(pnls: number[]): number {
+/** Max drawdown on daily IST equity curve (peak-to-trough). */
+function computeMaxDrawdownDaily(dailyEntries: Array<{ date: string; pnl: number }>): number {
   let peak = 0;
   let maxDD = 0;
   let running = 0;
-  for (const p of pnls) {
-    running += p;
+  for (const { pnl } of dailyEntries) {
+    running += pnl;
     if (running > peak) peak = running;
     const dd = peak - running;
     if (dd > maxDD) maxDD = dd;
@@ -231,7 +224,7 @@ function computeDisciplineScore(
 
 export function groupByDay(trades: Trade[]): Record<string, Trade[]> {
   return trades.reduce<Record<string, Trade[]>>((acc, t) => {
-    const key = format(new Date(t.date), "yyyy-MM-dd");
+    const key = getISTDateKey(new Date(t.date));
     if (!acc[key]) acc[key] = [];
     acc[key].push(t);
     return acc;
@@ -261,7 +254,7 @@ export function computeDailyPnl(trades: Trade[], days = 90): DailyPnl[] {
 export function computeWeeklyPnl(trades: Trade[]): WeeklyPnl[] {
   const closedTrades = trades.filter((t) => t.pnl !== null);
   const grouped = closedTrades.reduce<Record<string, Trade[]>>((acc, t) => {
-    const key = format(startOfWeek(new Date(t.date), { weekStartsOn: 1 }), "yyyy-MM-dd");
+    const key = getISTWeekKey(new Date(t.date));
     if (!acc[key]) acc[key] = [];
     acc[key].push(t);
     return acc;
@@ -280,7 +273,7 @@ export function computeWeeklyPnl(trades: Trade[]): WeeklyPnl[] {
 export function computeMonthlyPnl(trades: Trade[]): MonthlyPnl[] {
   const closedTrades = trades.filter((t) => t.pnl !== null);
   const grouped = closedTrades.reduce<Record<string, Trade[]>>((acc, t) => {
-    const key = format(startOfMonth(new Date(t.date)), "yyyy-MM");
+    const key = getISTMonthKey(new Date(t.date));
     if (!acc[key]) acc[key] = [];
     acc[key].push(t);
     return acc;
@@ -302,8 +295,8 @@ export function computeHourDayHeatmap(trades: Trade[]): HeatmapCell[] {
 
   for (const t of closedTrades) {
     const d = new Date(t.date);
-    const hour = getHours(d);
-    const day = getDay(d);
+    const hour = getISTHour(d);
+    const day = getISTDay(d);
     const key = `${day}-${hour}`;
     if (!cells[key]) cells[key] = { pnl: 0, trades: 0, wins: 0 };
     cells[key].pnl += t.pnl!;
@@ -361,7 +354,7 @@ export function computeMentalStateMetrics(trades: Trade[]): MentalStateMetrics {
   const hourPnl: Record<number, number> = {};
   const hourTrades: Record<number, number> = {};
   for (const t of closedTrades) {
-    const h = getHours(new Date(t.date));
+    const h = getISTHour(new Date(t.date));
     hourPnl[h] = (hourPnl[h] || 0) + t.pnl!;
     hourTrades[h] = (hourTrades[h] || 0) + 1;
   }
@@ -373,7 +366,7 @@ export function computeMentalStateMetrics(trades: Trade[]): MentalStateMetrics {
   const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   const dayPnl: Record<number, number> = {};
   for (const t of closedTrades) {
-    const d = getDay(new Date(t.date));
+    const d = getISTDay(new Date(t.date));
     dayPnl[d] = (dayPnl[d] || 0) + t.pnl!;
   }
   const dayEntries = Object.entries(dayPnl).sort((a, b) => b[1] - a[1]);
@@ -425,7 +418,7 @@ export function computeEquityCurve(trades: Trade[]): Array<{ date: string; equit
     if (equity > peak) peak = equity;
     const drawdown = peak > 0 ? ((peak - equity) / peak) * 100 : 0;
     return {
-      date: format(new Date(t.date), "yyyy-MM-dd HH:mm"),
+      date: formatDateTimeISTExport(new Date(t.date)),
       equity,
       drawdown,
     };

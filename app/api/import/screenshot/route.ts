@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { extractTradesFromImage } from "@/lib/gemini";
+import { parseTradeDate } from "@/lib/datetime";
 
 export async function POST(req: NextRequest) {
   try {
@@ -46,8 +47,8 @@ export async function POST(req: NextRequest) {
           pnl: t.pnl !== null && t.pnl !== undefined ? parseFloat(String(t.pnl)) : null,
           pnlPercent: t.pnlPercent !== null && t.pnlPercent !== undefined ? parseFloat(String(t.pnlPercent)) : null,
           fees: t.fees ? parseFloat(String(t.fees)) : 0,
-          date: new Date(String(t.date)),
-          closeDate: t.closeDate ? new Date(String(t.closeDate)) : null,
+          date: parseTradeDate(String(t.date)),
+          closeDate: t.closeDate ? parseTradeDate(String(t.closeDate)) : null,
           exchange: t.exchange ? String(t.exchange) : null,
           importSource: "screenshot",
         }));

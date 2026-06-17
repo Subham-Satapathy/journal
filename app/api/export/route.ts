@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { format } from "date-fns";
+import { formatDateTimeISTExport, getISTDateKey } from "@/lib/datetime";
 
 export async function GET(req: NextRequest) {
   try {
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
 
     const headers = ["Date", "Symbol", "Side", "Entry Price", "Exit Price", "Quantity", "P&L", "P&L %", "Fees", "Exchange", "Tags", "Notes"];
     const rows = trades.map((t) => [
-      format(new Date(t.date), "yyyy-MM-dd HH:mm"),
+      formatDateTimeISTExport(new Date(t.date)),
       t.symbol,
       t.side,
       t.entryPrice,
@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
     return new NextResponse(csv, {
       headers: {
         "Content-Type": "text/csv",
-        "Content-Disposition": `attachment; filename="trades-${format(new Date(), "yyyy-MM-dd")}.csv"`,
+        "Content-Disposition": `attachment; filename="trades-${getISTDateKey(new Date())}.csv"`,
       },
     });
   } catch (error) {

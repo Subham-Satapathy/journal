@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getISTHour, getISTDay } from "@/lib/datetime";
 
 export async function GET(req: NextRequest) {
   try {
@@ -34,8 +35,8 @@ export async function GET(req: NextRequest) {
       const dow = dayParam !== null ? parseInt(dayParam) : null;
       trades = trades.filter((t) => {
         const d = new Date(t.date);
-        if (hour !== null && d.getHours() !== hour) return false;
-        if (dow !== null && d.getDay() !== dow) return false;
+        if (hour !== null && getISTHour(d) !== hour) return false;
+        if (dow !== null && getISTDay(d) !== dow) return false;
         return true;
       });
       total = trades.length;

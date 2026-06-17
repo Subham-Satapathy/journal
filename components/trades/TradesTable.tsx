@@ -6,7 +6,7 @@ import { useCurrency } from "@/lib/currency-context";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { format } from "date-fns";
+import { formatDateTimeIST } from "@/lib/datetime";
 import { Trash2, ChevronLeft, ChevronRight, Download, Search, SlidersHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -126,7 +126,7 @@ export function TradesTable() {
                     className="accent-indigo-500"
                   />
                 </th>
-                {["Date", "Symbol", "Side", "Entry", "Exit", "Qty", "P&L", "P&L%", "Fees", "Source"].map((h) => (
+                {["Date (IST)", "Symbol", "Side", "Entry", "Exit", "Qty", "P&L", "P&L%", "Fees", "Source"].map((h) => (
                   <th key={h} className="px-3 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wide">{h}</th>
                 ))}
                 <th className="px-3 py-3 w-10" />
@@ -167,7 +167,7 @@ export function TradesTable() {
                       />
                     </td>
                     <td className="px-3 py-3 text-zinc-400 whitespace-nowrap">
-                      {format(new Date(t.date), "MMM d, yy HH:mm")}
+                      {formatDateTimeIST(t.date)}
                     </td>
                     <td className="px-3 py-3 font-mono font-medium text-white">{t.symbol}</td>
                     <td className="px-3 py-3">
