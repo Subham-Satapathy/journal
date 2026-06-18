@@ -2,17 +2,17 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 /**
- * One-time fix: trades imported before IST parsing stored wall-clock times as UTC.
- * Subtracts 5:30 from all trade dates. Run only once.
+ * Fix dates imported with UTC (Z) when broker sheet uses UTC+2.
+ * Subtracts 2 hours to restore true UTC instants. Run only once.
  */
 export async function POST() {
   try {
     const updated = await prisma.$executeRaw`
       UPDATE "Trade"
       SET
-        date = date - INTERVAL '5 hours 30 minutes',
+        date = date - INTERVAL '2 hours',
         "closeDate" = CASE
-          WHEN "closeDate" IS NOT NULL THEN "closeDate" - INTERVAL '5 hours 30 minutes'
+          WHEN "closeDate" IS NOT NULL THEN "closeDate" - INTERVAL '2 hours'
           ELSE NULL
         END
     `;

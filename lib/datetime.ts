@@ -17,11 +17,15 @@ export function hasTimezoneInfo(val: string): boolean {
   return false;
 }
 
+/** Broker CSV/Excel exports datetimes in UTC+2 without a timezone suffix. */
+const BROKER_TZ = "+02:00";
+
 /**
  * Parse trade date from sheet/import.
  * - Excel serial → UTC instant
  * - String with timezone (Z, +05:30, IST, etc.) → parsed as-is
- * - Plain datetime without timezone → treated as IST (Asia/Kolkata)
+ * - Plain datetime without timezone → broker server time (UTC+2)
+ *   Stored as UTC; displayed/grouped in IST via Asia/Kolkata helpers.
  */
 export function parseTradeDate(val: string | null | undefined): Date {
   if (!val) return new Date();
@@ -40,13 +44,8 @@ export function parseTradeDate(val: string | null | undefined): Date {
   }
 
   const normalized = s.includes("T") ? s : s.replace(" ", "T");
-  const d = new Date(normalized + "+05:30");
+  const d = new Date(normalized + BROKER_TZ);
   return isNaN(d.getTime()) ? new Date() : d;
-}
-
-/** Shift legacy dates that were stored as UTC but meant IST wall-clock (−5:30). */
-export function fixLegacyISTAsUTC(date: Date): Date {
-  return new Date(date.getTime() - IST_OFFSET_MS);
 }
 
 export function getISTHour(date: Date): number {

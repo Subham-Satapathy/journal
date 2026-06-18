@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
         return isNaN(n) ? null : n;
       };
 
-      // Parse dates — timezone in sheet is respected; plain datetimes treated as UTC
+      // Parse dates — timezone in sheet is respected; plain datetimes are broker UTC+2
       const parseDate = parseTradeDate;
 
       // Auto-detect orderId column if Gemini didn't map it:
