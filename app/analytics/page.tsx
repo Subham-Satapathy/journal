@@ -35,7 +35,7 @@ function MonthlyBarChart({
         <XAxis dataKey="month" tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} />
         <YAxis
           domain={[yMin, yMax]}
-          tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} width={70}
+          tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} width={48}
           tickFormatter={(v) => `${symbol}${Math.abs(v) >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`}
         />
         <ReferenceLine y={0} stroke="#52525b" strokeDasharray="3 3" />
@@ -148,7 +148,7 @@ export default function AnalyticsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-6">
+          <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
             <div className="text-center">
               <div className="text-4xl font-black" style={{ color: overview.currentStreakType === "win" ? "#10b981" : "#ef4444" }}>
                 {overview.currentStreak}

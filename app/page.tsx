@@ -65,7 +65,7 @@ export default function DashboardPage() {
     return (
       <div className="space-y-6 animate-pulse">
         <div className="h-8 w-48 bg-zinc-800 rounded" />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           {Array.from({ length: 8 }).map((_, i) => <div key={i} className="h-28 bg-zinc-900 rounded-xl border border-zinc-800" />)}
         </div>
         <div className="h-72 bg-zinc-900 rounded-xl border border-zinc-800" />
@@ -109,27 +109,31 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-          <p className="text-sm text-zinc-500 mt-0.5">Your trading performance overview</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <CurrencyToggle />
+      <div className="space-y-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold text-white">Dashboard</h1>
+            <p className="text-sm text-zinc-500 mt-0.5">Your trading performance overview</p>
+          </div>
           {isEmpty && (
-            <Link href="/import"><Button>Import First Trades</Button></Link>
+            <Link href="/import" className="shrink-0">
+              <Button size="sm">Import First Trades</Button>
+            </Link>
           )}
+        </div>
+        <div className="md:hidden">
+          <CurrencyToggle />
         </div>
       </div>
 
       {/* Currency mismatch banner */}
       {detectedCurrency && detectedCurrency !== baseCurrency && (
-        <div className="flex items-center justify-between gap-4 px-4 py-3 bg-amber-950/50 border border-amber-800/60 rounded-xl">
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-amber-400 font-semibold">⚠ Currency mismatch detected</span>
-            <span className="text-amber-600">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 bg-amber-950/50 border border-amber-800/60 rounded-xl">
+          <div className="text-sm space-y-1">
+            <div className="text-amber-400 font-semibold">⚠ Currency mismatch detected</div>
+            <div className="text-amber-600 text-xs sm:text-sm">
               Your trades look like <strong className="text-amber-400">{detectedCurrency}</strong> amounts, but &quot;Trades in&quot; is set to <strong className="text-amber-400">{baseCurrency}</strong> — amounts will display incorrectly.
-            </span>
+            </div>
           </div>
           <button
             onClick={() => {
@@ -164,7 +168,7 @@ export default function DashboardPage() {
       ) : (
         <>
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             <StatsCard
               title={`Total P&L (${currency})`}
               value={fmt(overview.totalPnl)}
@@ -229,7 +233,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Long vs Short Win Rate */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
               <div className="text-xs text-zinc-500 mb-2">Long Win Rate</div>
               <div className="text-xl font-bold text-emerald-400">{overview.longWinRate.toFixed(1)}%</div>

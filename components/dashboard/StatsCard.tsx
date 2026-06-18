@@ -28,17 +28,17 @@ export function StatsCard({
 
   return (
     <Card className={cn("hover:border-zinc-700 transition-colors", className)}>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>{title}</CardTitle>
-          <div className={cn("w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center", iconColor)}>
-            <Icon className="w-4 h-4" />
+      <CardHeader className="pb-0">
+        <div className="flex items-center justify-between gap-2">
+          <CardTitle className="text-xs sm:text-sm leading-tight">{title}</CardTitle>
+          <div className={cn("w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-zinc-800 flex items-center justify-center shrink-0", iconColor)}>
+            <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-2">
         <div className={cn(
-          "text-2xl font-bold tracking-tight",
+          "text-[clamp(0.8rem,3.8vw,1.5rem)] font-bold tracking-tight tabular-nums leading-tight",
           isPositive && "text-emerald-400",
           isNegative && "text-red-400",
           !isPositive && !isNegative && "text-white"
@@ -46,8 +46,8 @@ export function StatsCard({
           {value}
         </div>
         {(subValue || change !== undefined) && (
-          <div className="mt-1 flex items-center gap-2">
-            {subValue && <span className="text-xs text-zinc-500">{subValue}</span>}
+          <div className="mt-1.5 flex items-center gap-2 min-w-0">
+            {subValue && <span className="text-[10px] sm:text-xs text-zinc-500 truncate">{subValue}</span>}
             {change !== undefined && (
               <span className={cn(
                 "text-xs font-medium",

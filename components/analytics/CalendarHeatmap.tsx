@@ -6,6 +6,7 @@ import { formatISTDateKey, formatTimeIST, istDayRangeUTC, getISTDateKey } from "
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCurrency } from "@/lib/currency-context";
 import { X, TrendingUp, TrendingDown, Loader2 } from "lucide-react";
+import { getMaxAbsPnl, getPnlHeatStyle } from "@/lib/heatmap-colors";
 
 interface CalendarDay {
   date: string;
@@ -30,16 +31,27 @@ interface Trade {
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const DAY_LABELS = ["M", "T", "W", "T", "F", "S", "S"];
 
-function getCellColor(pnl: number, hasTrades: boolean): string {
-  if (!hasTrades) return "bg-zinc-800/50";
-  if (pnl > 500) return "bg-emerald-500";
-  if (pnl > 200) return "bg-emerald-500/80";
-  if (pnl > 50) return "bg-emerald-500/60";
-  if (pnl > 0) return "bg-emerald-500/40";
-  if (pnl < -500) return "bg-red-600";
-  if (pnl < -200) return "bg-red-500/80";
-  if (pnl < -50) return "bg-red-500/60";
-  return "bg-red-500/40";
+function HeatmapLegend({ maxAbsPnl }: { maxAbsPnl: number }) {
+  const steps = 7;
+  return (
+    <div className="flex items-center gap-2 sm:gap-3 mt-4 ml-8 md:ml-9 text-[10px] sm:text-[11px] text-zinc-500 flex-wrap">
+      <span>Loss</span>
+      <div className="flex h-3.5 sm:h-4 rounded overflow-hidden border border-zinc-800">
+        {Array.from({ length: steps }).map((_, i) => {
+          const pnl = -maxAbsPnl + (i / (steps - 1)) * maxAbsPnl * 2;
+          return (
+            <div
+              key={i}
+              className="w-5 sm:w-6"
+              style={getPnlHeatStyle(pnl, true, maxAbsPnl)}
+            />
+          );
+        })}
+      </div>
+      <span>Profit</span>
+      <span className="text-zinc-700 md:hidden w-full">← scroll →</span>
+    </div>
+  );
 }
 
 function DayTradesModal({ dateStr, summary, onClose }: { dateStr: string; summary: CalendarDay; onClose: () => void }) {
@@ -215,6 +227,10 @@ export function CalendarHeatmap({ data }: CalendarHeatmapProps) {
   }, []);
 
   const dataMap = useMemo(() => new Map(data.map((d) => [d.date, d])), [data]);
+  const maxAbsPnl = useMemo(
+    () => getMaxAbsPnl(data.filter((d) => d.count > 0).map((d) => d.pnl)),
+    [data]
+  );
 
   return (
     <>
@@ -281,12 +297,13 @@ export function CalendarHeatmap({ data }: CalendarHeatmapProps) {
                       }
                       const d = dataMap.get(day.dayStr);
                       const hasTrades = !!d && d.count > 0;
-                      const color = getCellColor(d?.pnl ?? 0, hasTrades);
+                      const pnl = d?.pnl ?? 0;
                       return (
                         <div
                           key={di}
                           onClick={() => hasTrades && d && setSelectedDay({ dateStr: day.dayStr, summary: d })}
-                          className={`w-[14px] h-[14px] md:w-full md:h-auto md:aspect-square md:min-h-[14px] md:max-h-[28px] shrink-0 rounded-sm ${color} transition-all ${
+                          style={getPnlHeatStyle(pnl, hasTrades, maxAbsPnl)}
+                          className={`w-[14px] h-[14px] md:w-full md:h-auto md:aspect-square md:min-h-[14px] md:max-h-[28px] shrink-0 rounded-sm transition-all ${
                             hasTrades
                               ? "cursor-pointer active:scale-110 md:hover:scale-110 md:hover:ring-2 md:hover:ring-white/30"
                               : "cursor-default"
@@ -299,15 +316,7 @@ export function CalendarHeatmap({ data }: CalendarHeatmapProps) {
                 ))}
               </div>
 
-              {/* Legend */}
-              <div className="flex items-center gap-2 sm:gap-3 mt-4 ml-8 md:ml-9 text-[10px] sm:text-[11px] text-zinc-500 flex-wrap">
-                <span>Less</span>
-                {["bg-zinc-800/50", "bg-red-500/40", "bg-red-500/80", "bg-emerald-500/40", "bg-emerald-500/80", "bg-emerald-500"].map((c, i) => (
-                  <div key={i} className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-sm ${c}`} />
-                ))}
-                <span>More</span>
-                <span className="text-zinc-700 md:hidden w-full">← scroll →</span>
-              </div>
+              <HeatmapLegend maxAbsPnl={maxAbsPnl} />
             </div>
           </div>
         </CardContent>

@@ -3,6 +3,7 @@
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCurrency } from "@/lib/currency-context";
+import { cn } from "@/lib/utils";
 
 const COLORS = ["#6366f1", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#f97316", "#84cc16", "#ec4899", "#14b8a6"];
 
@@ -46,22 +47,27 @@ export function DistributionCharts({ data, longShortRatio }: { data: SymbolDist[
           {data.length === 0 ? (
             <div className="h-40 flex items-center justify-center text-zinc-600 text-sm">No data</div>
           ) : (
-            <div className="flex items-center gap-4">
-              <ResponsiveContainer width={140} height={140}>
-                <PieChart>
-                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={35} outerRadius={60} paddingAngle={2} dataKey="value">
-                    {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                  </Pie>
-                  <Tooltip content={<CustomTooltip />} />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="flex flex-col gap-1 flex-1 min-w-0">
+            <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
+              <div className="w-[140px] h-[140px] shrink-0">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={pieData} cx="50%" cy="50%" innerRadius={35} outerRadius={60} paddingAngle={2} dataKey="value">
+                      {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="flex flex-col gap-1.5 w-full sm:flex-1 sm:min-w-0">
                 {pieData.map((d, i) => (
                   <div key={d.name} className="flex items-center gap-2 text-xs min-w-0">
                     <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: COLORS[i % COLORS.length] }} />
-                    <span className="text-zinc-300 truncate flex-1">{d.name}</span>
-                    <span className="text-zinc-500">{d.value}</span>
-                    <span className={d.pnl >= 0 ? "text-emerald-400" : "text-red-400"} style={{ fontSize: 10 }}>
+                    <span className="text-zinc-300 truncate flex-1 min-w-0">{d.name}</span>
+                    <span className="text-zinc-500 shrink-0">{d.value}</span>
+                    <span className={cn(
+                      "shrink-0 tabular-nums text-[10px] sm:text-xs",
+                      d.pnl >= 0 ? "text-emerald-400" : "text-red-400"
+                    )}>
                       {fmt(d.pnl)}
                     </span>
                   </div>

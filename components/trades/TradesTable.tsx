@@ -75,6 +75,14 @@ export function TradesTable() {
 
   const totalPages = Math.ceil(total / limit);
 
+  const sideBadgeClass = (side: string) =>
+    cn(
+      "px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium shrink-0",
+      ["LONG", "BUY", "CALL"].includes(side.toUpperCase())
+        ? "bg-emerald-500/15 text-emerald-400"
+        : "bg-red-500/15 text-red-400"
+    );
+
   return (
     <div className="space-y-4">
       {/* Controls */}
@@ -109,8 +117,95 @@ export function TradesTable() {
         </Button>
       </div>
 
-      {/* Table */}
-      <Card className="overflow-hidden">
+      {/* Mobile card list */}
+      <div className="lg:hidden space-y-2">
+        {loading ? (
+          Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-3 animate-pulse space-y-2">
+              <div className="h-4 bg-zinc-800 rounded w-2/3" />
+              <div className="h-3 bg-zinc-800 rounded w-1/2" />
+              <div className="h-3 bg-zinc-800 rounded w-full" />
+            </div>
+          ))
+        ) : trades.length === 0 ? (
+          <Card className="p-8 text-center text-zinc-600 text-sm">
+            No trades found. Import some trades to get started.
+          </Card>
+        ) : (
+          trades.map((t) => (
+            <Card
+              key={t.id}
+              className={cn(
+                "p-3 transition-colors",
+                selected.has(t.id) && "border-indigo-500/40 bg-indigo-500/5"
+              )}
+            >
+              <div className="flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  checked={selected.has(t.id)}
+                  onChange={() => toggleSelect(t.id)}
+                  className="accent-indigo-500 mt-1 shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="font-medium text-white text-sm truncate">{t.symbol}</div>
+                      <div className="text-[11px] text-zinc-500 mt-0.5">{formatDateTimeIST(t.date)}</div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <span className={sideBadgeClass(t.side)}>{t.side}</span>
+                      <span className={cn("text-sm font-semibold font-mono tabular-nums", pnlColor(t.pnl ?? 0))}>
+                        {t.pnl !== null ? fmt(t.pnl) : "—"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="mt-2.5 grid grid-cols-3 gap-2 text-[11px]">
+                    <div>
+                      <div className="text-zinc-600">Entry</div>
+                      <div className="text-zinc-300 font-mono tabular-nums">{fmt(t.entryPrice)}</div>
+                    </div>
+                    <div>
+                      <div className="text-zinc-600">Exit</div>
+                      <div className="text-zinc-400 font-mono tabular-nums">
+                        {t.exitPrice ? fmt(t.exitPrice) : "—"}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-zinc-600">Qty</div>
+                      <div className="text-zinc-400">{t.quantity}</div>
+                    </div>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between gap-2 text-[11px]">
+                    <div className="flex items-center gap-3 text-zinc-500">
+                      <span className={pnlColor(t.pnlPercent ?? 0)}>
+                        {t.pnlPercent !== null ? formatPercent(t.pnlPercent) : "—"}
+                      </span>
+                      {t.fees > 0 && <span>Fees {fmt(t.fees)}</span>}
+                      {t.importSource && (
+                        <span className="bg-zinc-800 px-1.5 py-0.5 rounded text-[10px]">{t.importSource}</span>
+                      )}
+                    </div>
+                    <button
+                      onClick={async () => {
+                        if (!confirm("Delete this trade?")) return;
+                        await fetch(`/api/trades/${t.id}`, { method: "DELETE" });
+                        fetchTrades();
+                      }}
+                      className="p-1.5 hover:text-red-400 text-zinc-600 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ))
+        )}
+      </div>
+
+      {/* Desktop table */}
+      <Card className="overflow-hidden hidden lg:block">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -171,12 +266,7 @@ export function TradesTable() {
                     </td>
                     <td className="px-3 py-3 font-mono font-medium text-white">{t.symbol}</td>
                     <td className="px-3 py-3">
-                      <span className={cn(
-                        "px-2 py-0.5 rounded-full text-xs font-medium",
-                        ["LONG", "BUY", "CALL"].includes(t.side.toUpperCase())
-                          ? "bg-emerald-500/15 text-emerald-400"
-                          : "bg-red-500/15 text-red-400"
-                      )}>
+                      <span className={sideBadgeClass(t.side)}>
                         {t.side}
                       </span>
                     </td>
@@ -217,23 +307,27 @@ export function TradesTable() {
             </tbody>
           </table>
         </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-zinc-800">
-            <span className="text-xs text-zinc-500">{total} total trades</span>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              <span className="text-xs text-zinc-400">Page {page} of {totalPages}</span>
-              <Button variant="ghost" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        )}
       </Card>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-1 py-2">
+          <span className="text-xs text-zinc-500">{total} total trades</span>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+            <span className="text-xs text-zinc-400">Page {page} of {totalPages}</span>
+            <Button variant="ghost" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {totalPages <= 1 && total > 0 && (
+        <p className="text-xs text-zinc-500 text-center lg:hidden">{total} total trades</p>
+      )}
     </div>
   );
 }

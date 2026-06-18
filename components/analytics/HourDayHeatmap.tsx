@@ -1,24 +1,40 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HeatmapCell } from "@/lib/analytics";
 import { useCurrency } from "@/lib/currency-context";
 import { formatTimeIST } from "@/lib/datetime";
+import { getMaxAbsPnl, getPnlHeatStyle, getPnlHeatTextClass } from "@/lib/heatmap-colors";
 import { X, TrendingUp, TrendingDown, Loader2 } from "lucide-react";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const HOURS = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, "0")}:00`);
 
-function getColor(pnl: number, trades: number): string {
-  if (trades === 0) return "bg-zinc-800/30";
-  if (pnl > 200) return "bg-emerald-500 text-white";
-  if (pnl > 50) return "bg-emerald-500/70 text-white";
-  if (pnl > 0) return "bg-emerald-500/40 text-emerald-200";
-  if (pnl < -200) return "bg-red-600 text-white";
-  if (pnl < -50) return "bg-red-500/70 text-white";
-  if (pnl < 0) return "bg-red-500/40 text-red-200";
-  return "bg-zinc-700 text-zinc-300";
+function HeatmapLegend({ maxAbsPnl }: { maxAbsPnl: number }) {
+  const steps = 7;
+  return (
+    <div className="flex items-center gap-2 mt-3 text-[10px] text-zinc-500 flex-wrap">
+      <span>Loss</span>
+      <div className="flex h-3 rounded overflow-hidden border border-zinc-800">
+        {Array.from({ length: steps }).map((_, i) => {
+          const pnl = -maxAbsPnl + (i / (steps - 1)) * maxAbsPnl * 2;
+          return (
+            <div
+              key={i}
+              className="w-5"
+              style={getPnlHeatStyle(pnl, true, maxAbsPnl)}
+            />
+          );
+        })}
+      </div>
+      <span>Profit</span>
+      <div className="flex items-center gap-1 ml-2">
+        <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: "rgba(39, 39, 42, 0.45)" }} />
+        No trades
+      </div>
+    </div>
+  );
 }
 
 interface Trade {
@@ -167,17 +183,25 @@ export function HourDayHeatmap({ data }: { data: HeatmapCell[] }) {
     grid[`${cell.day}-${cell.hour}`] = cell;
   }
 
+  const maxAbsPnl = useMemo(
+    () => getMaxAbsPnl(data.filter((c) => c.trades > 0).map((c) => c.pnl)),
+    [data]
+  );
+
   return (
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="text-base font-semibold text-white">
+          <CardTitle className="text-base font-semibold text-white leading-snug">
             Performance Heatmap — Hour × Day
-            <span className="ml-2 text-[11px] font-normal text-zinc-600">click any cell to see trades</span>
+            <span className="block sm:inline sm:ml-2 text-[11px] font-normal text-zinc-600 mt-0.5 sm:mt-0">
+              tap a cell to see trades
+            </span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-2 overflow-x-auto">
-          <div className="min-w-[560px]">
+        <CardContent className="pt-2 pb-4">
+          <div className="overflow-x-auto overscroll-x-contain touch-pan-x -mx-1 px-1 sm:mx-0 sm:px-0">
+            <div className="min-w-[520px]">
             {/* Header */}
             <div className="flex items-center mb-1">
               <div className="w-10 flex-shrink-0" />
@@ -194,13 +218,14 @@ export function HourDayHeatmap({ data }: { data: HeatmapCell[] }) {
                 <div className="w-10 text-[10px] text-zinc-600 text-right pr-2 flex-shrink-0">{hour}</div>
                 {DAYS.map((_, d) => {
                   const cell = grid[`${d}-${h}`];
-                  const color = getColor(cell?.pnl ?? 0, cell?.trades ?? 0);
                   const hasData = cell && cell.trades > 0;
+                  const pnl = cell?.pnl ?? 0;
                   return (
                     <div
                       key={d}
                       onClick={() => hasData && setSelected({ day: d, hour: h, cell })}
-                      className={`flex-1 h-5 rounded-sm ${color} flex items-center justify-center text-[9px] font-medium transition-all
+                      style={getPnlHeatStyle(pnl, !!hasData, maxAbsPnl)}
+                      className={`flex-1 h-5 rounded-sm flex items-center justify-center text-[9px] font-medium transition-all ${getPnlHeatTextClass(pnl, !!hasData, maxAbsPnl)}
                         ${hasData ? "cursor-pointer hover:scale-110 hover:z-10 hover:ring-1 hover:ring-white/30" : "cursor-default"}`}
                       title={cell ? `${DAYS[d]} ${hour}: ${cell.trades} trades, ${fmt(cell.pnl)}, ${cell.winRate.toFixed(0)}% WR` : `${DAYS[d]} ${hour}: No data`}
                     >
@@ -211,13 +236,8 @@ export function HourDayHeatmap({ data }: { data: HeatmapCell[] }) {
               </div>
             ))}
 
-            {/* Legend */}
-            <div className="flex items-center gap-2 mt-3 text-[10px] text-zinc-500 flex-wrap">
-              <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-sm bg-emerald-500" /> Strong Profit</div>
-              <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-sm bg-emerald-500/40" /> Small Profit</div>
-              <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-sm bg-red-500/40" /> Small Loss</div>
-              <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-sm bg-red-600" /> Big Loss</div>
-              <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-sm bg-zinc-800/30" /> No trades</div>
+            <HeatmapLegend maxAbsPnl={maxAbsPnl} />
+            <p className="text-[10px] text-zinc-700 mt-2 md:hidden">← scroll horizontally →</p>
             </div>
           </div>
         </CardContent>
