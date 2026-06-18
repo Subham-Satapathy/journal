@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { eachDayOfInterval, getDay, startOfWeek } from "date-fns";
 import { formatISTDateKey, formatTimeIST, istDayRangeUTC, getISTDateKey } from "@/lib/datetime";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,7 +49,7 @@ function HeatmapLegend({ maxAbsPnl }: { maxAbsPnl: number }) {
         })}
       </div>
       <span>Profit</span>
-      <span className="text-zinc-700 md:hidden w-full">← scroll →</span>
+      <span className="text-zinc-700 md:hidden w-full">Swipe for earlier weeks →</span>
     </div>
   );
 }
@@ -82,15 +82,15 @@ function DayTradesModal({ dateStr, summary, onClose }: { dateStr: string; summar
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="bg-zinc-950 border border-zinc-800 rounded-t-2xl sm:rounded-2xl w-full sm:max-w-2xl max-h-[92vh] sm:max-h-[80vh] flex flex-col shadow-2xl"
+        className="bg-zinc-950 border border-zinc-800 rounded-t-2xl sm:rounded-2xl w-full sm:max-w-2xl min-h-[40vh] sm:min-h-0 max-h-[85vh] sm:max-h-[80vh] flex flex-col shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-800 shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-5 py-4 border-b border-zinc-800 shrink-0">
           <div>
             <h2 className="text-base font-bold text-white">{displayDate}</h2>
             <p className="text-xs text-zinc-500 mt-0.5">
@@ -108,7 +108,7 @@ function DayTradesModal({ dateStr, summary, onClose }: { dateStr: string; summar
         </div>
 
         {/* Scrollable body */}
-        <div className="overflow-y-auto flex-1">
+        <div className="overflow-y-auto flex-1 min-h-0 pb-[max(1rem,env(safe-area-inset-bottom))]">
           {loading ? (
             <div className="flex items-center justify-center py-12 gap-2 text-zinc-500">
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -117,7 +117,47 @@ function DayTradesModal({ dateStr, summary, onClose }: { dateStr: string; summar
           ) : trades.length === 0 ? (
             <div className="text-center py-12 text-sm text-zinc-600">No trades found for this day</div>
           ) : (
-            <table className="w-full text-xs table-fixed">
+            <>
+              {/* Mobile: card list */}
+              <div className="md:hidden px-4 py-3 space-y-2">
+                {trades.map((t, idx) => {
+                  const win = (t.pnl ?? 0) >= 0;
+                  const isCall = ["BUY", "CALL", "LONG"].includes(t.side.toUpperCase());
+                  return (
+                    <div
+                      key={t.id}
+                      className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-3"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-zinc-600 font-medium">#{idx + 1}</span>
+                            <span className="font-medium text-white text-sm truncate">{t.symbol}</span>
+                          </div>
+                          <div className="text-[11px] text-zinc-500 mt-1">{formatTimeIST(t.date)} IST</div>
+                        </div>
+                        <div className="flex flex-col items-end gap-1 shrink-0">
+                          <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                            isCall ? "bg-emerald-500/15 text-emerald-400" : "bg-red-500/15 text-red-400"
+                          }`}>
+                            {isCall ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
+                            {t.side}
+                          </span>
+                          <span className={`text-sm font-bold tabular-nums ${win ? "text-emerald-400" : "text-red-400"}`}>
+                            {t.pnl !== null ? fmt(t.pnl) : "—"}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="mt-2 text-[11px] text-zinc-500">
+                        Qty <span className="text-zinc-300">{t.quantity}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop: table */}
+              <table className="hidden md:table w-full text-xs table-fixed">
               <colgroup>
                 <col className="w-8" />
                 <col className="w-[28%]" />
@@ -176,6 +216,7 @@ function DayTradesModal({ dateStr, summary, onClose }: { dateStr: string; summar
                 </tfoot>
               )}
             </table>
+            </>
           )}
         </div>
       </div>
@@ -186,6 +227,13 @@ function DayTradesModal({ dateStr, summary, onClose }: { dateStr: string; summar
 export function CalendarHeatmap({ data }: CalendarHeatmapProps) {
   const { fmt } = useCurrency();
   const [selectedDay, setSelectedDay] = useState<{ dateStr: string; summary: CalendarDay } | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const dataMap = useMemo(() => new Map(data.map((d) => [d.date, d])), [data]);
+  const maxAbsPnl = useMemo(
+    () => getMaxAbsPnl(data.filter((d) => d.count > 0).map((d) => d.pnl)),
+    [data]
+  );
 
   const { weeks, monthLabels } = useMemo(() => {
     const today = new Date();
@@ -213,24 +261,46 @@ export function CalendarHeatmap({ data }: CalendarHeatmapProps) {
       weeksArr.push(week);
     }
 
+    // Trim leading empty weeks so mobile view starts where trades exist
+    let firstDataWeek = weeksArr.length;
+    for (let wi = 0; wi < weeksArr.length; wi++) {
+      const hasTrades = weeksArr[wi].some(
+        (d) => d !== null && (dataMap.get(d.dayStr)?.count ?? 0) > 0
+      );
+      if (hasTrades) {
+        firstDataWeek = wi;
+        break;
+      }
+    }
+    const trimStart = firstDataWeek < weeksArr.length ? Math.max(0, firstDataWeek - 2) : 0;
+    const weeksToShow = weeksArr.slice(trimStart);
+
     const labels: Array<{ month: string; col: number }> = [];
     let lastMonth = -1;
-    for (let i = 0; i < weeksArr.length; i++) {
-      const firstValid = weeksArr[i].find((d) => d !== null);
+    for (let i = 0; i < weeksToShow.length; i++) {
+      const firstValid = weeksToShow[i].find((d) => d !== null);
       if (firstValid) {
         const m = firstValid.date.getMonth();
         if (m !== lastMonth) { labels.push({ month: MONTHS[m], col: i }); lastMonth = m; }
       }
     }
 
-    return { weeks: weeksArr, monthLabels: labels };
-  }, []);
+    return { weeks: weeksToShow, monthLabels: labels };
+  }, [dataMap]);
 
-  const dataMap = useMemo(() => new Map(data.map((d) => [d.date, d])), [data]);
-  const maxAbsPnl = useMemo(
-    () => getMaxAbsPnl(data.filter((d) => d.count > 0).map((d) => d.pnl)),
-    [data]
-  );
+  // On mobile, scroll to the most recent data if the grid still overflows
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const scrollToData = () => {
+      if (window.innerWidth >= 768) return;
+      if (el.scrollWidth <= el.clientWidth) return;
+      el.scrollLeft = el.scrollWidth - el.clientWidth;
+    };
+    scrollToData();
+    const t = window.setTimeout(scrollToData, 50);
+    return () => window.clearTimeout(t);
+  }, [weeks, data]);
 
   return (
     <>
@@ -245,7 +315,10 @@ export function CalendarHeatmap({ data }: CalendarHeatmapProps) {
         </CardHeader>
         <CardContent className="pt-0 pb-4">
           {/* Horizontal scroll on mobile; full-width flex on desktop */}
-          <div className="overflow-x-auto overscroll-x-contain touch-pan-x -mx-1 px-1 sm:mx-0 sm:px-0 md:overflow-visible">
+          <div
+            ref={scrollRef}
+            className="overflow-x-auto overscroll-x-contain touch-pan-x -mx-1 px-1 sm:mx-0 sm:px-0 md:overflow-visible"
+          >
             <div className="inline-block md:block w-max md:w-full">
               {/* Month labels */}
               <div className="relative mb-2 ml-8 md:ml-9 h-4">

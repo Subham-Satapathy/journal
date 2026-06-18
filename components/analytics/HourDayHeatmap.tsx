@@ -77,15 +77,15 @@ function TradesModal({ slot, onClose }: { slot: SlotInfo; onClose: () => void })
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="bg-zinc-950 border border-zinc-800 rounded-t-2xl sm:rounded-2xl w-full sm:max-w-2xl max-h-[92vh] sm:max-h-[80vh] flex flex-col shadow-2xl"
+        className="bg-zinc-950 border border-zinc-800 rounded-t-2xl sm:rounded-2xl w-full sm:max-w-2xl min-h-[40vh] sm:min-h-0 max-h-[85vh] sm:max-h-[80vh] flex flex-col shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-800">
+        <div className="flex items-center justify-between px-4 sm:px-5 py-4 border-b border-zinc-800 shrink-0">
           <div>
             <h2 className="text-base font-bold text-white">
               {DAYS[slot.day]} · {HOURS[slot.hour]}
@@ -108,7 +108,7 @@ function TradesModal({ slot, onClose }: { slot: SlotInfo; onClose: () => void })
         </div>
 
         {/* Body */}
-        <div className="overflow-y-auto flex-1">
+        <div className="overflow-y-auto flex-1 min-h-0 pb-[max(1rem,env(safe-area-inset-bottom))]">
           {loading ? (
             <div className="flex items-center justify-center py-12 gap-2 text-zinc-500">
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -117,7 +117,48 @@ function TradesModal({ slot, onClose }: { slot: SlotInfo; onClose: () => void })
           ) : trades.length === 0 ? (
             <div className="text-center py-12 text-sm text-zinc-600">No trades found for this slot</div>
           ) : (
-            <table className="w-full text-xs table-fixed">
+            <>
+              {/* Mobile: card list */}
+              <div className="md:hidden px-4 py-3 space-y-2">
+                {trades.map((t) => {
+                  const win = (t.pnl ?? 0) >= 0;
+                  const isLong = t.side === "BUY" || t.side === "CALL" || t.side === "LONG";
+                  return (
+                    <div key={t.id} className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="font-medium text-white text-sm truncate">{t.symbol}</div>
+                          <div className="text-[11px] text-zinc-500 mt-1">{formatTimeIST(t.date)} IST</div>
+                        </div>
+                        <div className="flex flex-col items-end gap-1 shrink-0">
+                          <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                            isLong ? "bg-emerald-500/15 text-emerald-400" : "bg-red-500/15 text-red-400"
+                          }`}>
+                            {isLong ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
+                            {t.side}
+                          </span>
+                          <span className={`text-sm font-bold tabular-nums ${win ? "text-emerald-400" : "text-red-400"}`}>
+                            {t.pnl !== null ? fmt(t.pnl) : "—"}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
+                        <div>
+                          <span className="text-zinc-600">Qty </span>
+                          <span className="text-zinc-300">{t.quantity}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-zinc-600">Entry </span>
+                          <span className="text-zinc-300">{t.entryPrice}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop: table */}
+              <table className="hidden md:table w-full text-xs table-fixed">
               <colgroup>
                 <col className="w-[28%]" />
                 <col className="w-[15%]" />
@@ -167,6 +208,7 @@ function TradesModal({ slot, onClose }: { slot: SlotInfo; onClose: () => void })
                 })}
               </tbody>
             </table>
+            </>
           )}
         </div>
       </div>
@@ -188,6 +230,22 @@ export function HourDayHeatmap({ data }: { data: HeatmapCell[] }) {
     [data]
   );
 
+  // Only show hour rows where trades exist (±1h padding)
+  const visibleHourIndices = useMemo(() => {
+    const active = data.filter((c) => c.trades > 0);
+    if (active.length === 0) return HOURS.map((_, i) => i);
+    const minH = Math.min(...active.map((c) => c.hour));
+    const maxH = Math.max(...active.map((c) => c.hour));
+    const start = Math.max(0, minH - 1);
+    const end = Math.min(23, maxH + 1);
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+  }, [data]);
+
+  const hourRangeLabel =
+    visibleHourIndices.length < 24
+      ? `${HOURS[visibleHourIndices[0]]} – ${HOURS[visibleHourIndices[visibleHourIndices.length - 1]]}`
+      : null;
+
   return (
     <>
       <Card>
@@ -195,13 +253,12 @@ export function HourDayHeatmap({ data }: { data: HeatmapCell[] }) {
           <CardTitle className="text-base font-semibold text-white leading-snug">
             Performance Heatmap — Hour × Day
             <span className="block sm:inline sm:ml-2 text-[11px] font-normal text-zinc-600 mt-0.5 sm:mt-0">
-              tap a cell to see trades
+              {hourRangeLabel ? `${hourRangeLabel} · tap a cell` : "tap a cell to see trades"}
             </span>
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-2 pb-4">
-          <div className="overflow-x-auto overscroll-x-contain touch-pan-x -mx-1 px-1 sm:mx-0 sm:px-0">
-            <div className="min-w-[520px]">
+          <div className="w-full">
             {/* Header */}
             <div className="flex items-center mb-1">
               <div className="w-10 flex-shrink-0" />
@@ -212,10 +269,10 @@ export function HourDayHeatmap({ data }: { data: HeatmapCell[] }) {
               ))}
             </div>
 
-            {/* Grid rows by hour */}
-            {HOURS.map((hour, h) => (
+            {/* Grid rows by hour — only active hours */}
+            {visibleHourIndices.map((h) => (
               <div key={h} className="flex items-center gap-0.5 mb-0.5">
-                <div className="w-10 text-[10px] text-zinc-600 text-right pr-2 flex-shrink-0">{hour}</div>
+                <div className="w-10 text-[10px] text-zinc-600 text-right pr-2 flex-shrink-0">{HOURS[h]}</div>
                 {DAYS.map((_, d) => {
                   const cell = grid[`${d}-${h}`];
                   const hasData = cell && cell.trades > 0;
@@ -227,7 +284,7 @@ export function HourDayHeatmap({ data }: { data: HeatmapCell[] }) {
                       style={getPnlHeatStyle(pnl, !!hasData, maxAbsPnl)}
                       className={`flex-1 h-5 rounded-sm flex items-center justify-center text-[9px] font-medium transition-all ${getPnlHeatTextClass(pnl, !!hasData, maxAbsPnl)}
                         ${hasData ? "cursor-pointer hover:scale-110 hover:z-10 hover:ring-1 hover:ring-white/30" : "cursor-default"}`}
-                      title={cell ? `${DAYS[d]} ${hour}: ${cell.trades} trades, ${fmt(cell.pnl)}, ${cell.winRate.toFixed(0)}% WR` : `${DAYS[d]} ${hour}: No data`}
+                      title={cell ? `${DAYS[d]} ${HOURS[h]}: ${cell.trades} trades, ${fmt(cell.pnl)}, ${cell.winRate.toFixed(0)}% WR` : `${DAYS[d]} ${HOURS[h]}: No data`}
                     >
                       {hasData && cell.trades}
                     </div>
@@ -237,8 +294,6 @@ export function HourDayHeatmap({ data }: { data: HeatmapCell[] }) {
             ))}
 
             <HeatmapLegend maxAbsPnl={maxAbsPnl} />
-            <p className="text-[10px] text-zinc-700 mt-2 md:hidden">← scroll horizontally →</p>
-            </div>
           </div>
         </CardContent>
       </Card>
