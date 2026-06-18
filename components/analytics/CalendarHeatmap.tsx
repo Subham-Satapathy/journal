@@ -317,25 +317,18 @@ export function CalendarHeatmap({ data }: CalendarHeatmapProps) {
           {/* Horizontal scroll on mobile; full-width flex on desktop */}
           <div
             ref={scrollRef}
-            className="overflow-x-auto overscroll-x-contain touch-pan-x -mx-1 px-1 sm:mx-0 sm:px-0 md:overflow-visible"
+            className="overflow-x-auto overscroll-x-contain touch-pan-x -mx-1 px-1 sm:mx-0 sm:px-0"
           >
-            <div className="inline-block md:block w-max md:w-full">
-              {/* Month labels */}
+            <div className="inline-block w-max">
+              {/* Month labels — fixed column width at all breakpoints */}
               <div className="relative mb-2 ml-8 md:ml-9 h-4">
                 {monthLabels.map(({ month, col }, idx) => (
-                  <div key={`${month}-${idx}`}>
-                    <div
-                      className="absolute md:hidden text-[10px] text-zinc-500 font-medium whitespace-nowrap"
-                      style={{ left: `calc(2rem + ${col} * 18px)` }}
-                    >
-                      {month}
-                    </div>
-                    <div
-                      className="absolute hidden md:block text-[11px] text-zinc-500 font-medium whitespace-nowrap"
-                      style={{ left: `calc(2.25rem + ${col} * ((100% - 2.25rem) / ${weeks.length}))` }}
-                    >
-                      {month}
-                    </div>
+                  <div
+                    key={`${month}-${idx}`}
+                    className="absolute text-[10px] md:text-[11px] text-zinc-500 font-medium whitespace-nowrap"
+                    style={{ left: `calc(2rem + ${col} * 18px)` }}
+                  >
+                    {month}
                   </div>
                 ))}
               </div>
@@ -346,25 +339,25 @@ export function CalendarHeatmap({ data }: CalendarHeatmapProps) {
                   {DAY_LABELS.map((d, i) => (
                     <div
                       key={i}
-                      className="h-[14px] md:h-auto md:flex-1 md:min-h-[16px] flex items-center justify-end pr-1 text-[9px] sm:text-[10px] text-zinc-600 font-medium"
+                      className="h-[14px] md:h-[18px] flex items-center justify-end pr-1 text-[9px] sm:text-[10px] text-zinc-600 font-medium"
                     >
                       {d}
                     </div>
                   ))}
                 </div>
 
-                {/* Weeks */}
+                {/* Weeks — fixed square cells (no flex-1 stretch on desktop) */}
                 {weeks.map((week, wi) => (
                   <div
                     key={wi}
-                    className="flex flex-col gap-1 w-[14px] shrink-0 md:w-auto md:flex-1 md:min-w-[8px]"
+                    className="flex flex-col gap-1 w-[14px] md:w-[18px] shrink-0"
                   >
                     {week.map((day, di) => {
                       if (!day) {
                         return (
                           <div
                             key={di}
-                            className="w-[14px] h-[14px] md:w-full md:h-auto md:aspect-square md:min-h-[14px] md:max-h-[28px] shrink-0"
+                            className="w-[14px] h-[14px] md:w-[18px] md:h-[18px] shrink-0"
                           />
                         );
                       }
@@ -376,7 +369,7 @@ export function CalendarHeatmap({ data }: CalendarHeatmapProps) {
                           key={di}
                           onClick={() => hasTrades && d && setSelectedDay({ dateStr: day.dayStr, summary: d })}
                           style={getPnlHeatStyle(pnl, hasTrades, maxAbsPnl)}
-                          className={`w-[14px] h-[14px] md:w-full md:h-auto md:aspect-square md:min-h-[14px] md:max-h-[28px] shrink-0 rounded-sm transition-all ${
+                          className={`w-[14px] h-[14px] md:w-[18px] md:h-[18px] shrink-0 rounded-sm transition-all ${
                             hasTrades
                               ? "cursor-pointer active:scale-110 md:hover:scale-110 md:hover:ring-2 md:hover:ring-white/30"
                               : "cursor-default"

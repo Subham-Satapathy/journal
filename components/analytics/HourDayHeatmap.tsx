@@ -88,7 +88,7 @@ function TradesModal({ slot, onClose }: { slot: SlotInfo; onClose: () => void })
         <div className="flex items-center justify-between px-4 sm:px-5 py-4 border-b border-zinc-800 shrink-0">
           <div>
             <h2 className="text-base font-bold text-white">
-              {DAYS[slot.day]} · {HOURS[slot.hour]}
+              {DAYS[slot.day]} · {HOURS[slot.hour]}–{String(slot.hour).padStart(2, "0")}:59 IST
             </h2>
             <p className="text-xs text-zinc-500 mt-0.5">
               {slot.cell.trades} trades · {slot.cell.winRate.toFixed(0)}% win rate

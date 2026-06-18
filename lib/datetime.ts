@@ -21,7 +21,7 @@ export function hasTimezoneInfo(val: string): boolean {
  * Parse trade date from sheet/import.
  * - Excel serial → UTC instant
  * - String with timezone (Z, +05:30, IST, etc.) → parsed as-is
- * - Plain datetime without timezone → treated as UTC
+ * - Plain datetime without timezone → treated as IST (Asia/Kolkata)
  */
 export function parseTradeDate(val: string | null | undefined): Date {
   if (!val) return new Date();
@@ -40,17 +40,33 @@ export function parseTradeDate(val: string | null | undefined): Date {
   }
 
   const normalized = s.includes("T") ? s : s.replace(" ", "T");
-  const d = new Date(normalized + "Z");
+  const d = new Date(normalized + "+05:30");
   return isNaN(d.getTime()) ? new Date() : d;
 }
 
+/** Shift legacy dates that were stored as UTC but meant IST wall-clock (−5:30). */
+export function fixLegacyISTAsUTC(date: Date): Date {
+  return new Date(date.getTime() - IST_OFFSET_MS);
+}
+
 export function getISTHour(date: Date): number {
-  return toIST(date).getUTCHours();
+  const parts = new Intl.DateTimeFormat("en-IN", {
+    timeZone: IST_TIMEZONE,
+    hour: "numeric",
+    hour12: false,
+  }).formatToParts(date);
+  return Number(parts.find((p) => p.type === "hour")?.value ?? 0);
 }
 
 /** 0 = Sunday … 6 = Saturday (IST) */
 export function getISTDay(date: Date): number {
-  return toIST(date).getUTCDay();
+  const parts = new Intl.DateTimeFormat("en-IN", {
+    timeZone: IST_TIMEZONE,
+    weekday: "short",
+  }).formatToParts(date);
+  const wd = parts.find((p) => p.type === "weekday")?.value ?? "Sun";
+  const map: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+  return map[wd] ?? 0;
 }
 
 /** yyyy-MM-dd in IST */
