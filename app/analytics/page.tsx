@@ -10,6 +10,7 @@ import type { HeatmapCell, MentalStateMetrics } from "@/lib/analytics";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from "recharts";
 import { Flame, TrendingUp } from "lucide-react";
 import { useCurrency } from "@/lib/currency-context";
+import { CurrencyToggle } from "@/components/ui/CurrencyToggle";
 
 // Stable top-level component — avoids white-screen crash from defining
 // components inside render (IIFE pattern breaks React's rules of hooks).
@@ -125,9 +126,14 @@ export default function AnalyticsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white">Analytics</h1>
-        <p className="text-sm text-zinc-500 mt-0.5">Deep dive into your trading patterns</p>
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-white">Analytics</h1>
+          <p className="text-sm text-zinc-500 mt-0.5">Deep dive into your trading patterns</p>
+        </div>
+        <div className="md:hidden">
+          <CurrencyToggle />
+        </div>
       </div>
 
       {/* Calendar Heatmap */}

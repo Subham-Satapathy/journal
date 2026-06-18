@@ -70,11 +70,11 @@ function DayTradesModal({ dateStr, summary, onClose }: { dateStr: string; summar
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl"
+        className="bg-zinc-950 border border-zinc-800 rounded-t-2xl sm:rounded-2xl w-full sm:max-w-2xl max-h-[92vh] sm:max-h-[80vh] flex flex-col shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -219,71 +219,95 @@ export function CalendarHeatmap({ data }: CalendarHeatmapProps) {
   return (
     <>
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base font-semibold text-white">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base font-semibold text-white leading-snug">
             Trading Calendar — P&L Heatmap{" "}
-            <span className="text-zinc-600 font-normal text-sm">(last 12 months · click a day)</span>
+            <span className="text-zinc-600 font-normal text-xs sm:text-sm block sm:inline mt-0.5 sm:mt-0">
+              last 12 months · tap a day
+            </span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-2 pb-4">
-          <div className="w-full">
-            {/* Month labels */}
-            <div className="relative flex mb-2 ml-9" style={{ height: 16 }}>
-              {monthLabels.map(({ month, col }, idx) => (
-                <div
-                  key={`${month}-${idx}`}
-                  className="absolute text-[11px] text-zinc-500 font-medium"
-                  style={{ left: `calc(36px + ${col} * ((100% - 36px) / ${weeks.length}))` }}
-                >
-                  {month}
-                </div>
-              ))}
-            </div>
-
-            <div className="flex gap-1 w-full">
-              {/* Day labels */}
-              <div className="flex flex-col gap-1 w-8 shrink-0">
-                {DAY_LABELS.map((d, i) => (
-                  <div key={i} className="flex-1 min-h-[16px] flex items-center justify-end pr-1 text-[10px] text-zinc-600 font-medium">
-                    {d}
+        <CardContent className="pt-0 pb-4">
+          {/* Horizontal scroll on mobile; full-width flex on desktop */}
+          <div className="overflow-x-auto overscroll-x-contain touch-pan-x -mx-1 px-1 sm:mx-0 sm:px-0 md:overflow-visible">
+            <div className="inline-block md:block w-max md:w-full">
+              {/* Month labels */}
+              <div className="relative mb-2 ml-8 md:ml-9 h-4">
+                {monthLabels.map(({ month, col }, idx) => (
+                  <div key={`${month}-${idx}`}>
+                    <div
+                      className="absolute md:hidden text-[10px] text-zinc-500 font-medium whitespace-nowrap"
+                      style={{ left: `calc(2rem + ${col} * 18px)` }}
+                    >
+                      {month}
+                    </div>
+                    <div
+                      className="absolute hidden md:block text-[11px] text-zinc-500 font-medium whitespace-nowrap"
+                      style={{ left: `calc(2.25rem + ${col} * ((100% - 2.25rem) / ${weeks.length}))` }}
+                    >
+                      {month}
+                    </div>
                   </div>
                 ))}
               </div>
 
-              {/* Weeks — flex to fill full card width */}
-              {weeks.map((week, wi) => (
-                <div key={wi} className="flex flex-col gap-1 flex-1 min-w-[8px]">
-                  {week.map((day, di) => {
-                    if (!day) {
-                      return <div key={di} className="w-full aspect-square min-h-[14px] max-h-[28px]" />;
-                    }
-                    const d = dataMap.get(day.dayStr);
-                    const hasTrades = !!d && d.count > 0;
-                    const color = getCellColor(d?.pnl ?? 0, hasTrades);
-                    return (
-                      <div
-                        key={di}
-                        onClick={() => hasTrades && d && setSelectedDay({ dateStr: day.dayStr, summary: d })}
-                        className={`w-full aspect-square min-h-[14px] max-h-[28px] rounded-sm ${color} transition-all ${
-                          hasTrades
-                            ? "cursor-pointer hover:scale-110 hover:ring-2 hover:ring-white/30 hover:z-10"
-                            : "cursor-default"
-                        }`}
-                        title={`${day.dayStr}: ${d && hasTrades ? `${d.count} trade(s), ${fmt(d.pnl)}` : "No trades"}`}
-                      />
-                    );
-                  })}
+              <div className="flex gap-1">
+                {/* Day labels */}
+                <div className="flex flex-col gap-1 w-8 shrink-0">
+                  {DAY_LABELS.map((d, i) => (
+                    <div
+                      key={i}
+                      className="h-[14px] md:h-auto md:flex-1 md:min-h-[16px] flex items-center justify-end pr-1 text-[9px] sm:text-[10px] text-zinc-600 font-medium"
+                    >
+                      {d}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
 
-            {/* Legend */}
-            <div className="flex items-center gap-3 mt-4 ml-9 text-[11px] text-zinc-500">
-              <span>Less</span>
-              {["bg-zinc-800/50", "bg-red-500/40", "bg-red-500/80", "bg-emerald-500/40", "bg-emerald-500/80", "bg-emerald-500"].map((c, i) => (
-                <div key={i} className={`w-4 h-4 rounded-sm ${c}`} />
-              ))}
-              <span>More</span>
+                {/* Weeks */}
+                {weeks.map((week, wi) => (
+                  <div
+                    key={wi}
+                    className="flex flex-col gap-1 w-[14px] shrink-0 md:w-auto md:flex-1 md:min-w-[8px]"
+                  >
+                    {week.map((day, di) => {
+                      if (!day) {
+                        return (
+                          <div
+                            key={di}
+                            className="w-[14px] h-[14px] md:w-full md:h-auto md:aspect-square md:min-h-[14px] md:max-h-[28px] shrink-0"
+                          />
+                        );
+                      }
+                      const d = dataMap.get(day.dayStr);
+                      const hasTrades = !!d && d.count > 0;
+                      const color = getCellColor(d?.pnl ?? 0, hasTrades);
+                      return (
+                        <div
+                          key={di}
+                          onClick={() => hasTrades && d && setSelectedDay({ dateStr: day.dayStr, summary: d })}
+                          className={`w-[14px] h-[14px] md:w-full md:h-auto md:aspect-square md:min-h-[14px] md:max-h-[28px] shrink-0 rounded-sm ${color} transition-all ${
+                            hasTrades
+                              ? "cursor-pointer active:scale-110 md:hover:scale-110 md:hover:ring-2 md:hover:ring-white/30"
+                              : "cursor-default"
+                          }`}
+                          title={`${day.dayStr}: ${d && hasTrades ? `${d.count} trade(s), ${fmt(d.pnl)}` : "No trades"}`}
+                        />
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+
+              {/* Legend */}
+              <div className="flex items-center gap-2 sm:gap-3 mt-4 ml-8 md:ml-9 text-[10px] sm:text-[11px] text-zinc-500 flex-wrap">
+                <span>Less</span>
+                {["bg-zinc-800/50", "bg-red-500/40", "bg-red-500/80", "bg-emerald-500/40", "bg-emerald-500/80", "bg-emerald-500"].map((c, i) => (
+                  <div key={i} className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-sm ${c}`} />
+                ))}
+                <span>More</span>
+                <span className="text-zinc-700 md:hidden w-full">← scroll →</span>
+              </div>
             </div>
           </div>
         </CardContent>
