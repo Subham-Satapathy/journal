@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { generateInsights } from "@/lib/gemini";
 import { computeOverviewStats, computeMentalStateMetrics } from "@/lib/analytics";
 import { subDays, subWeeks, subMonths } from "date-fns";
+import { fetchUsdInrRate } from "@/lib/exchange-rate";
+import { normalizeTradeMonetary, type TradeCurrency } from "@/lib/trade-currency";
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,11 +12,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "GEMINI_API_KEY not configured" }, { status: 503 });
     }
 
-    const { period = "month" } = await req.json();
+    const { period = "month", currency, rate } = await req.json();
 
     let from: Date;
     const to = new Date();
-    if (period === "week") from = subWeeks(to, 1);
+    if (period === "day") from = subDays(to, 1);
+    else if (period === "week") from = subWeeks(to, 1);
     else if (period === "month") from = subMonths(to, 1);
     else if (period === "quarter") from = subMonths(to, 3);
     else from = subDays(to, 30);
@@ -28,16 +31,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ insights: "No trades found for the selected period. Add some trades first!" });
     }
 
-    // Detect currency from trade records
-    const currency = trades.find((t) => t.currency)?.currency ?? "USDT";
-    const currencySymbol = currency === "INR" ? "₹" : "$";
+    const displayCurrency: TradeCurrency =
+      currency === "INR" || currency === "USDT" ? currency : "USDT";
+    const fxRate = Number(rate) > 0 ? Number(rate) : await fetchUsdInrRate();
+    const normalized = trades.map((t) => normalizeTradeMonetary(t, displayCurrency, fxRate));
+    const currencySymbol = displayCurrency === "INR" ? "₹" : "$";
 
-    const overview = computeOverviewStats(trades);
-    const mental = computeMentalStateMetrics(trades);
+    const overview = computeOverviewStats(normalized);
+    const mental = computeMentalStateMetrics(normalized);
 
     const summary = {
       period,
-      currency,
+      currency: displayCurrency,
+      fxRateUsed: fxRate,
       currencySymbol,
       totalTrades: overview.totalTrades,
       totalPnl: `${currencySymbol}${overview.totalPnl.toFixed(2)}`,
@@ -55,7 +61,7 @@ export async function POST(req: NextRequest) {
       profitableHours: mental.profitableHours,
       worstHours: mental.worstHours,
       psychologyScore: mental.psychologyScore,
-      topTrades: trades
+      topTrades: normalized
         .filter((t) => t.pnl !== null)
         .sort((a, b) => (b.pnl ?? 0) - (a.pnl ?? 0))
         .slice(0, 5)

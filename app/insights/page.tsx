@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Brain, Sparkles, Clock, TrendingUp, AlertCircle, FlaskConical, CheckCircle2, XCircle } from "lucide-react";
+import { useCurrency } from "@/lib/currency-context";
 
 function DiagnosePanel() {
   const [result, setResult] = useState<{
@@ -68,9 +69,10 @@ function DiagnosePanel() {
   );
 }
 
-type Period = "week" | "month" | "quarter";
+type Period = "day" | "week" | "month" | "quarter";
 
 const PERIOD_LABELS: Record<Period, string> = {
+  day: "Last 1 day",
   week: "Last 7 days",
   month: "Last 30 days",
   quarter: "Last 90 days",
@@ -106,6 +108,7 @@ export default function InsightsPage() {
   const [loading, setLoading] = useState(false);
   const [insights, setInsights] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { displayCurrency, rate } = useCurrency();
 
   const generate = async () => {
     setLoading(true);
@@ -115,7 +118,7 @@ export default function InsightsPage() {
       const res = await fetch("/api/insights", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ period }),
+        body: JSON.stringify({ period, currency: displayCurrency, rate }),
       });
       const data = await res.json();
       if (data.error) { setError(data.error); return; }
