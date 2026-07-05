@@ -128,6 +128,10 @@ export async function generateInsights(tradesJson: string, period: string): Prom
 
 Data: ${tradesJson}
 
+Important for this app:
+- This journal is for binary options style trading.
+- Do NOT evaluate or mention average risk/reward (R:R), since it is not a relevant metric here.
+
 Be data-driven and constructive. Use markdown.`
   );
 }

@@ -158,7 +158,9 @@ function computeMaxDrawdownDaily(dailyEntries: Array<{ date: string; pnl: number
 }
 
 function computeStreak(trades: Trade[]): StreakData {
-  const sorted = [...trades].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const sorted = [...trades]
+    .filter((t) => t.pnl !== null && t.pnl !== 0)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   let current = 0;
   let type: "win" | "loss" | "none" = "none";
   let longestWins = 0;

@@ -60,7 +60,7 @@ export default function ImportPage() {
   const [manualLoading, setManualLoading] = useState(false);
   const [manualDone, setManualDone] = useState(false);
 
-  // Smart local column guesser — used as fallback when Gemini is unavailable
+  // Smart local column guesser — used as fallback when AI mapping is unavailable
   const guessMapping = (headers: string[]): Record<string, string | null> => {
     const lower = headers.map((h) => h.toLowerCase().trim());
     const find = (...terms: string[]) =>
@@ -257,8 +257,8 @@ export default function ImportPage() {
                   <div>
                     Found <span className="text-white font-semibold">{csvTotal} rows</span>.{" "}
                     {csvAiMapped
-                      ? "✨ Gemini AI auto-mapped your columns — verify below before importing."
-                      : "⚡ Columns were auto-guessed (Gemini unavailable). Please verify the mapping below before importing."}
+                      ? "✨ AI auto-mapped your columns — verify below before importing."
+                      : "⚡ Columns were auto-guessed (AI mapping unavailable). Please verify the mapping below before importing."}
                   </div>
                 </div>
 
@@ -356,7 +356,7 @@ export default function ImportPage() {
             {ssStep === "upload" && (
               <div className="space-y-4">
                 <div className="p-3 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-xs text-indigo-300">
-                  Gemini AI will analyze your screenshot and extract trade data automatically.
+                  AI will analyze your screenshot and extract trade data automatically.
                 </div>
                 <FileUpload
                   onFile={handleSsFile}
@@ -367,7 +367,7 @@ export default function ImportPage() {
                 {ssLoading && (
                   <div className="flex items-center justify-center gap-3 py-6 text-sm text-zinc-400">
                     <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-                    Gemini AI is analyzing your screenshot...
+                    AI is analyzing your screenshot...
                   </div>
                 )}
               </div>

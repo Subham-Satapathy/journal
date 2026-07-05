@@ -28,7 +28,7 @@ function DiagnosePanel() {
     <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-5 space-y-4">
       <div className="flex items-center gap-2">
         <FlaskConical className="w-5 h-5 text-amber-400" />
-        <span className="text-sm font-semibold text-amber-300">Gemini API Diagnostics</span>
+        <span className="text-sm font-semibold text-amber-300">AI API Diagnostics</span>
         {loading && <span className="text-xs text-zinc-500">Running tests...</span>}
       </div>
 
@@ -111,7 +111,7 @@ export default function InsightsPage() {
       if (msg.includes("No Gemini models")) {
         setError("__DIAGNOSE__");
       } else if (msg.includes("401") || msg.includes("403") || msg.includes("API_KEY")) {
-        setError("Invalid Gemini API key. Get a free key at aistudio.google.com/apikey and add it to your .env file.");
+        setError("Invalid AI API key. Get a valid key at aistudio.google.com/apikey and add it to your .env file.");
       } else {
         setError(`AI request failed: ${msg}`);
       }
@@ -124,7 +124,7 @@ export default function InsightsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">AI Insights</h1>
-        <p className="text-sm text-zinc-500 mt-0.5">Gemini-powered trading analysis and recommendations</p>
+        <p className="text-sm text-zinc-500 mt-0.5">AI-powered trading analysis and recommendations</p>
       </div>
 
       {/* Controls */}
@@ -180,7 +180,7 @@ export default function InsightsPage() {
               <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center">
                 <Brain className="w-4 h-4 text-indigo-400 animate-pulse" />
               </div>
-              <div className="text-sm text-zinc-400">Gemini is analyzing your trading data...</div>
+              <div className="text-sm text-zinc-400">AI is analyzing your trading data...</div>
             </div>
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className={`h-4 bg-zinc-800 rounded animate-pulse`} style={{ width: `${70 + Math.random() * 30}%` }} />
@@ -223,7 +223,7 @@ export default function InsightsPage() {
             </div>
             <h3 className="text-base font-semibold text-zinc-400 mb-2">Ready to Analyze</h3>
             <p className="text-sm text-zinc-600 max-w-sm mx-auto">
-              Select a time period and click &ldquo;Generate AI Insights&rdquo; to get Gemini-powered analysis of your trading patterns, psychology, and recommendations.
+              Select a time period and click &ldquo;Generate AI Insights&rdquo; to get AI-powered analysis of your trading patterns, psychology, and recommendations.
             </p>
           </CardContent>
         </Card>

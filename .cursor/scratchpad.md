@@ -118,9 +118,26 @@ All 12 tasks are complete. The app builds cleanly (`npm run build` passes) and t
 - The `next.config.ts` turbopack.root warning needs Next.js to accept the path import — may need `"import type"` adjustment
 - Prisma errors on startup are expected until DB is connected
 
+### Market Research (Outside India) — Subscription Monetization
+
+- Gathered competitor pricing benchmarks for trading journals:
+  - TraderSync: roughly `$29.95` / `$49.95` / `$79.95` monthly tiers.
+  - Tradervue: free + paid tiers around `$29.95` and `$49.95`.
+  - Edgewonk: annual-only around `$197/year`.
+- Direction: position TradeJournal below TraderSync/Tradervue paid tiers with cleaner UX + AI coaching focus.
+- Prepared to recommend geo targeting (US, UK, Canada, Australia, Singapore, EU) and subscription packages for launch.
+
+### AI Insights adjustments (latest)
+
+- Removed average Risk/Reward references from AI summary payload in `/api/insights` for binary-trading relevance.
+- Updated AI prompt guidance to explicitly avoid R:R analysis for binary options.
+- Replaced user-facing "Gemini" wording with neutral "AI" wording in Insights and Import pages.
+
 ## Lessons
 
 - Vercel does not support persistent SQLite; always use external Postgres (Neon free tier recommended)
 - Use `DATABASE_URL` env var for Prisma on Vercel
 - Gemini API: use `@google/generative-ai` package; `gemini-1.5-flash` model supports both vision (inlineData base64) and text; free tier = 15 RPM, 1M TPM
 - For shadcn/ui dark mode: set `darkMode: 'class'` in tailwind.config, add `class="dark"` to `<html>`
+- Trading-journal market expects price anchors around `$15–$50/mo`; annual plans and trial periods are standard.
+- For binary options users, AI coaching should avoid generic R:R commentary unless explicitly requested.

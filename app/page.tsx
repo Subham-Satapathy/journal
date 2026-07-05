@@ -7,7 +7,7 @@ import { EquityCurve } from "@/components/dashboard/EquityCurve";
 import { useCurrency } from "@/lib/currency-context";
 import { CurrencyToggle } from "@/components/ui/CurrencyToggle";
 import {
-  TrendingUp, TrendingDown, Target, BarChart3, Zap, Trophy, Shield, DollarSign
+  TrendingUp, TrendingDown, Target, Zap, Trophy, Shield, DollarSign
 } from "lucide-react";
 import type { OverviewStats, DailyPnl, WeeklyPnl, MonthlyPnl } from "@/lib/analytics";
 import Link from "next/link";
@@ -32,12 +32,12 @@ export default function DashboardPage() {
       try {
         const q = analyticsQuery();
         const [overviewRes, dailyRes, weeklyRes, monthlyRes, equityRes, detectRes] = await Promise.all([
-          fetch(`/api/analytics?type=overview&${q}`),
-          fetch(`/api/analytics?type=daily&${q}`),
-          fetch(`/api/analytics?type=weekly&${q}`),
-          fetch(`/api/analytics?type=monthly&${q}`),
-          fetch(`/api/analytics?type=equity&${q}`),
-          fetch("/api/settings/currency"),
+          fetch(`/api/analytics?type=overview&${q}`, { cache: "no-store" }),
+          fetch(`/api/analytics?type=daily&${q}`, { cache: "no-store" }),
+          fetch(`/api/analytics?type=weekly&${q}`, { cache: "no-store" }),
+          fetch(`/api/analytics?type=monthly&${q}`, { cache: "no-store" }),
+          fetch(`/api/analytics?type=equity&${q}`, { cache: "no-store" }),
+          fetch("/api/settings/currency", { cache: "no-store" }),
         ]);
         const [overview, daily, weekly, monthly, equity, detect] = await Promise.all([
           overviewRes.json(), dailyRes.json(), weeklyRes.json(), monthlyRes.json(), equityRes.json(),
@@ -156,14 +156,6 @@ export default function DashboardPage() {
               icon={Target}
               iconColor="text-indigo-400"
               trend={overview.winRate >= 50 ? "up" : "down"}
-            />
-            <StatsCard
-              title="Profit Factor"
-              value={overview.profitFactor === Infinity ? "∞" : overview.profitFactor.toFixed(2)}
-              subValue="Gross P / Gross L"
-              icon={BarChart3}
-              iconColor="text-violet-400"
-              trend={overview.profitFactor >= 1.5 ? "up" : overview.profitFactor >= 1 ? "neutral" : "down"}
             />
             <StatsCard
               title={`Best Day (${currency})`}

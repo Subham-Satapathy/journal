@@ -74,14 +74,14 @@ export default function AnalyticsPage() {
     const fetchAll = async () => {
       const q = analyticsQuery();
       const [heatmapRes, mentalRes, calendarRes, distRes, weeklyRes, monthlyRes, overviewRes, detectRes] = await Promise.all([
-        fetch(`/api/analytics?type=heatmap&${q}`),
-        fetch(`/api/analytics?type=mental&${q}`),
-        fetch(`/api/analytics?type=calendar&${q}`),
-        fetch(`/api/analytics?type=distribution&${q}`),
-        fetch(`/api/analytics?type=weekly&${q}`),
-        fetch(`/api/analytics?type=monthly&${q}`),
-        fetch(`/api/analytics?type=overview&${q}`),
-        fetch("/api/settings/currency"),
+        fetch(`/api/analytics?type=heatmap&${q}`, { cache: "no-store" }),
+        fetch(`/api/analytics?type=mental&${q}`, { cache: "no-store" }),
+        fetch(`/api/analytics?type=calendar&${q}`, { cache: "no-store" }),
+        fetch(`/api/analytics?type=distribution&${q}`, { cache: "no-store" }),
+        fetch(`/api/analytics?type=weekly&${q}`, { cache: "no-store" }),
+        fetch(`/api/analytics?type=monthly&${q}`, { cache: "no-store" }),
+        fetch(`/api/analytics?type=overview&${q}`, { cache: "no-store" }),
+        fetch("/api/settings/currency", { cache: "no-store" }),
       ]);
       const [heatmap, mental, calendar, distribution, weekly, monthly, overview, detect] = await Promise.all([
         heatmapRes.json(), mentalRes.json(), calendarRes.json(),
