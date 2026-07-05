@@ -21,7 +21,7 @@ export default function LandingPage() {
 
       <header className="relative px-6 sm:px-10 py-5 border-b border-zinc-800/50 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <img src="/logo.svg" alt="Pnlogix" className="w-8 h-8 rounded" />
+          <img src="/logo.png" alt="Pnlogix" className="w-8 h-8 rounded" />
           <div>
             <div className="text-sm font-bold text-white">Pnlogix</div>
             <div className="text-[10px] text-zinc-500">Trading Journal</div>

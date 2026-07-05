@@ -37,9 +37,9 @@ export const metadata: Metadata = {
     description: siteConfig.description,
     images: [
       {
-        url: "/logo.svg",
-        width: 512,
-        height: 512,
+        url: "/logo.png",
+        width: 1024,
+        height: 1024,
         alt: "Pnlogix logo",
       },
     ],
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${siteConfig.title} | ${siteConfig.name}`,
     description: siteConfig.description,
-    images: ["/logo.svg"],
+    images: ["/logo.png"],
   },
   icons: {
     icon: "/favicon.ico",

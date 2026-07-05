@@ -8,7 +8,6 @@ import {
   Upload,
   BarChart3,
   Brain,
-  TrendingUp,
   BadgeDollarSign,
   CreditCard,
   LogOut,
@@ -71,9 +70,7 @@ export function Sidebar() {
       {/* Logo */}
       <div className="p-5 pb-4 border-b border-zinc-800/50">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-            <TrendingUp className="w-4 h-4 text-white" />
-          </div>
+          <img src="/logo.png" alt="Pnlogix logo" className="w-8 h-8 rounded-md border border-zinc-700/60" />
           <div>
             <div className="text-sm font-bold text-white">Pnlogix</div>
             <div className="text-[10px] text-zinc-500">Personal Ledger</div>

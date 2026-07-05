@@ -415,3 +415,22 @@ Implemented:
 Validation:
 - `npm run build` passes.
 - No linter errors in updated landing file.
+
+### Executor Update — Task 22.1 (User-Provided Logo Applied) Completed
+
+Implemented:
+- Replaced branding logo asset with user-provided image (`public/logo.png`).
+- Regenerated `public/favicon.ico` from the same logo for browser tab consistency.
+- Updated logo references in landing/header, sidebar branding, and metadata OG/Twitter image.
+
+Validation:
+- `npm run build` passes after branding swap.
+
+### Executor Update — Task 22.2 (Favicon Update) Completed
+
+Implemented:
+- Replaced favicon source with user-provided icon asset.
+- Regenerated `public/favicon.ico` from the uploaded favicon image for browser compatibility.
+
+Validation:
+- Favicon assets updated successfully (`public/favicon.png`, `public/favicon.ico`).
