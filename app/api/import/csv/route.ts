@@ -104,6 +104,26 @@ export async function POST(req: NextRequest) {
 
       const importedCurrencies = new Set<string>();
 
+      // If file has no explicit Currency column, infer a sane default from magnitudes.
+      // Typical INR option sheets: qty/pnl are much larger than USD account exports.
+      const inferredFileCurrency = (() => {
+        if (currencyHeader) return "USDT" as const; // per-row currency will be used
+        const sample = rows.slice(0, 200).filter((row) =>
+          row.some((cell) => cell !== null && cell !== undefined && String(cell).trim())
+        );
+        if (sample.length === 0) return "USDT" as const;
+        const qtyVals = sample
+          .map((row) => parseNum(getVal(row, "quantity")))
+          .filter((v): v is number => v !== null);
+        const pnlVals = sample
+          .map((row) => parseNum(getVal(row, "pnl")))
+          .filter((v): v is number => v !== null)
+          .map((v) => Math.abs(v));
+        const avgQty = qtyVals.length > 0 ? qtyVals.reduce((a, b) => a + b, 0) / qtyVals.length : 0;
+        const avgAbsPnl = pnlVals.length > 0 ? pnlVals.reduce((a, b) => a + b, 0) / pnlVals.length : 0;
+        return avgQty > 100 || avgAbsPnl > 100 ? "INR" : "USDT";
+      })();
+
       const trades = rows
         .filter((row) => row.some((cell) => cell !== null && cell !== undefined && String(cell).trim()))
         .map((row) => {
@@ -128,8 +148,8 @@ export async function POST(req: NextRequest) {
                 return val != null && String(val).trim() ? String(val).trim() : null;
               })()
             : null;
-          const currencyVal = normalizeTradeCurrency(currencyRaw);
-          if (currencyRaw) importedCurrencies.add(currencyRaw.toUpperCase());
+          const currencyVal = normalizeTradeCurrency(currencyRaw ?? inferredFileCurrency);
+          importedCurrencies.add(currencyRaw ? currencyRaw.toUpperCase() : inferredFileCurrency);
 
           return {
             symbol: symbol.toUpperCase().trim(),
