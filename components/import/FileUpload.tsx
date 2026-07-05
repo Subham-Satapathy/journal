@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useId } from "react";
 import { Upload, FileSpreadsheet, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +14,7 @@ interface FileUploadProps {
 export function FileUpload({ onFile, accept = ".csv,.xlsx,.xls", label = "Drop your CSV or Excel file", sublabel = "Supports .csv, .xlsx, .xls" }: FileUploadProps) {
   const [dragging, setDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const inputId = useId();
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -39,20 +40,20 @@ export function FileUpload({ onFile, accept = ".csv,.xlsx,.xls", label = "Drop y
       onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
       onDragLeave={() => setDragging(false)}
       onDrop={handleDrop}
-      onClick={() => !file && document.getElementById("file-input")?.click()}
+      onClick={() => !file && document.getElementById(inputId)?.click()}
     >
-      <input id="file-input" type="file" accept={accept} className="hidden" onChange={handleChange} />
+      <input id={inputId} type="file" accept={accept} className="hidden" onChange={handleChange} />
 
       {file ? (
-        <div className="flex items-center justify-center gap-3">
-          <FileSpreadsheet className="w-8 h-8 text-emerald-400" />
-          <div className="text-left">
-            <div className="text-sm font-medium text-white">{file.name}</div>
+        <div className="w-full flex items-center gap-3 min-w-0">
+          <FileSpreadsheet className="w-8 h-8 text-emerald-400 shrink-0" />
+          <div className="min-w-0 flex-1 text-left">
+            <div className="text-sm font-medium text-white truncate">{file.name}</div>
             <div className="text-xs text-zinc-500">{(file.size / 1024).toFixed(1)} KB</div>
           </div>
           <button
             onClick={(e) => { e.stopPropagation(); clear(); }}
-            className="ml-2 p-1 hover:bg-zinc-700 rounded-full text-zinc-400 hover:text-white transition-colors"
+            className="ml-1 p-1 hover:bg-zinc-700 rounded-full text-zinc-400 hover:text-white transition-colors shrink-0"
           >
             <X className="w-4 h-4" />
           </button>

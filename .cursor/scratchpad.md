@@ -8,6 +8,7 @@ The user wants a personal trading journal/ledger web app. Key goals:
 - Day/week/month wise growth with advanced analytics
 - Behavior pattern analysis (accuracy, mental state, profitability)
 - Built with Next.js, dark theme, Vercel-deployable, no auth needed
+- New goal (Jul 2026): evaluate launch potential as a Pocket Option-focused trading journal and identify safest go-to-market positioning.
 
 ## Key Challenges and Analysis
 
@@ -90,6 +91,9 @@ The user wants a personal trading journal/ledger web app. Key goals:
 - [ ] Task 10: AI insights
 - [ ] Task 11: UI polish
 - [ ] Task 12: Vercel deployment config
+- [ ] Task 13 (Ad-hoc): Pocket Option launch potential research (executor finished initial pass; awaiting user/planner validation)
+- [ ] Task 14 (Ad-hoc): Technical SEO foundation (metadata + robots + sitemap)
+- [ ] Task 15 (Ad-hoc): Fix mobile upload filename alignment overflow
 
 ## Executor's Feedback or Assistance Requests
 
@@ -133,6 +137,67 @@ All 12 tasks are complete. The app builds cleanly (`npm run build` passes) and t
 - Updated AI prompt guidance to explicitly avoid R:R analysis for binary options.
 - Replaced user-facing "Gemini" wording with neutral "AI" wording in Insights and Import pages.
 
+### Executor Update — Pocket Option Launch Potential (Initial Research Pass)
+
+Milestone completed: gathered external market, pricing, and regulatory signals for a Pocket Option-focused launch.
+
+Key findings:
+- Demand signal appears strong: third-party traffic estimators show `pocketoption.com` around ~5M-8M monthly visits (directional only, not official).
+- Existing journal competitors already target Pocket Option imports (e.g., TradesViz guidance pages), so there is proven use-case demand but not an empty market.
+- Trading-journal benchmark pricing remains in expected range: roughly `$29.95`/`$49.95` monthly tiers, with annual discounting common.
+- Most visible Pocket Option workflows rely on manual history export (CSV/XLS), which aligns with this app's import-first architecture.
+
+Critical risk (must be handled in positioning):
+- Binary options are prohibited/restricted for retail users in major regions (EU/UK and others). Platform-specific marketing without compliance framing may create legal and ad-platform risk.
+
+Recommended positioning:
+- Position as a neutral "trade analytics and discipline journal" for exported user trade data.
+- Avoid broker endorsement language and include clear jurisdiction/compliance disclaimer.
+- Prioritize regions where product/intermediary rules are clearer for educational analytics tooling.
+
+Assistance request to user/planner:
+- Please confirm whether Task 13 should be accepted as complete and whether to proceed with the next single step: defining launch ICP + pricing + landing-page messaging draft.
+
+### Executor Update — Task 14 (Technical SEO Foundation) Completed
+
+Milestone implemented (single-step execution):
+- Added centralized site config in `lib/site.ts` with `NEXT_PUBLIC_SITE_URL` support and safe fallback URL.
+- Upgraded root metadata in `app/layout.tsx` with:
+  - canonical setup (`alternates.canonical`)
+  - richer title/description/keywords
+  - Open Graph + Twitter metadata
+  - JSON-LD `WebApplication` structured data block
+- Added `app/robots.ts` using Next.js metadata file convention, with sitemap reference.
+- Added `app/sitemap.ts` using Next.js metadata file convention for core routes.
+
+Validation status:
+- IDE lints for edited files show no errors.
+- `npm run lint` currently fails due local ESLint runtime issue (`Cannot find module '../package.json'` from `node_modules/.bin/eslint`), appears environment/tooling-related and not from these code edits.
+
+Assistance request to user/planner:
+- Please manually verify:
+  1. `/robots.txt` renders with sitemap URL
+  2. `/sitemap.xml` renders expected routes
+  3. page source includes canonical + OG metadata and JSON-LD
+- If verified, approve moving to next single milestone: auth + subscription plan data model and plans page scaffold.
+
+### Executor Update — Task 15 (Import Screen Alignment Fix) Completed
+
+Issue fixed:
+- On mobile import upload card, long file names overflowed/misaligned and pushed UI elements out of alignment.
+
+Changes made:
+- Updated `components/import/FileUpload.tsx` to use truncation-safe flex layout:
+  - `min-w-0`, `flex-1`, and `truncate` on filename container/text
+  - `shrink-0` on icon and remove button
+- Switched hidden file input id to `useId()` so each upload widget has a unique input id.
+
+Assistance request to user/planner:
+- Please re-open the Import page on mobile, select a long `.xlsx` filename, and confirm:
+  1. filename stays inside the card (truncated with ellipsis)
+  2. close (`x`) icon stays aligned on the right
+  3. no text overlaps card borders
+
 ## Lessons
 
 - Vercel does not support persistent SQLite; always use external Postgres (Neon free tier recommended)
@@ -141,3 +206,6 @@ All 12 tasks are complete. The app builds cleanly (`npm run build` passes) and t
 - For shadcn/ui dark mode: set `darkMode: 'class'` in tailwind.config, add `class="dark"` to `<html>`
 - Trading-journal market expects price anchors around `$15–$50/mo`; annual plans and trial periods are standard.
 - For binary options users, AI coaching should avoid generic R:R commentary unless explicitly requested.
+- Pocket Option-focused GTM must be compliance-aware: keep messaging educational/analytics-first, not broker-promotional.
+- Treat third-party traffic and broker-review websites as directional; rely on regulator sources for compliance decisions.
+- For Next.js 16 metadata/SEO, prefer file conventions (`app/robots.ts`, `app/sitemap.ts`) and centralized metadata in `app/layout.tsx`.
