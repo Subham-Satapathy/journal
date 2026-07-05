@@ -139,9 +139,9 @@ Headers: ${JSON.stringify(headers)}
 Sample (3 rows): ${JSON.stringify(sampleRows)}
 
 Return ONLY this JSON (null if no match):
-{"symbol":null,"side":null,"date":null,"entryPrice":null,"exitPrice":null,"quantity":null,"pnl":null,"pnlPercent":null,"fees":null,"closeDate":null,"exchange":null,"orderId":null}
+{"symbol":null,"side":null,"date":null,"entryPrice":null,"exitPrice":null,"quantity":null,"pnl":null,"pnlPercent":null,"fees":null,"closeDate":null,"exchange":null,"orderId":null,"currency":null}
 
-orderId should be mapped to any column containing a unique trade/order identifier (UUID, order number, trade ID, etc.)`
+orderId → unique trade/order ID column. currency → USD, INR, USDT, etc.`
   );
   try {
     return JSON.parse(text.trim().replace(/^```json\n?/, "").replace(/\n?```$/, "")) as ColumnMapping;
@@ -171,5 +171,5 @@ export interface ColumnMapping {
   entryPrice: string | null; exitPrice: string | null;
   quantity: string | null; pnl: string | null; pnlPercent: string | null;
   fees: string | null; date: string | null; closeDate: string | null;
-  exchange: string | null; orderId: string | null;
+  exchange: string | null; orderId: string | null; currency: string | null;
 }

@@ -26,6 +26,7 @@ interface Trade {
   quantity: number;
   date: string;
   entryPrice: number;
+  currency?: string | null;
 }
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -55,7 +56,7 @@ function HeatmapLegend({ maxAbsPnl }: { maxAbsPnl: number }) {
 }
 
 function DayTradesModal({ dateStr, summary, onClose }: { dateStr: string; summary: CalendarDay; onClose: () => void }) {
-  const { fmt } = useCurrency();
+  const { fmt, fmtDisplay, convert } = useCurrency();
   const [trades, setTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -75,7 +76,7 @@ function DayTradesModal({ dateStr, summary, onClose }: { dateStr: string; summar
   useEffect(() => { fetchTrades(); }, [fetchTrades]);
 
   const wins = trades.filter((t) => (t.pnl ?? 0) > 0).length;
-  const totalPnl = trades.reduce((s, t) => s + (t.pnl ?? 0), 0);
+  const totalPnl = trades.reduce((s, t) => s + convert(t.pnl ?? 0, t.currency), 0);
 
   // Format date nicely
   const displayDate = formatISTDateKey(dateStr);
@@ -99,7 +100,7 @@ function DayTradesModal({ dateStr, summary, onClose }: { dateStr: string; summar
           </div>
           <div className="flex items-center gap-4">
             <div className={`text-sm font-bold ${totalPnl >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-              {fmt(totalPnl)}
+              {fmtDisplay(totalPnl)}
             </div>
             <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-zinc-800 text-zinc-500 hover:text-white transition-colors">
               <X className="w-4 h-4" />
@@ -144,7 +145,7 @@ function DayTradesModal({ dateStr, summary, onClose }: { dateStr: string; summar
                             {t.side}
                           </span>
                           <span className={`text-sm font-bold tabular-nums ${win ? "text-emerald-400" : "text-red-400"}`}>
-                            {t.pnl !== null ? fmt(t.pnl) : "—"}
+                            {t.pnl !== null ? fmt(t.pnl, t.currency) : "—"}
                           </span>
                         </div>
                       </div>
@@ -192,9 +193,9 @@ function DayTradesModal({ dateStr, summary, onClose }: { dateStr: string; summar
                           {t.side}
                         </span>
                       </td>
-                      <td className="py-2 px-3 text-right text-zinc-400">{fmt(t.quantity)}</td>
+                      <td className="py-2 px-3 text-right text-zinc-400">{t.quantity}</td>
                       <td className={`py-2 px-3 text-right font-semibold ${win ? "text-emerald-400" : "text-red-400"}`}>
-                        {t.pnl !== null ? fmt(t.pnl) : "—"}
+                        {t.pnl !== null ? fmt(t.pnl, t.currency) : "—"}
                       </td>
                       <td className="py-2 px-3 text-right text-zinc-600">
                         {formatTimeIST(t.date)}
@@ -209,7 +210,7 @@ function DayTradesModal({ dateStr, summary, onClose }: { dateStr: string; summar
                     <td />
                     <td colSpan={3} className="py-2.5 px-3 text-zinc-500 text-xs text-right">Total</td>
                     <td className={`py-2.5 px-3 text-right font-bold text-xs ${totalPnl >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                      {fmt(totalPnl)}
+                      {fmtDisplay(totalPnl)}
                     </td>
                     <td />
                   </tr>
@@ -225,7 +226,7 @@ function DayTradesModal({ dateStr, summary, onClose }: { dateStr: string; summar
 }
 
 export function CalendarHeatmap({ data }: CalendarHeatmapProps) {
-  const { fmt } = useCurrency();
+  const { fmt, fmtDisplay } = useCurrency();
   const [selectedDay, setSelectedDay] = useState<{ dateStr: string; summary: CalendarDay } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -374,7 +375,7 @@ export function CalendarHeatmap({ data }: CalendarHeatmapProps) {
                               ? "cursor-pointer active:scale-110 md:hover:scale-110 md:hover:ring-2 md:hover:ring-white/30"
                               : "cursor-default"
                           }`}
-                          title={`${day.dayStr}: ${d && hasTrades ? `${d.count} trade(s), ${fmt(d.pnl)}` : "No trades"}`}
+                          title={`${day.dayStr}: ${d && hasTrades ? `${d.count} trade(s), ${fmtDisplay(d.pnl)}` : "No trades"}`}
                         />
                       );
                     })}

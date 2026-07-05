@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { normalizeTradeCurrency, type TradeCurrency } from "@/lib/trade-currency";
 
-// Update ALL trades to a given currency (bulk migration)
+// Legacy: bulk-set currency on all trades (prefer per-trade currency from import)
 export async function POST(req: NextRequest) {
   try {
     const { currency } = await req.json();
@@ -16,23 +17,31 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// Auto-detect currency from trade data (heuristic)
 export async function GET() {
   try {
-    const sample = await prisma.trade.findMany({
-      where: { pnl: { not: null } },
-      take: 20,
-      select: { pnl: true, quantity: true },
+    const groups = await prisma.trade.groupBy({
+      by: ["currency"],
+      _count: { _all: true },
     });
-    if (sample.length === 0) return NextResponse.json({ detected: "USDT" });
 
-    const avgPnl = sample.reduce((a, t) => a + Math.abs(t.pnl ?? 0), 0) / sample.length;
-    const avgQty = sample.reduce((a, t) => a + Math.abs(t.quantity ?? 0), 0) / sample.length;
+    if (groups.length === 0) {
+      return NextResponse.json({ detected: "USDT", currencies: {} });
+    }
 
-    // INR trades typically have larger round numbers (>100 for pnl, >500 for qty)
-    // USDT crypto trades typically have pnl < 100 for retail traders
-    const likelyINR = avgPnl > 100 || avgQty > 200;
-    return NextResponse.json({ detected: likelyINR ? "INR" : "USDT", avgPnl, avgQty });
+    const currencies: Record<string, number> = {};
+    for (const g of groups) {
+      const key = normalizeTradeCurrency(g.currency);
+      currencies[key] = (currencies[key] ?? 0) + g._count._all;
+    }
+
+    const detected: TradeCurrency =
+      (currencies.INR ?? 0) > (currencies.USDT ?? 0) ? "INR" : "USDT";
+
+    return NextResponse.json({
+      detected,
+      currencies,
+      mixed: Object.keys(currencies).length > 1,
+    });
   } catch (error) {
     return NextResponse.json({ detected: "USDT" });
   }

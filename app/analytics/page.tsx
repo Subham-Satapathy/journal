@@ -67,23 +67,28 @@ interface AnalyticsData {
 export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
-  const { fmt, convert, symbol } = useCurrency();
+  const [mixedCurrencies, setMixedCurrencies] = useState(false);
+  const { fmtDisplay, symbol, analyticsQuery } = useCurrency();
 
   useEffect(() => {
     const fetchAll = async () => {
-      const [heatmapRes, mentalRes, calendarRes, distRes, weeklyRes, monthlyRes, overviewRes] = await Promise.all([
-        fetch("/api/analytics?type=heatmap"),
-        fetch("/api/analytics?type=mental"),
-        fetch("/api/analytics?type=calendar"),
-        fetch("/api/analytics?type=distribution"),
-        fetch("/api/analytics?type=weekly"),
-        fetch("/api/analytics?type=monthly"),
-        fetch("/api/analytics?type=overview"),
+      const q = analyticsQuery();
+      const [heatmapRes, mentalRes, calendarRes, distRes, weeklyRes, monthlyRes, overviewRes, detectRes] = await Promise.all([
+        fetch(`/api/analytics?type=heatmap&${q}`),
+        fetch(`/api/analytics?type=mental&${q}`),
+        fetch(`/api/analytics?type=calendar&${q}`),
+        fetch(`/api/analytics?type=distribution&${q}`),
+        fetch(`/api/analytics?type=weekly&${q}`),
+        fetch(`/api/analytics?type=monthly&${q}`),
+        fetch(`/api/analytics?type=overview&${q}`),
+        fetch("/api/settings/currency"),
       ]);
-      const [heatmap, mental, calendar, distribution, weekly, monthly, overview] = await Promise.all([
+      const [heatmap, mental, calendar, distribution, weekly, monthly, overview, detect] = await Promise.all([
         heatmapRes.json(), mentalRes.json(), calendarRes.json(),
         distRes.json(), weeklyRes.json(), monthlyRes.json(), overviewRes.json(),
+        detectRes.json(),
       ]);
+      if (detect?.mixed) setMixedCurrencies(true);
       setData({
         heatmap: Array.isArray(heatmap) ? heatmap : [],
         mental: mental && typeof mental.psychologyScore === "number" ? mental : {
@@ -102,7 +107,7 @@ export default function AnalyticsPage() {
       setLoading(false);
     };
     fetchAll();
-  }, []);
+  }, [analyticsQuery]);
 
   if (loading) {
     return (
@@ -117,7 +122,7 @@ export default function AnalyticsPage() {
 
   const { heatmap, mental, calendar, distribution, weekly, monthly, overview } = data!;
 
-  const convertedMonthly = monthly.map((d) => ({ ...d, pnl: convert(d.pnl) }));
+  const convertedMonthly = monthly;
 
   const longShortRatio = {
     long: overview.totalTrades > 0 ? Math.round(overview.totalTrades * (overview.longWinRate / 100)) : 0,
@@ -170,7 +175,7 @@ export default function AnalyticsPage() {
           {monthly.length === 0 ? (
             <div className="h-40 flex items-center justify-center text-zinc-600 text-sm">No data</div>
           ) : (
-            <MonthlyBarChart data={convertedMonthly} fmt={fmt} symbol={symbol} />
+            <MonthlyBarChart data={convertedMonthly} fmt={fmtDisplay} symbol={symbol} />
           )}
         </CardContent>
       </Card>

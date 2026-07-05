@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { mapCsvColumns, ColumnMapping } from "@/lib/gemini";
 import { parseTradeDate } from "@/lib/datetime";
+import { normalizeTradeCurrency } from "@/lib/trade-currency";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 
@@ -93,6 +94,16 @@ export async function POST(req: NextRequest) {
         }
       }
 
+      // Auto-detect Currency column (USD / INR from broker export)
+      const currencyHeader =
+        mapping.currency ||
+        headers.find((h) => h.toLowerCase().trim() === "currency") ||
+        headers.find((h) => h.toLowerCase().includes("currency")) ||
+        null;
+      if (currencyHeader) mapping.currency = currencyHeader;
+
+      const importedCurrencies = new Set<string>();
+
       const trades = rows
         .filter((row) => row.some((cell) => cell !== null && cell !== undefined && String(cell).trim()))
         .map((row) => {
@@ -109,6 +120,16 @@ export async function POST(req: NextRequest) {
           if (entryPrice === null || isNaN(quantity)) return null;
 
           const orderIdVal = getVal(row, "orderId");
+          const currencyRaw = currencyHeader
+            ? (() => {
+                const idx = headers.indexOf(currencyHeader);
+                if (idx === -1) return null;
+                const val = row[idx];
+                return val != null && String(val).trim() ? String(val).trim() : null;
+              })()
+            : null;
+          const currencyVal = normalizeTradeCurrency(currencyRaw);
+          if (currencyRaw) importedCurrencies.add(currencyRaw.toUpperCase());
 
           return {
             symbol: symbol.toUpperCase().trim(),
@@ -123,6 +144,7 @@ export async function POST(req: NextRequest) {
             closeDate: getVal(row, "closeDate") ? parseDate(getVal(row, "closeDate")) : null,
             exchange: getVal(row, "exchange") || null,
             orderId: orderIdVal || null,
+            currency: currencyVal,
             importSource: fileName.endsWith(".csv") ? "csv" : "excel",
           };
         })
@@ -142,6 +164,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         imported: result.count,
         skipped,
+        currencies: [...importedCurrencies],
         message: skipped > 0
           ? `${result.count} new trades imported, ${skipped} duplicates skipped`
           : `${result.count} trades imported successfully`,

@@ -14,7 +14,7 @@ interface SymbolDist {
 }
 
 export function DistributionCharts({ data, longShortRatio }: { data: SymbolDist[]; longShortRatio: { long: number; short: number } }) {
-  const { fmt } = useCurrency();
+  const { fmtDisplay } = useCurrency();
   const pieData = data.slice(0, 8).map((d) => ({ name: d.symbol, value: d.count, pnl: d.pnl }));
 
   const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ name: string; value: number; payload: { pnl: number; count: number } }> }) => {
@@ -25,7 +25,7 @@ export function DistributionCharts({ data, longShortRatio }: { data: SymbolDist[
           <div className="font-bold text-white">{name}</div>
           <div className="text-zinc-400">{value} trades</div>
           {item.pnl !== undefined && (
-            <div className={item.pnl >= 0 ? "text-emerald-400" : "text-red-400"}>{fmt(item.pnl)}</div>
+            <div className={item.pnl >= 0 ? "text-emerald-400" : "text-red-400"}>{fmtDisplay(item.pnl)}</div>
           )}
         </div>
       );
@@ -68,7 +68,7 @@ export function DistributionCharts({ data, longShortRatio }: { data: SymbolDist[
                       "shrink-0 tabular-nums text-[10px] sm:text-xs",
                       d.pnl >= 0 ? "text-emerald-400" : "text-red-400"
                     )}>
-                      {fmt(d.pnl)}
+                      {fmtDisplay(d.pnl)}
                     </span>
                   </div>
                 ))}

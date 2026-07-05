@@ -25,6 +25,7 @@ interface Trade {
   tags: string | null;
   notes: string | null;
   importSource: string | null;
+  currency?: string | null;
 }
 
 export function TradesTable() {
@@ -156,19 +157,19 @@ export function TradesTable() {
                     <div className="flex flex-col items-end gap-1 shrink-0">
                       <span className={sideBadgeClass(t.side)}>{t.side}</span>
                       <span className={cn("text-sm font-semibold font-mono tabular-nums", pnlColor(t.pnl ?? 0))}>
-                        {t.pnl !== null ? fmt(t.pnl) : "—"}
+                        {t.pnl !== null ? fmt(t.pnl, t.currency) : "—"}
                       </span>
                     </div>
                   </div>
                   <div className="mt-2.5 grid grid-cols-3 gap-2 text-[11px]">
                     <div>
                       <div className="text-zinc-600">Entry</div>
-                      <div className="text-zinc-300 font-mono tabular-nums">{fmt(t.entryPrice)}</div>
+                      <div className="text-zinc-300 font-mono tabular-nums">{fmt(t.entryPrice, t.currency)}</div>
                     </div>
                     <div>
                       <div className="text-zinc-600">Exit</div>
                       <div className="text-zinc-400 font-mono tabular-nums">
-                        {t.exitPrice ? fmt(t.exitPrice) : "—"}
+                        {t.exitPrice ? fmt(t.exitPrice, t.currency) : "—"}
                       </div>
                     </div>
                     <div>
@@ -181,7 +182,7 @@ export function TradesTable() {
                       <span className={pnlColor(t.pnlPercent ?? 0)}>
                         {t.pnlPercent !== null ? formatPercent(t.pnlPercent) : "—"}
                       </span>
-                      {t.fees > 0 && <span>Fees {fmt(t.fees)}</span>}
+                      {t.fees > 0 && <span>Fees {fmt(t.fees, t.currency)}</span>}
                       {t.importSource && (
                         <span className="bg-zinc-800 px-1.5 py-0.5 rounded text-[10px]">{t.importSource}</span>
                       )}
@@ -270,18 +271,18 @@ export function TradesTable() {
                         {t.side}
                       </span>
                     </td>
-                    <td className="px-3 py-3 text-zinc-300 font-mono">{fmt(t.entryPrice)}</td>
+                    <td className="px-3 py-3 text-zinc-300 font-mono">{fmt(t.entryPrice, t.currency)}</td>
                     <td className="px-3 py-3 text-zinc-400 font-mono">
-                      {t.exitPrice ? fmt(t.exitPrice) : <span className="text-zinc-700">—</span>}
+                      {t.exitPrice ? fmt(t.exitPrice, t.currency) : <span className="text-zinc-700">—</span>}
                     </td>
                     <td className="px-3 py-3 text-zinc-400">{t.quantity}</td>
                     <td className={cn("px-3 py-3 font-medium font-mono", pnlColor(t.pnl ?? 0))}>
-                      {t.pnl !== null ? fmt(t.pnl) : <span className="text-zinc-700">—</span>}
+                      {t.pnl !== null ? fmt(t.pnl, t.currency) : <span className="text-zinc-700">—</span>}
                     </td>
                     <td className={cn("px-3 py-3 text-xs", pnlColor(t.pnlPercent ?? 0))}>
                       {t.pnlPercent !== null ? formatPercent(t.pnlPercent) : <span className="text-zinc-700">—</span>}
                     </td>
-                    <td className="px-3 py-3 text-zinc-600 text-xs">{t.fees > 0 ? fmt(t.fees) : "—"}</td>
+                    <td className="px-3 py-3 text-zinc-600 text-xs">{t.fees > 0 ? fmt(t.fees, t.currency) : "—"}</td>
                     <td className="px-3 py-3">
                       {t.importSource && (
                         <span className="text-[10px] text-zinc-600 bg-zinc-800 px-1.5 py-0.5 rounded">

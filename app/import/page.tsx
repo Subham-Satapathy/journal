@@ -25,6 +25,8 @@ const TRADE_FIELDS = [
   { key: "fees", label: "Fees" },
   { key: "closeDate", label: "Close Date" },
   { key: "exchange", label: "Exchange" },
+  { key: "orderId", label: "Order ID" },
+  { key: "currency", label: "Currency (USD/INR)" },
 ];
 
 export default function ImportPage() {
@@ -63,18 +65,24 @@ export default function ImportPage() {
     const lower = headers.map((h) => h.toLowerCase().trim());
     const find = (...terms: string[]) =>
       headers[lower.findIndex((h) => terms.some((t) => h.includes(t)))] ?? null;
+    const findExact = (...terms: string[]) => {
+      const idx = lower.findIndex((h) => terms.some((t) => h === t));
+      return idx >= 0 ? headers[idx] : null;
+    };
     return {
       symbol:     find("symbol", "pair", "ticker", "coin", "asset", "instrument"),
       side:       find("side", "direction", "type", "position", "action"),
-      date:       find("open time", "open date", "date", "time", "entry time", "created"),
-      entryPrice: find("entry price", "open price", "entry", "open", "avg entry", "avg. entry"),
-      exitPrice:  find("exit price", "close price", "exit", "close", "avg exit", "avg. exit"),
-      quantity:   find("quantity", "size", "amount", "qty", "volume", "contracts", "lots"),
-      pnl:        find("realized pnl", "pnl", "profit", "p&l", "net profit", "profit & loss"),
+      date:       findExact("open time") ?? find("open time", "open date", "date", "time", "entry time", "created"),
+      entryPrice: findExact("open price") ?? find("entry price", "open price", "entry", "open", "avg entry"),
+      exitPrice:  findExact("close price") ?? find("exit price", "close price", "exit", "close", "avg exit"),
+      quantity:   findExact("trade amount") ?? find("quantity", "size", "trade amount", "qty", "volume", "contracts", "lots"),
+      pnl:        findExact("profit") ?? find("realized pnl", "pnl", "profit", "p&l", "net profit", "profit & loss"),
       pnlPercent: find("pnl%", "roi", "return%", "profit%", "roe"),
       fees:       find("fee", "commission", "cost"),
-      closeDate:  find("close time", "close date", "exit time"),
+      closeDate:  findExact("close time") ?? find("close time", "close date", "exit time"),
       exchange:   find("exchange", "broker", "platform"),
+      orderId:    findExact("order") ?? find("order", "order id", "trade id", "orderid"),
+      currency:   findExact("currency") ?? find("currency"),
     };
   };
 

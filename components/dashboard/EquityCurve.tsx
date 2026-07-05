@@ -14,7 +14,7 @@ interface EquityPoint {
 }
 
 export function EquityCurve({ data }: { data: EquityPoint[] }) {
-  const { fmt, symbol } = useCurrency();
+  const { fmtDisplay, symbol } = useCurrency();
 
   const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; name: string; color: string }>; label?: string }) => {
     if (active && payload && payload.length) {
@@ -23,7 +23,7 @@ export function EquityCurve({ data }: { data: EquityPoint[] }) {
       return (
         <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-xs">
           <div className="text-zinc-400 mb-1">{label}</div>
-          <div className={eq >= 0 ? "text-emerald-400" : "text-red-400"}>Equity: {fmt(eq)}</div>
+          <div className={eq >= 0 ? "text-emerald-400" : "text-red-400"}>Equity: {fmtDisplay(eq)}</div>
           <div className="text-red-400">Drawdown: -{dd.toFixed(1)}%</div>
         </div>
       );

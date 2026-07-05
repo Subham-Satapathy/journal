@@ -19,7 +19,7 @@ interface PnlChartProps {
 
 export function PnlChart({ daily, weekly, monthly }: PnlChartProps) {
   const [period, setPeriod] = useState<Period>("daily");
-  const { fmt, symbol } = useCurrency();
+  const { fmtDisplay, symbol } = useCurrency();
 
   const dataMap: Record<Period, (DailyPnl | WeeklyPnl | MonthlyPnl)[]> = { daily, weekly, monthly };
   const data = dataMap[period];
@@ -43,10 +43,10 @@ export function PnlChart({ daily, weekly, monthly }: PnlChartProps) {
         <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-xs">
           <div className="text-zinc-400 mb-1">{label}</div>
           <div className={`font-bold ${pnl >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-            {period === "daily" ? "Day" : period === "weekly" ? "Week" : "Month"} P&L: {fmt(pnl)}
+            {period === "daily" ? "Day" : period === "weekly" ? "Week" : "Month"} P&L: {fmtDisplay(pnl)}
           </div>
           <div className={`${cum >= 0 ? "text-emerald-300" : "text-red-300"}`}>
-            Cumulative: {fmt(cum)}
+            Cumulative: {fmtDisplay(cum)}
           </div>
         </div>
       );

@@ -46,6 +46,7 @@ interface Trade {
   date: string;
   entryPrice: number;
   exitPrice: number | null;
+  currency?: string | null;
 }
 
 interface SlotInfo {
@@ -55,7 +56,7 @@ interface SlotInfo {
 }
 
 function TradesModal({ slot, onClose }: { slot: SlotInfo; onClose: () => void }) {
-  const { fmt } = useCurrency();
+  const { fmt, fmtDisplay, convert } = useCurrency();
   const [trades, setTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -72,7 +73,7 @@ function TradesModal({ slot, onClose }: { slot: SlotInfo; onClose: () => void })
 
   useEffect(() => { fetchTrades(); }, [fetchTrades]);
 
-  const totalPnl = trades.reduce((s, t) => s + (t.pnl ?? 0), 0);
+  const totalPnl = trades.reduce((s, t) => s + convert(t.pnl ?? 0, t.currency), 0);
   const wins = trades.filter((t) => (t.pnl ?? 0) > 0).length;
 
   return (
@@ -97,7 +98,7 @@ function TradesModal({ slot, onClose }: { slot: SlotInfo; onClose: () => void })
           <div className="flex items-center gap-4">
             <div className="text-right">
               <div className={`text-sm font-bold ${totalPnl >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                {fmt(totalPnl)}
+                {fmtDisplay(totalPnl)}
               </div>
               <div className="text-[10px] text-zinc-600">{wins}W / {trades.length - wins}L</div>
             </div>
@@ -138,7 +139,7 @@ function TradesModal({ slot, onClose }: { slot: SlotInfo; onClose: () => void })
                             {t.side}
                           </span>
                           <span className={`text-sm font-bold tabular-nums ${win ? "text-emerald-400" : "text-red-400"}`}>
-                            {t.pnl !== null ? fmt(t.pnl) : "—"}
+                            {t.pnl !== null ? fmt(t.pnl, t.currency) : "—"}
                           </span>
                         </div>
                       </div>
@@ -217,7 +218,7 @@ function TradesModal({ slot, onClose }: { slot: SlotInfo; onClose: () => void })
 }
 
 export function HourDayHeatmap({ data }: { data: HeatmapCell[] }) {
-  const { fmt } = useCurrency();
+  const { fmtDisplay } = useCurrency();
   const [selected, setSelected] = useState<SlotInfo | null>(null);
 
   const grid: Record<string, HeatmapCell> = {};
@@ -284,7 +285,7 @@ export function HourDayHeatmap({ data }: { data: HeatmapCell[] }) {
                       style={getPnlHeatStyle(pnl, !!hasData, maxAbsPnl)}
                       className={`flex-1 h-5 rounded-sm flex items-center justify-center text-[9px] font-medium transition-all ${getPnlHeatTextClass(pnl, !!hasData, maxAbsPnl)}
                         ${hasData ? "cursor-pointer hover:scale-110 hover:z-10 hover:ring-1 hover:ring-white/30" : "cursor-default"}`}
-                      title={cell ? `${DAYS[d]} ${HOURS[h]}: ${cell.trades} trades, ${fmt(cell.pnl)}, ${cell.winRate.toFixed(0)}% WR` : `${DAYS[d]} ${HOURS[h]}: No data`}
+                      title={cell ? `${DAYS[d]} ${HOURS[h]}: ${cell.trades} trades, ${fmtDisplay(cell.pnl)}, ${cell.winRate.toFixed(0)}% WR` : `${DAYS[d]} ${HOURS[h]}: No data`}
                     >
                       {hasData && cell.trades}
                     </div>

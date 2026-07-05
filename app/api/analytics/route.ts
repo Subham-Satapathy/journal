@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { fetchUsdInrRate } from "@/lib/exchange-rate";
 import {
   computeOverviewStats,
   computeDailyPnl,
@@ -11,6 +12,16 @@ import {
   computeEquityCurve,
   computeSymbolDistribution,
 } from "@/lib/analytics";
+import { normalizeTradeMonetary, type TradeCurrency } from "@/lib/trade-currency";
+import type { Trade } from "@prisma/client";
+
+function normalizeTradesForDisplay(
+  trades: Trade[],
+  displayCurrency: TradeCurrency,
+  rate: number
+): Trade[] {
+  return trades.map((t) => normalizeTradeMonetary(t, displayCurrency, rate));
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -31,37 +42,43 @@ export async function GET(req: NextRequest) {
       orderBy: { date: "asc" },
     });
 
+    const displayParam = searchParams.get("currency");
+    const displayCurrency: TradeCurrency =
+      displayParam === "INR" || displayParam === "USDT" ? displayParam : "USDT";
+    const rate = parseFloat(searchParams.get("rate") || "") || (await fetchUsdInrRate());
+    const normalized = normalizeTradesForDisplay(trades, displayCurrency, rate);
+
     switch (type) {
       case "overview":
-        return NextResponse.json(computeOverviewStats(trades));
+        return NextResponse.json(computeOverviewStats(normalized));
       case "daily":
-        return NextResponse.json(computeDailyPnl(trades));
+        return NextResponse.json(computeDailyPnl(normalized));
       case "weekly":
-        return NextResponse.json(computeWeeklyPnl(trades));
+        return NextResponse.json(computeWeeklyPnl(normalized));
       case "monthly":
-        return NextResponse.json(computeMonthlyPnl(trades));
+        return NextResponse.json(computeMonthlyPnl(normalized));
       case "heatmap":
-        return NextResponse.json(computeHourDayHeatmap(trades));
+        return NextResponse.json(computeHourDayHeatmap(normalized));
       case "mental":
-        return NextResponse.json(computeMentalStateMetrics(trades));
+        return NextResponse.json(computeMentalStateMetrics(normalized));
       case "calendar":
-        return NextResponse.json(computeCalendarData(trades));
+        return NextResponse.json(computeCalendarData(normalized));
       case "equity":
-        return NextResponse.json(computeEquityCurve(trades));
+        return NextResponse.json(computeEquityCurve(normalized));
       case "distribution":
-        return NextResponse.json(computeSymbolDistribution(trades));
+        return NextResponse.json(computeSymbolDistribution(normalized));
       case "all": {
         const [overview, daily, weekly, monthly, heatmap, mental, calendar, equity, distribution] =
           await Promise.all([
-            computeOverviewStats(trades),
-            computeDailyPnl(trades),
-            computeWeeklyPnl(trades),
-            computeMonthlyPnl(trades),
-            computeHourDayHeatmap(trades),
-            computeMentalStateMetrics(trades),
-            computeCalendarData(trades),
-            computeEquityCurve(trades),
-            computeSymbolDistribution(trades),
+            computeOverviewStats(normalized),
+            computeDailyPnl(normalized),
+            computeWeeklyPnl(normalized),
+            computeMonthlyPnl(normalized),
+            computeHourDayHeatmap(normalized),
+            computeMentalStateMetrics(normalized),
+            computeCalendarData(normalized),
+            computeEquityCurve(normalized),
+            computeSymbolDistribution(normalized),
           ]);
         return NextResponse.json({ overview, daily, weekly, monthly, heatmap, mental, calendar, equity, distribution });
       }

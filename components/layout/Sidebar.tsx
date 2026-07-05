@@ -22,36 +22,12 @@ const navItems = [
 ];
 
 function SidebarCurrencyWidget() {
-  const { displayCurrency, baseCurrency, setDisplayCurrency, setBaseCurrency, rate } = useCurrency();
-
-  const applyBase = (c: Currency) => {
-    setBaseCurrency(c);
-    fetch("/api/settings/currency", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ currency: c }),
-    }).catch(() => {});
-  };
+  const { displayCurrency, setDisplayCurrency, rate, mixedCurrencies } = useCurrency();
 
   return (
     <div className="px-3 py-3 border-t border-zinc-800/50 space-y-2">
-      <div className="text-[10px] text-zinc-600 uppercase tracking-wider font-medium px-1">Currency</div>
+      <div className="text-[10px] text-zinc-600 uppercase tracking-wider font-medium px-1">Display</div>
       <div className="space-y-1.5">
-        <div className="flex items-center justify-between px-1">
-          <span className="text-[11px] text-zinc-500">Trades in</span>
-          <div className="flex bg-zinc-900 border border-zinc-800 rounded-md p-0.5 gap-0.5">
-            {(["USDT", "INR"] as Currency[]).map((c) => (
-              <button key={c} onClick={() => applyBase(c)}
-                className={cn("px-2 py-0.5 rounded text-[10px] font-semibold transition-all",
-                  baseCurrency === c
-                    ? c === "INR" ? "bg-orange-700 text-white" : "bg-blue-700 text-white"
-                    : "text-zinc-600 hover:text-zinc-400"
-                )}>
-                {c === "INR" ? "₹" : "$"}
-              </button>
-            ))}
-          </div>
-        </div>
         <div className="flex items-center justify-between px-1">
           <span className="text-[11px] text-zinc-500">Show as</span>
           <div className="flex bg-zinc-900 border border-zinc-800 rounded-md p-0.5 gap-0.5">
@@ -68,6 +44,9 @@ function SidebarCurrencyWidget() {
           </div>
         </div>
         <div className="text-[10px] text-zinc-700 px-1 text-center">1$ = ₹{rate.toFixed(1)}</div>
+        {mixedCurrencies && (
+          <div className="text-[9px] text-zinc-600 px-1 text-center leading-tight">USD & INR trades converted</div>
+        )}
       </div>
     </div>
   );

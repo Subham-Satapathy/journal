@@ -24,18 +24,19 @@ interface DashboardData {
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [detectedCurrency, setDetectedCurrency] = useState<string | null>(null);
-  const { fmt, convert, symbol, displayCurrency: currency, baseCurrency, setBaseCurrency, setDisplayCurrency } = useCurrency();
+  const [mixedCurrencies, setMixedCurrencies] = useState(false);
+  const { fmtDisplay, symbol, displayCurrency: currency, analyticsQuery } = useCurrency();
 
   useEffect(() => {
     const fetchAll = async () => {
       try {
+        const q = analyticsQuery();
         const [overviewRes, dailyRes, weeklyRes, monthlyRes, equityRes, detectRes] = await Promise.all([
-          fetch("/api/analytics?type=overview"),
-          fetch("/api/analytics?type=daily"),
-          fetch("/api/analytics?type=weekly"),
-          fetch("/api/analytics?type=monthly"),
-          fetch("/api/analytics?type=equity"),
+          fetch(`/api/analytics?type=overview&${q}`),
+          fetch(`/api/analytics?type=daily&${q}`),
+          fetch(`/api/analytics?type=weekly&${q}`),
+          fetch(`/api/analytics?type=monthly&${q}`),
+          fetch(`/api/analytics?type=equity&${q}`),
           fetch("/api/settings/currency"),
         ]);
         const [overview, daily, weekly, monthly, equity, detect] = await Promise.all([
@@ -51,7 +52,7 @@ export default function DashboardPage() {
             equity: Array.isArray(equity) ? equity : [],
           });
         }
-        if (detect?.detected) setDetectedCurrency(detect.detected);
+        if (detect?.mixed) setMixedCurrencies(true);
       } catch {
         // DB not connected — show empty state
       } finally {
@@ -59,7 +60,7 @@ export default function DashboardPage() {
       }
     };
     fetchAll();
-  }, []);
+  }, [analyticsQuery]);
 
   if (loading) {
     return (
@@ -100,12 +101,6 @@ export default function DashboardPage() {
   const { overview, daily, weekly, monthly, equity } = data;
   const isEmpty = overview.totalTrades === 0;
 
-  // Convert chart data for selected currency
-  const convertChartData = <T extends { pnl: number; cumulative: number }>(arr: T[]): T[] =>
-    arr.map((d) => ({ ...d, pnl: convert(d.pnl), cumulative: convert(d.cumulative) }));
-
-  const convertEquity = equity.map((e) => ({ ...e, equity: convert(e.equity) }));
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -126,31 +121,9 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Currency mismatch banner */}
-      {detectedCurrency && detectedCurrency !== baseCurrency && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 bg-amber-950/50 border border-amber-800/60 rounded-xl">
-          <div className="text-sm space-y-1">
-            <div className="text-amber-400 font-semibold">⚠ Currency mismatch detected</div>
-            <div className="text-amber-600 text-xs sm:text-sm">
-              Your trades look like <strong className="text-amber-400">{detectedCurrency}</strong> amounts, but &quot;Trades in&quot; is set to <strong className="text-amber-400">{baseCurrency}</strong> — amounts will display incorrectly.
-            </div>
-          </div>
-          <button
-            onClick={() => {
-              const c = detectedCurrency as "INR" | "USDT";
-              setBaseCurrency(c);
-              setDisplayCurrency(c);
-              fetch("/api/settings/currency", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ currency: c }),
-              }).catch(() => {});
-              setDetectedCurrency(null);
-            }}
-            className="shrink-0 px-3 py-1.5 bg-amber-700 hover:bg-amber-600 text-white text-xs font-semibold rounded-lg transition-colors"
-          >
-            Fix — Switch to {detectedCurrency}
-          </button>
+      {mixedCurrencies && (
+        <div className="px-4 py-3 bg-indigo-950/40 border border-indigo-800/40 rounded-xl text-xs text-indigo-300">
+          Mixed USD & INR trades detected — stats are converted to your selected display currency.
         </div>
       )}
 
@@ -171,7 +144,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             <StatsCard
               title={`Total P&L (${currency})`}
-              value={fmt(overview.totalPnl)}
+              value={fmtDisplay(overview.totalPnl)}
               icon={DollarSign}
               iconColor={overview.totalPnl >= 0 ? "text-emerald-400" : "text-red-400"}
               trend={overview.totalPnl >= 0 ? "up" : "down"}
@@ -194,14 +167,14 @@ export default function DashboardPage() {
             />
             <StatsCard
               title={`Best Day (${currency})`}
-              value={fmt(overview.bestDay)}
+              value={fmtDisplay(overview.bestDay)}
               icon={Trophy}
               iconColor="text-amber-400"
               trend="up"
             />
             <StatsCard
               title={`Max Drawdown (${currency})`}
-              value={fmt(overview.maxDrawdown)}
+              value={fmtDisplay(overview.maxDrawdown)}
               icon={TrendingDown}
               iconColor="text-red-400"
               trend="down"
@@ -209,7 +182,7 @@ export default function DashboardPage() {
             <StatsCard
               title="Avg R:R"
               value={`${overview.avgRiskReward.toFixed(2)}:1`}
-              subValue={`Win ${symbol}${convert(overview.avgWin).toFixed(0)} / Loss ${symbol}${convert(overview.avgLoss).toFixed(0)}`}
+              subValue={`Win ${fmtDisplay(overview.avgWin)} / Loss ${fmtDisplay(overview.avgLoss)}`}
               icon={Zap}
               iconColor="text-cyan-400"
               trend={overview.avgRiskReward >= 1.5 ? "up" : "neutral"}
@@ -225,7 +198,7 @@ export default function DashboardPage() {
             <StatsCard
               title={`${overview.currentStreakType === "win" ? "🔥" : "❄️"} Current Streak`}
               value={`${overview.currentStreak} ${overview.currentStreakType === "win" ? "W" : overview.currentStreakType === "loss" ? "L" : ""}`}
-              subValue={`Fees: ${fmt(overview.totalFees)}`}
+              subValue={`Fees: ${fmtDisplay(overview.totalFees)}`}
               icon={TrendingUp}
               iconColor={overview.currentStreakType === "win" ? "text-emerald-400" : "text-red-400"}
               trend={overview.currentStreakType === "win" ? "up" : "down"}
@@ -250,13 +223,8 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Charts — pass currency-converted data */}
-          <PnlChart
-            daily={convertChartData(daily)}
-            weekly={convertChartData(weekly)}
-            monthly={convertChartData(monthly)}
-          />
-          <EquityCurve data={convertEquity} />
+          <PnlChart daily={daily} weekly={weekly} monthly={monthly} />
+          <EquityCurve data={equity} />
         </>
       )}
     </div>
