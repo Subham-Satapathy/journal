@@ -107,6 +107,8 @@ The user wants a personal trading journal/ledger web app. Key goals:
 - [ ] Task 28 (Ad-hoc): Full mobile responsiveness pass across pages
 - [ ] Task 29 (Ad-hoc): Full-screen auth width + signup logo branding
 - [ ] Task 30 (Ad-hoc): SEO hardening pass (canonical, sitemap, noindex, metadata, FAQ schema)
+- [ ] Task 31 (Ad-hoc): Landing testimonials aligned to binary Pocket Option audience
+- [ ] Task 32 (Ad-hoc): Make all pages full width
 
 ## Executor's Feedback or Assistance Requests
 
@@ -650,3 +652,36 @@ Assistance request to user/planner:
   2. `/login` page source has `noindex`
   3. landing page source includes FAQ JSON-LD
   4. Google Search Console is set and sitemap re-submitted
+
+### Executor Update — Task 31 (Binary Pocket Option Testimonials) Completed
+
+Implemented:
+- Updated testimonials section in `app/page.tsx` to explicitly reference binary Pocket Option traders.
+- Replaced generic review copy with binary options-specific outcomes:
+  - session/time/expiry discipline and win-rate review
+  - screenshot import and AI summary benefits for revenge-trade control.
+- Updated section heading to `What binary options traders say`.
+
+Validation:
+- IDE lints pass on edited file.
+
+Assistance request to user/planner:
+- Please review landing testimonials section and confirm tone/wording matches your target audience.
+
+### Executor Update — Task 32 (Global Full-Width Pages) Completed
+
+Implemented:
+- Updated shared layout wrapper in `components/layout/AppFrame.tsx`:
+  - removed global max-width constraints (`max-w-7xl` / `max-w-6xl`)
+  - switched to full-width container (`w-full`) for all routes.
+- Kept consistent page padding for readability while allowing content sections to span the full available viewport width.
+- Back button spacing remains consistent after wrapper update.
+
+Validation:
+- IDE lint checks pass on edited file.
+- `npm run build` passes.
+
+Assistance request to user/planner:
+- Please verify on desktop and mobile that:
+  1. landing and app pages now stretch full width
+  2. spacing still feels readable (not too edge-clipped)

@@ -205,17 +205,17 @@ export default function LandingPage() {
       </section>
 
       <section className="relative px-6 sm:px-10 pb-10">
-        <h2 className="text-base font-semibold text-white mb-3">What traders say</h2>
+        <h2 className="text-base font-semibold text-white mb-3">What binary options traders say</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-4">
             <Quote className="w-4 h-4 text-indigo-300 mb-2" />
-            <p className="text-sm text-zinc-300">“I finally know which sessions are hurting my performance. The heatmaps changed how I review.”</p>
-            <p className="text-xs text-zinc-500 mt-2">— Intraday options trader</p>
+            <p className="text-sm text-zinc-300">“My Pocket Option sessions are finally structured. I can clearly see which time blocks and expiry choices are hurting my win rate.”</p>
+            <p className="text-xs text-zinc-500 mt-2">— Pocket Option binary trader</p>
           </div>
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-4">
             <Quote className="w-4 h-4 text-indigo-300 mb-2" />
-            <p className="text-sm text-zinc-300">“Screenshot import plus AI summaries makes journaling actually sustainable.”</p>
-            <p className="text-xs text-zinc-500 mt-2">— Multi-asset retail trader</p>
+            <p className="text-sm text-zinc-300">“Screenshot import from Pocket Option and AI summaries helped me stop revenge trades and stay disciplined after losing streaks.”</p>
+            <p className="text-xs text-zinc-500 mt-2">— Binary options scalper</p>
           </div>
         </div>
       </section>
