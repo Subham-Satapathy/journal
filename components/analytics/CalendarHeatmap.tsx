@@ -205,7 +205,7 @@ function DayTradesModal({ dateStr, summary, onClose }: { dateStr: string; summar
                 })}
               </tbody>
               {trades.length > 1 && (
-                <tfoot className="sticky bottom-0 z-10 bg-zinc-950">
+                <tfoot className="bg-zinc-950">
                   <tr className="border-t border-zinc-700">
                     <td />
                     <td colSpan={3} className="py-2.5 px-3 text-zinc-500 text-xs text-right">Total</td>
