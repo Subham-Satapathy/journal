@@ -101,6 +101,12 @@ The user wants a personal trading journal/ledger web app. Key goals:
 - [ ] Task 20 (Ad-hoc): Branded public landing page with animated hero
 - [ ] Task 23 (Ad-hoc): OTP email verification required before login
 - [ ] Task 24 (Ad-hoc): Branded emails + payment receipt email on successful payment webhook
+- [ ] Task 25 (Ad-hoc): Geo-locked display currency (India => INR, others => USD)
+- [ ] Task 26 (Ad-hoc): Add back button on all pages
+- [ ] Task 27 (Ad-hoc): India users can toggle USD/INR; non-India stays USD-only
+- [ ] Task 28 (Ad-hoc): Full mobile responsiveness pass across pages
+- [ ] Task 29 (Ad-hoc): Full-screen auth width + signup logo branding
+- [ ] Task 30 (Ad-hoc): SEO hardening pass (canonical, sitemap, noindex, metadata, FAQ schema)
 
 ## Executor's Feedback or Assistance Requests
 
@@ -350,6 +356,10 @@ Security note from dependency check:
 - NOWPayments webhooks must be validated with `NOWPAYMENTS_IPN_SECRET`; reject unsigned/invalid callbacks.
 - When using `crypto.timingSafeEqual`, always check buffer lengths first to avoid runtime throw on malformed signatures.
 - Auth cookies must be HTTP-only and signed with `AUTH_SECRET`; never trust client-provided user email for subscription assignment.
+- For geo-based currency lock, prefer request headers (`x-vercel-ip-country` / `cf-ipcountry`) and enforce the same rule in both UI and API.
+- Geo display rules may differ by country: return `allowedDisplayCurrencies` from API and let UI toggle only when multiple are allowed.
+- For mobile-first UX, prefer `grid-cols-1` base with breakpoint expansion and stack action buttons vertically on small screens.
+- Avoid global canonical set to `/` in root metadata; define canonicals only per indexable page to prevent duplicate-canonical signals.
 
 ### Executor Update — Task 20 (Branding + Landing Hero) Completed
 
@@ -490,3 +500,153 @@ Assistance request to user/planner:
   1. OTP email arrives with logo/header styling
   2. payment receipt email arrives after webhook success
   3. receipt contains correct plan, amount, membership expiry, and transaction reference
+
+### Executor Update — Task 25 (Geo-Locked Currency Display) Completed
+
+Implemented:
+- Added geo currency helper in `lib/geo-currency.ts` to map request country to display currency:
+  - India (`IN`) => `INR`
+  - all other countries => `USDT` (USD display)
+- Updated `GET /api/settings/currency` to return geo-locked `displayCurrency` and country code.
+- Updated `POST /api/settings/currency` to reject currency updates that violate geo lock (403).
+- Updated `GET /api/analytics` and `POST /api/insights` to enforce geo currency server-side even if client sends a different currency.
+- Updated UI currency widgets in `components/ui/CurrencyToggle.tsx` and `components/layout/Sidebar.tsx`:
+  - removed INR/USD switching controls
+  - now show a single display-currency badge only.
+- Updated `lib/currency-context.tsx` to auto-apply server-provided geo currency and stop manual currency overrides.
+
+Validation:
+- IDE lint checks for edited files pass.
+- `npm run build` passes.
+
+Assistance request to user/planner:
+- Please verify with two regions:
+  1. India IP/header -> only INR badge visible
+  2. Non-India IP/header -> only USD badge visible
+
+### Executor Update — Task 26 (Global Back Button) Completed
+
+Implemented:
+- Added reusable `BackButton` component in `components/ui/BackButton.tsx` using client-side navigation (`router.back()` with fallback route).
+- Integrated this button in `components/layout/AppFrame.tsx` so it appears globally on all pages except root (`/`) without editing each page separately.
+- Added context-aware fallback behavior:
+  - app-shell pages fallback to `/dashboard`
+  - marketing/auth pages fallback to `/`
+
+Validation:
+- Lint checks pass for edited files.
+- `npm run build` passes.
+
+Assistance request to user/planner:
+- Please verify button visibility and behavior on:
+  1. `/dashboard`, `/trades`, `/import`, `/analytics`, `/insights`, `/billing`
+  2. `/login`, `/signup`, `/verify-email`, `/pricing`
+
+### Executor Update — Task 27 (India Currency Toggle Update) Completed
+
+Implemented:
+- Updated geo-currency rules in `lib/geo-currency.ts`:
+  - India users: allowed display currencies are `USDT` and `INR`
+  - Non-India users: allowed display currency is `USDT` only
+- Updated `GET /api/settings/currency` to return `allowedDisplayCurrencies`.
+- Updated `POST /api/settings/currency` validation to allow both options for India users and only USD for others.
+- Updated `GET /api/analytics` and `POST /api/insights` to enforce allowed currencies server-side using shared normalization.
+- Updated `lib/currency-context.tsx` to:
+  - consume `allowedDisplayCurrencies`
+  - keep user-selected currency (from localStorage) only if allowed by region
+  - allow UI toggle only when more than one currency is allowed
+- Updated `components/ui/CurrencyToggle.tsx` and `components/layout/Sidebar.tsx`:
+  - India users see switch buttons (`$` and `₹`)
+  - non-India users see a single USD badge.
+
+Validation:
+- IDE lint checks pass.
+- `npm run build` passes.
+
+Assistance request to user/planner:
+- Please verify behavior:
+  1. India users can switch between USD and INR from dashboard/trades/analytics views.
+  2. Non-India users only see USD and cannot switch to INR.
+
+### Executor Update — Task 28 (Mobile Responsiveness Pass) Completed
+
+Implemented:
+- `app/import/page.tsx`
+  - Mode cards now stack on mobile and scale up by breakpoint (`1 -> 2 -> 3` columns).
+  - Mapping and manual form grids now start at 1 column on mobile.
+  - Action rows (Back/Import, Try Again/Save, Import More/View Trades) now stack vertically on small screens.
+  - Notice banner actions now wrap cleanly on mobile.
+- `app/insights/page.tsx`
+  - Period filter now supports horizontal scrolling with no overflow clipping.
+  - Diagnostics rows now avoid fixed-width overflow on mobile.
+  - Result header now wraps cleanly on small screens.
+- `app/billing/page.tsx`
+  - Membership status row now wraps correctly on mobile.
+  - Payment history now has dedicated mobile card layout and keeps desktop table for larger screens.
+- `app/signup/page.tsx`, `app/verify-email/page.tsx`
+  - Added mobile horizontal padding to prevent edge clipping.
+- `app/page.tsx` (landing)
+  - Header now uses responsive stacking/wrapping for logo + auth links on narrow screens.
+
+Validation:
+- IDE lints pass for edited files.
+- `npm run build` passes.
+
+Assistance request to user/planner:
+- Please manually verify key pages on a phone viewport:
+  1. `/import` (mode selector, mapping form, action buttons)
+  2. `/insights` (period tabs + diagnostics panel)
+  3. `/billing` (payment history cards)
+  4. `/signup`, `/verify-email`
+  5. `/` landing header buttons
+
+### Executor Update — Task 29 (Auth Full-Width + Signup Logo) Completed
+
+Implemented:
+- Updated `components/layout/AppFrame.tsx` to remove max-width constraints on auth pages (`/login`, `/signup`, `/verify-email`) so those screens render in full-width viewport layout.
+- Kept back button spacing consistent after container change.
+- Updated `app/signup/page.tsx` to match login branding:
+  - added logo block above the card
+  - added branded background glow accents
+  - switched to full-screen auth section (`min-h-screen`) with consistent card styling.
+
+Validation:
+- IDE lint checks pass on edited files.
+- `npm run build` passes.
+
+Assistance request to user/planner:
+- Please verify:
+  1. `/login` and `/signup` now render as full-screen auth layouts
+  2. signup page shows logo + branding same style family as login
+
+### Executor Update — Task 30 (SEO Hardening Pass) Completed
+
+Implemented:
+- Canonical cleanup:
+  - removed global root-level canonical from `app/layout.tsx` to avoid forcing all routes to canonical `/`.
+  - kept explicit page canonical URLs on indexable public pages (`/`, `/pricing`).
+- Sitemap cleanup:
+  - updated `app/sitemap.ts` to include only public indexable pages:
+    - `/`
+    - `/pricing`
+  - removed private/authenticated utility routes from sitemap.
+- Noindex coverage:
+  - added route metadata layouts with `robots: { index: false, follow: false }` for non-public pages:
+    - `/login`, `/signup`, `/verify-email`
+    - `/dashboard`, `/import`, `/trades`, `/analytics`, `/insights`, `/billing`
+- Metadata coverage upgrades:
+  - added keyword-rich metadata to landing and pricing pages.
+- FAQ schema + keyword section:
+  - added `FAQPage` JSON-LD to `app/page.tsx`.
+  - added a focused keyword/content section for trading journal discovery intent and compliance-safe positioning.
+
+Validation:
+- IDE lint checks pass for all edited files.
+- `npm run build` passes.
+
+Assistance request to user/planner:
+- After deploy, verify in production:
+  1. `/sitemap.xml` contains only public pages
+  2. `/login` page source has `noindex`
+  3. landing page source includes FAQ JSON-LD
+  4. Google Search Console is set and sitemap re-submitted

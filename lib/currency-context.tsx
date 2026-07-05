@@ -8,6 +8,8 @@ export type Currency = TradeCurrency;
 interface CurrencyContextValue {
   displayCurrency: Currency;
   baseCurrency: Currency;
+  allowedDisplayCurrencies: Currency[];
+  canToggleDisplayCurrency: boolean;
   rate: number;
   rateUpdatedAt: number | null;
   mixedCurrencies: boolean;
@@ -26,6 +28,8 @@ interface CurrencyContextValue {
 const CurrencyContext = createContext<CurrencyContextValue>({
   displayCurrency: "USDT",
   baseCurrency: "USDT",
+  allowedDisplayCurrencies: ["USDT"],
+  canToggleDisplayCurrency: false,
   rate: 84.5,
   rateUpdatedAt: null,
   mixedCurrencies: false,
@@ -42,35 +46,38 @@ const CurrencyContext = createContext<CurrencyContextValue>({
 export function CurrencyProvider({ children }: { children: React.ReactNode }) {
   const [displayCurrency, setDisplayCurrencyState] = useState<Currency>("USDT");
   const [baseCurrency, setBaseCurrencyState] = useState<Currency>("USDT");
+  const [allowedDisplayCurrencies, setAllowedDisplayCurrencies] = useState<Currency[]>(["USDT"]);
   const [mixedCurrencies, setMixedCurrencies] = useState(false);
   const [rate, setRate] = useState(84.5);
   const [rateUpdatedAt, setRateUpdatedAt] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const savedDisplay = localStorage.getItem("display_currency") as Currency | null;
-    const savedBase = localStorage.getItem("base_currency") as Currency | null;
-    const manuallySet = localStorage.getItem("currency_manually_set") === "1";
-
-    if (savedDisplay === "INR" || savedDisplay === "USDT") {
-      setDisplayCurrencyState(savedDisplay);
-    }
-    if (savedBase === "INR" || savedBase === "USDT") {
-      setBaseCurrencyState(savedBase);
-    }
+    const savedDisplay = localStorage.getItem("display_currency");
 
     fetch("/api/settings/currency")
       .then((r) => r.json())
       .then((d) => {
-        if (d.mixed) setMixedCurrencies(true);
-        if (!manuallySet && d.detected) {
-          setBaseCurrencyState(d.detected);
-          localStorage.setItem("base_currency", d.detected);
-          if (!savedDisplay) {
-            setDisplayCurrencyState(d.detected);
-            localStorage.setItem("display_currency", d.detected);
-          }
+        if (d.mixed) {
+          setMixedCurrencies(true);
         }
+        const detected: Currency = d.displayCurrency === "INR" ? "INR" : "USDT";
+        const allowed: Currency[] = Array.isArray(d.allowedDisplayCurrencies)
+          ? d.allowedDisplayCurrencies.filter((c: string) => c === "INR" || c === "USDT")
+          : [detected];
+        const resolvedAllowed = allowed.length > 0 ? allowed : [detected];
+        const preferred: Currency =
+          savedDisplay === "INR" || savedDisplay === "USDT"
+            ? resolvedAllowed.includes(savedDisplay)
+              ? savedDisplay
+              : detected
+            : detected;
+
+        setAllowedDisplayCurrencies(resolvedAllowed);
+        setBaseCurrencyState(detected);
+        setDisplayCurrencyState(preferred);
+        localStorage.setItem("base_currency", detected);
+        localStorage.setItem("display_currency", preferred);
       })
       .catch(() => {});
   }, []);
@@ -92,16 +99,16 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => { fetchRate(); }, [fetchRate]);
 
   const setDisplayCurrency = (c: Currency) => {
+    if (!allowedDisplayCurrencies.includes(c)) return;
     setDisplayCurrencyState(c);
     localStorage.setItem("display_currency", c);
-    localStorage.setItem("currency_manually_set", "1");
     fetchRate();
   };
 
   const setBaseCurrency = (c: Currency) => {
+    if (!allowedDisplayCurrencies.includes(c)) return;
     setBaseCurrencyState(c);
     localStorage.setItem("base_currency", c);
-    localStorage.setItem("currency_manually_set", "1");
   };
 
   const convert = useCallback((amount: number, fromCurrency?: Currency | string | null): number => {
@@ -136,7 +143,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <CurrencyContext.Provider value={{
-      displayCurrency, baseCurrency, rate, rateUpdatedAt, mixedCurrencies,
+      displayCurrency, baseCurrency, allowedDisplayCurrencies, canToggleDisplayCurrency: allowedDisplayCurrencies.length > 1, rate, rateUpdatedAt, mixedCurrencies,
       setDisplayCurrency, setBaseCurrency, convert, fmt, fmtDisplay,
       symbol: displayCurrency === "INR" ? "₹" : "$",
       loading, analyticsQuery,

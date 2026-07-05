@@ -6,6 +6,7 @@ import { subDays, subWeeks, subMonths } from "date-fns";
 import { fetchUsdInrRate } from "@/lib/exchange-rate";
 import { normalizeTradeMonetary, type TradeCurrency } from "@/lib/trade-currency";
 import { requireActiveSubscription } from "@/lib/api-auth";
+import { normalizeRequestedDisplayCurrency } from "@/lib/geo-currency";
 
 export async function POST(req: NextRequest) {
   try {
@@ -35,8 +36,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ insights: "No trades found for the selected period. Add some trades first!" });
     }
 
-    const displayCurrency: TradeCurrency =
-      currency === "INR" || currency === "USDT" ? currency : "USDT";
+    const displayCurrency: TradeCurrency = normalizeRequestedDisplayCurrency(req, currency);
     const fxRate = Number(rate) > 0 ? Number(rate) : await fetchUsdInrRate();
     const normalized = trades.map((t) => normalizeTradeMonetary(t, displayCurrency, fxRate));
     const currencySymbol = displayCurrency === "INR" ? "₹" : "$";

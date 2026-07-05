@@ -6,20 +6,62 @@ export const metadata: Metadata = {
   title: "Pnlogix — Trading Journal for Serious Traders",
   description:
     "Track trades, reveal patterns, and grow consistency with Pnlogix analytics and AI insights.",
+  keywords: [
+    "pocket option trading journal",
+    "binary options trading journal",
+    "trade journal app",
+    "trading performance analytics",
+    "trading psychology journal",
+  ],
   alternates: {
     canonical: "/",
   },
 };
 
 export default function LandingPage() {
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: "What is Pnlogix?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Pnlogix is a trading journal platform that helps traders import trades, analyze performance, and improve discipline with analytics and AI insights.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Can I import Pocket Option trade history?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Yes. You can import compatible CSV or Excel exports, and also use screenshot extraction for supported trade statements.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Does Pnlogix support both USD and INR display?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Yes. Display currency is available based on region configuration, with automatic conversion support for mixed trade currencies.",
+        },
+      },
+    ],
+  };
+
   return (
     <div className="relative overflow-hidden rounded-3xl border border-zinc-800/60 bg-gradient-to-b from-zinc-950 via-zinc-950 to-zinc-900">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute -top-32 -left-16 h-72 w-72 rounded-full bg-indigo-600/20 blur-3xl float-slow" />
         <div className="absolute top-24 -right-20 h-80 w-80 rounded-full bg-cyan-500/20 blur-3xl float-slower" />
       </div>
 
-      <header className="relative px-6 sm:px-10 py-5 border-b border-zinc-800/50 flex items-center justify-between">
+      <header className="relative px-4 sm:px-10 py-5 border-b border-zinc-800/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <img src="/logo.png" alt="Pnlogix" className="w-8 h-8 rounded" />
           <div>
@@ -27,7 +69,7 @@ export default function LandingPage() {
             <div className="text-[10px] text-zinc-500">Trading Journal</div>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex flex-wrap items-center gap-2 text-xs">
           <Link href="/pricing" className="px-3 py-1.5 rounded-lg border border-zinc-700 text-zinc-300 hover:border-zinc-500">Pricing</Link>
           <Link href="/login" className="px-3 py-1.5 rounded-lg border border-zinc-700 text-zinc-300 hover:border-zinc-500">Login</Link>
           <Link href="/signup" className="px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-500">Get Started</Link>
@@ -142,6 +184,23 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="relative px-6 sm:px-10 pb-10">
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 space-y-4">
+          <h2 className="text-base font-semibold text-white">
+            Pocket Option Trading Journal, Built for Consistency
+          </h2>
+          <p className="text-sm text-zinc-400">
+            Pnlogix helps active traders track Pocket Option and similar trade exports with a structured
+            trading journal workflow. Review your trades, identify repeated mistakes, and improve execution
+            discipline with clear analytics.
+          </p>
+          <p className="text-sm text-zinc-500">
+            Pnlogix is an independent analytics and journaling platform. It does not provide broker
+            endorsements, investment advice, or guarantees of trading outcomes.
+          </p>
         </div>
       </section>
 

@@ -262,7 +262,7 @@ export default function ImportPage() {
       </div>
       {notice && (
         <div
-          className={`rounded-xl border px-4 py-3 text-sm flex items-center justify-between gap-3 ${
+          className={`rounded-xl border px-4 py-3 text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${
             notice.tone === "error"
               ? "border-red-500/30 bg-red-500/10 text-red-200"
               : notice.tone === "success"
@@ -288,7 +288,7 @@ export default function ImportPage() {
       )}
 
       {/* Mode selector */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[
           { key: "csv" as ImportMode, icon: FileSpreadsheet, title: "CSV / Excel", desc: "Upload .csv or .xlsx files" },
           { key: "screenshot" as ImportMode, icon: Camera, title: "Screenshot", desc: "AI extracts trades from image" },
@@ -357,7 +357,7 @@ export default function ImportPage() {
                 </div>
 
                 {/* Mapping UI */}
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                   {TRADE_FIELDS.map(({ key, label, required }) => (
                     <div key={key}>
                       <label className="text-xs text-zinc-400 mb-1 block">
@@ -382,7 +382,7 @@ export default function ImportPage() {
                     Please map the required fields: <strong>Symbol, Side, Date, Entry Price</strong> before importing.
                   </div>
                 )}
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <Button variant="outline" onClick={() => setCsvStep("upload")}>Back</Button>
                   <Button
                     onClick={handleCsvImport}
@@ -408,7 +408,7 @@ export default function ImportPage() {
                   </div>
                 )}
                 <p className="text-xs text-zinc-600">Redirecting to dashboard...</p>
-                <div className="flex gap-3 mt-1">
+                <div className="flex flex-col sm:flex-row gap-3 mt-1 w-full sm:w-auto">
                   <Button variant="outline" onClick={() => { setCsvStep("upload"); setCsvFile(null); }}>Import More</Button>
                   <a href="/trades" className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm rounded-lg transition-colors">
                     View Trades
@@ -492,7 +492,7 @@ export default function ImportPage() {
                     </table>
                   </div>
                 )}
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <Button variant="outline" onClick={() => { setSsStep("upload"); setSsFile(null); setSsExtracted([]); }}>
                     Try Again
                   </Button>
@@ -509,7 +509,7 @@ export default function ImportPage() {
               <div className="flex flex-col items-center py-8 text-center gap-3">
                 <CheckCircle2 className="w-12 h-12 text-emerald-400" />
                 <div className="text-xl font-bold text-white">Trades saved!</div>
-                <div className="flex gap-3 mt-2">
+                <div className="flex flex-col sm:flex-row gap-3 mt-2 w-full sm:w-auto">
                   <Button variant="outline" onClick={() => { setSsStep("upload"); setSsFile(null); setSsExtracted([]); }}>Import More</Button>
                   <a href="/trades" className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm rounded-lg transition-colors">
                     View Trades
@@ -533,7 +533,7 @@ export default function ImportPage() {
                 <CheckCircle2 className="w-4 h-4" /> Trade saved successfully!
               </div>
             )}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {[
                 { key: "symbol", label: "Symbol *", placeholder: "BTCUSDT", type: "text" },
                 { key: "date", label: "Date & Time *", placeholder: "", type: "datetime-local" },

@@ -84,7 +84,7 @@ export default function BillingPage() {
           </p>
           {active ? (
             <>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <Badge>Active</Badge>
                 <span className="text-zinc-300">
                   {active.planId.toUpperCase()} ({active.billingCycle})
@@ -156,7 +156,8 @@ export default function BillingPage() {
           {!data?.invoices?.length ? (
             <p className="text-sm text-zinc-500">No payment attempts yet.</p>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            <div className="overflow-x-auto hidden sm:block">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="text-zinc-500 border-b border-zinc-800">
@@ -197,6 +198,33 @@ export default function BillingPage() {
                 </tbody>
               </table>
             </div>
+            <div className="sm:hidden space-y-2">
+              {data.invoices.map((inv) => (
+                <div key={inv.id} className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-3 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="text-zinc-200 text-xs font-semibold">
+                      {inv.planId.toUpperCase()} ({inv.billingCycle})
+                    </div>
+                    <span className="px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 text-[10px]">{inv.status}</span>
+                  </div>
+                  <div className="text-[11px] text-zinc-500">{new Date(inv.createdAt).toLocaleString()}</div>
+                  <div className="text-sm text-zinc-300">${inv.amountUsd.toFixed(2)}</div>
+                  {inv.checkoutUrl && ["checkout_created", "initiated", "pending"].includes(inv.status) ? (
+                    <a
+                      href={inv.checkoutUrl}
+                      className="inline-flex text-xs text-indigo-400 hover:text-indigo-300"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Resume
+                    </a>
+                  ) : (
+                    <span className="text-xs text-zinc-600">No action</span>
+                  )}
+                </div>
+              ))}
+            </div>
+            </>
           )}
           {latest && !active && (
             <p className="mt-3 text-xs text-amber-300">

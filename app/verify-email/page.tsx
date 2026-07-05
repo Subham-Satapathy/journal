@@ -69,7 +69,7 @@ export default function VerifyEmailPage() {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center">
+    <div className="min-h-[80vh] flex items-center justify-center px-4">
       <Card className="w-full max-w-md border-zinc-800 bg-zinc-900/60">
         <CardHeader>
           <CardTitle className="text-xl text-white">Verify your email</CardTitle>

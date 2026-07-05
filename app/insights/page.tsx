@@ -36,13 +36,13 @@ function DiagnosePanel() {
         <>
           <div className="space-y-1.5">
             {Object.entries(result.results).map(([model, status]) => (
-              <div key={model} className="flex items-center gap-2 text-xs">
+              <div key={model} className="flex items-start sm:items-center gap-2 text-xs">
                 {status.startsWith("✅") ? (
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
                 ) : (
                   <XCircle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
                 )}
-                <span className="text-zinc-300 font-mono w-44 flex-shrink-0">{model}</span>
+                <span className="text-zinc-300 font-mono sm:w-44 break-all sm:break-normal sm:truncate flex-shrink-0">{model}</span>
                 <span className={status.startsWith("✅") ? "text-emerald-400" : "text-red-400/80"}>{status}</span>
               </div>
             ))}
@@ -131,19 +131,21 @@ export default function InsightsPage() {
       <Card>
         <CardContent className="pt-5">
           <div className="flex items-center gap-4 flex-wrap">
-            <div className="flex items-center gap-1 bg-zinc-900 rounded-lg p-1 border border-zinc-800">
+            <div className="w-full sm:w-auto overflow-x-auto">
+              <div className="inline-flex min-w-max items-center gap-1 bg-zinc-900 rounded-lg p-1 border border-zinc-800">
               {(Object.entries(PERIOD_LABELS) as [Period, string][]).map(([p, label]) => (
                 <button
                   key={p}
                   onClick={() => setPeriod(p)}
                   disabled={loading}
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                  className={`px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
                     period === p ? "bg-indigo-600 text-white" : "text-zinc-400 hover:text-white disabled:opacity-50"
                   }`}
                 >
                   {label}
                 </button>
               ))}
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <Button onClick={generate} loading={loading} className="gap-2">
@@ -193,12 +195,12 @@ export default function InsightsPage() {
       {insights && !loading && (
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-center gap-2 min-w-0">
                 <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
                   <Brain className="w-3.5 h-3.5 text-white" />
                 </div>
-                <CardTitle className="text-base font-semibold text-white">
+                <CardTitle className="text-base font-semibold text-white break-words">
                   AI Analysis — {PERIOD_LABELS[period]}
                 </CardTitle>
               </div>

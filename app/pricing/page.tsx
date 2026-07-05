@@ -6,6 +6,11 @@ export const metadata: Metadata = {
   title: "Pricing",
   description:
     "Choose a Pnlogix plan and subscribe with crypto payments to unlock analytics, AI insights, and premium trading journal features.",
+  keywords: [
+    "trading journal pricing",
+    "pocket option journal pricing",
+    "crypto subscription trading app",
+  ],
   alternates: {
     canonical: "/pricing",
   },

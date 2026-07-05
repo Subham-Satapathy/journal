@@ -25,9 +25,6 @@ export const metadata: Metadata = {
     "trade tracker",
     "trading psychology",
   ],
-  alternates: {
-    canonical: "/",
-  },
   openGraph: {
     type: "website",
     locale: siteConfig.locale,

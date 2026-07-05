@@ -26,28 +26,55 @@ const navItems = [
 ];
 
 function SidebarCurrencyWidget() {
-  const { displayCurrency, setDisplayCurrency, rate, mixedCurrencies } = useCurrency();
+  const {
+    displayCurrency,
+    setDisplayCurrency,
+    allowedDisplayCurrencies,
+    canToggleDisplayCurrency,
+    rate,
+    mixedCurrencies,
+  } = useCurrency();
+  const isInr = displayCurrency === "INR";
 
   return (
     <div className="px-3 py-3 border-t border-zinc-800/50 space-y-2">
       <div className="text-[10px] text-zinc-600 uppercase tracking-wider font-medium px-1">Display</div>
       <div className="space-y-1.5">
         <div className="flex items-center justify-between px-1">
-          <span className="text-[11px] text-zinc-500">Show as</span>
-          <div className="flex bg-zinc-900 border border-zinc-800 rounded-md p-0.5 gap-0.5">
-            {(["USDT", "INR"] as Currency[]).map((c) => (
-              <button key={c} onClick={() => setDisplayCurrency(c)}
-                className={cn("px-2 py-0.5 rounded text-[10px] font-semibold transition-all",
-                  displayCurrency === c
-                    ? c === "INR" ? "bg-orange-600 text-white" : "bg-indigo-600 text-white"
-                    : "text-zinc-600 hover:text-zinc-400"
-                )}>
-                {c === "INR" ? "₹" : "$"}
-              </button>
-            ))}
-          </div>
+          <span className="text-[11px] text-zinc-500">{canToggleDisplayCurrency ? "Show as" : "Display"}</span>
+          {canToggleDisplayCurrency ? (
+            <div className="flex bg-zinc-900 border border-zinc-800 rounded-md p-0.5 gap-0.5">
+              {(allowedDisplayCurrencies as Currency[]).map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setDisplayCurrency(c)}
+                  className={cn(
+                    "px-2 py-0.5 rounded text-[10px] font-semibold transition-all",
+                    displayCurrency === c
+                      ? c === "INR"
+                        ? "bg-orange-600 text-white"
+                        : "bg-indigo-600 text-white"
+                      : "text-zinc-600 hover:text-zinc-400"
+                  )}
+                >
+                  {c === "INR" ? "₹" : "$"}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <span
+              className={cn(
+                "px-2 py-0.5 rounded text-[10px] font-semibold border",
+                isInr
+                  ? "border-orange-500/30 bg-orange-600/20 text-orange-300"
+                  : "border-indigo-500/30 bg-indigo-600/20 text-indigo-300"
+              )}
+            >
+              {isInr ? "₹ INR" : "$ USD"}
+            </span>
+          )}
         </div>
-        <div className="text-[10px] text-zinc-700 px-1 text-center">1$ = ₹{rate.toFixed(1)}</div>
+        <div className="text-[10px] text-zinc-700 px-1 text-center">1 USD = INR {rate.toFixed(1)}</div>
         {mixedCurrencies && (
           <div className="text-[9px] text-zinc-600 px-1 text-center leading-tight">USD & INR trades converted</div>
         )}
