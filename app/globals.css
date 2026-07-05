@@ -47,3 +47,23 @@ body {
 .prose-dark strong { color: #e4e4e7; font-weight: 600; }
 .prose-dark code { background: #27272a; color: #a78bfa; padding: 0.1em 0.4em; border-radius: 4px; font-size: 0.8em; }
 .prose-dark blockquote { border-left: 3px solid #6366f1; padding-left: 1rem; color: #71717a; margin: 0.75em 0; font-style: italic; }
+
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  50% { transform: translateY(-12px) translateX(6px); }
+}
+
+@keyframes floatSlower {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  50% { transform: translateY(14px) translateX(-8px); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0px); }
+}
+
+.float-slow { animation: floatSlow 8s ease-in-out infinite; }
+.float-slower { animation: floatSlower 11s ease-in-out infinite; }
+.fade-up { animation: fadeUp 600ms ease-out both; }
+.fade-up-delayed { animation: fadeUp 850ms ease-out both; }

@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { useCurrency, type Currency } from "@/lib/currency-context";
 
 const navItems = [
-  { href: "/", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/trades", icon: List, label: "Trades" },
   { href: "/import", icon: Upload, label: "Import" },
   { href: "/analytics", icon: BarChart3, label: "Analytics" },
@@ -57,7 +57,7 @@ function SidebarCurrencyWidget() {
 
 export function Sidebar() {
   const pathname = usePathname();
-  if (pathname === "/login" || pathname === "/signup") return null;
+  if (pathname === "/login" || pathname === "/signup" || pathname === "/" || pathname === "/pricing") return null;
 
   const logout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -82,7 +82,7 @@ export function Sidebar() {
       {/* Nav */}
       <nav className="flex-1 p-3 space-y-0.5">
         {navItems.map(({ href, icon: Icon, label }) => {
-          const active = pathname === href || (href !== "/" && pathname.startsWith(href));
+          const active = pathname === href || pathname.startsWith(`${href}/`);
           return (
             <Link
               key={href}

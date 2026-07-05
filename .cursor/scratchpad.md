@@ -7,13 +7,13 @@ The user wants a personal trading journal/ledger web app. Key goals:
 - AI-powered extraction of trade details (pair, amount, side, P&L, etc.)
 - Day/week/month wise growth with advanced analytics
 - Behavior pattern analysis (accuracy, mental state, profitability)
-- Built with Next.js, dark theme, Vercel-deployable, no auth needed
+- Built with Next.js, dark theme, deployable on Node-compatible hosting, no auth needed
 - New goal (Jul 2026): evaluate launch potential as a Pocket Option-focused trading journal and identify safest go-to-market positioning.
 
 ## Key Challenges and Analysis
 
 1. **AI Extraction**: Gemini Vision (gemini-1.5-flash) for screenshot parsing; papaparse + xlsx for CSV/Excel
-2. **Data Storage**: Vercel doesn't support SQLite (no persistent FS). Plan: Prisma + PostgreSQL via Neon (free tier). Env var `DATABASE_URL` needed.
+2. **Data Storage**: SQLite on ephemeral hosting is unsafe for persistence. Plan: Prisma + PostgreSQL via Neon (free tier). Env var `DATABASE_URL` needed.
 3. **Chart Library**: Recharts (lightweight, React-native) for all analytics charts
 4. **Mental State Analysis**: Derived metrics — revenge trading (big loss followed by increased position size), overtrading (>N trades/day), consistency score
 5. **AI Insights**: Use Google Gemini API (free tier) for periodic summaries and recommendations
@@ -26,7 +26,7 @@ The user wants a personal trading journal/ledger web app. Key goals:
 - **AI**: Google Gemini API — `gemini-1.5-flash` (free tier, supports vision + text)
 - **File Parsing**: papaparse (CSV), xlsx (Excel)
 - **Charts**: Recharts
-- **Deployment**: Vercel (environment vars: DATABASE_URL, GEMINI_API_KEY)
+- **Deployment**: Node-compatible hosting (environment vars: DATABASE_URL, GEMINI_API_KEY)
 
 ## High-level Task Breakdown
 
@@ -74,8 +74,8 @@ The user wants a personal trading journal/ledger web app. Key goals:
 ### Phase 6: Polish & Deploy
 - [ ] **Task 11**: Responsive layout, navigation, final UI polish
   - Success: Works well on mobile and desktop
-- [ ] **Task 12**: Vercel deployment config (vercel.json, env var docs in README)
-  - Success: `vercel deploy` works, README has setup instructions
+- [ ] **Task 12**: Deployment config (hosting config, env var docs in README)
+  - Success: Production deployment works, README has setup instructions
 
 ## Project Status Board
 
@@ -90,7 +90,7 @@ The user wants a personal trading journal/ledger web app. Key goals:
 - [ ] Task 9: Mental state metrics
 - [ ] Task 10: AI insights
 - [ ] Task 11: UI polish
-- [ ] Task 12: Vercel deployment config
+- [ ] Task 12: Deployment config
 - [ ] Task 13 (Ad-hoc): Pocket Option launch potential research (executor finished initial pass; awaiting user/planner validation)
 - [ ] Task 14 (Ad-hoc): Technical SEO foundation (metadata + robots + sitemap)
 - [ ] Task 15 (Ad-hoc): Fix mobile upload filename alignment overflow
@@ -98,6 +98,7 @@ The user wants a personal trading journal/ledger web app. Key goals:
 - [ ] Task 17 (Ad-hoc): Pricing page + crypto checkout initialization
 - [ ] Task 18 (Ad-hoc): Harden NOWPayments flow (validation, signature verification, persistence)
 - [ ] Task 19 (Ad-hoc): Auth + session + subscription-gated APIs
+- [ ] Task 20 (Ad-hoc): Branded public landing page with animated hero
 
 ## Executor's Feedback or Assistance Requests
 
@@ -114,7 +115,7 @@ All 12 tasks are complete. The app builds cleanly (`npm run build` passes) and t
 - Import page with CSV/Excel (Gemini AI column mapping), Screenshot (Gemini Vision), Manual entry
 - Analytics page with Calendar heatmap, Hour×Day heatmap, Monthly bar chart, Symbol distribution, Mental state card
 - AI Insights page powered by Gemini
-- README with Vercel deployment guide
+- README with deployment guide
 
 **User needs to provide:**
 1. A real PostgreSQL URL (Neon free tier recommended) → replace in `.env`
@@ -207,10 +208,10 @@ Assistance request to user/planner:
 Milestone implemented:
 - Updated SEO default site URL in `lib/site.ts` from previous domain to `https://pnlogix.com`.
 - Updated SEO/app brand name in site config to `Pnlogix` for metadata output consistency.
-- Updated `README.md` env docs to include `NEXT_PUBLIC_SITE_URL=https://pnlogix.com` for local/Vercel correctness.
+- Updated `README.md` env docs to include `NEXT_PUBLIC_SITE_URL=https://pnlogix.com` for local/production correctness.
 
 Assistance request to user/planner:
-- Please set environment variable `NEXT_PUBLIC_SITE_URL=https://pnlogix.com` in Vercel Project Settings and redeploy.
+- Please set environment variable `NEXT_PUBLIC_SITE_URL=https://pnlogix.com` in production environment settings and redeploy.
 - After deploy, verify:
   1. canonical URL uses `https://pnlogix.com`
   2. `/robots.txt` sitemap points to `https://pnlogix.com/sitemap.xml`
@@ -333,8 +334,8 @@ Security note from dependency check:
 
 ## Lessons
 
-- Vercel does not support persistent SQLite; always use external Postgres (Neon free tier recommended)
-- Use `DATABASE_URL` env var for Prisma on Vercel
+- Ephemeral hosting does not support persistent SQLite; always use external Postgres (Neon free tier recommended)
+- Use `DATABASE_URL` env var for Prisma in production
 - Gemini API: use `@google/generative-ai` package; `gemini-1.5-flash` model supports both vision (inlineData base64) and text; free tier = 15 RPM, 1M TPM
 - For shadcn/ui dark mode: set `darkMode: 'class'` in tailwind.config, add `class="dark"` to `<html>`
 - Trading-journal market expects price anchors around `$15–$50/mo`; annual plans and trial periods are standard.
@@ -347,3 +348,20 @@ Security note from dependency check:
 - NOWPayments webhooks must be validated with `NOWPAYMENTS_IPN_SECRET`; reject unsigned/invalid callbacks.
 - When using `crypto.timingSafeEqual`, always check buffer lengths first to avoid runtime throw on malformed signatures.
 - Auth cookies must be HTTP-only and signed with `AUTH_SECRET`; never trust client-provided user email for subscription assignment.
+
+### Executor Update — Task 20 (Branding + Landing Hero) Completed
+
+Milestone delivered:
+- Converted root route `/` into a branded public landing page with animated hero, value-prop cards, and CTAs.
+- Added subtle animation effects via CSS keyframes (`float` + `fade-up`) in `app/globals.css`.
+- Moved previous app dashboard to `/dashboard` and preserved existing dashboard functionality.
+- Updated app navigation to use `/dashboard` as the authenticated home route.
+- Updated auth and routing flow:
+  - login default redirect now goes to `/dashboard`
+  - protected route redirects still work via proxy
+  - shell nav hidden on marketing routes (`/` and `/pricing`) for cleaner brand presentation.
+- Added `/dashboard` to sitemap.
+
+Validation status:
+- `npm run build` passes after route and UI changes.
+- No linter errors on changed files.

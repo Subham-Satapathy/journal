@@ -6,7 +6,7 @@ import { LayoutDashboard, List, Upload, BarChart3, Brain, BadgeDollarSign } from
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/", icon: LayoutDashboard, label: "Home" },
+  { href: "/dashboard", icon: LayoutDashboard, label: "Home" },
   { href: "/trades", icon: List, label: "Trades" },
   { href: "/import", icon: Upload, label: "Import" },
   { href: "/analytics", icon: BarChart3, label: "Stats" },
@@ -16,13 +16,13 @@ const navItems = [
 
 export function MobileNav() {
   const pathname = usePathname();
-  if (pathname === "/login" || pathname === "/signup") return null;
+  if (pathname === "/login" || pathname === "/signup" || pathname === "/" || pathname === "/pricing") return null;
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-zinc-950/95 border-t border-zinc-800/80 backdrop-blur-md pb-[max(0.5rem,env(safe-area-inset-bottom))]">
       <div className="flex items-stretch justify-around px-1 pt-1 pb-2">
         {navItems.map(({ href, icon: Icon, label }) => {
-          const active = pathname === href || (href !== "/" && pathname.startsWith(href));
+          const active = pathname === href || pathname.startsWith(`${href}/`);
           return (
             <Link
               key={href}

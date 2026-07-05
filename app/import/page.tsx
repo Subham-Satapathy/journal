@@ -132,7 +132,7 @@ export default function ImportPage() {
       setCsvResult(data);
       setCsvStep("done");
       // Auto-redirect to dashboard after 2 seconds
-      setTimeout(() => router.push("/"), 2000);
+      setTimeout(() => router.push("/dashboard"), 2000);
     } catch (e) {
       alert("Import failed");
     } finally {
@@ -174,7 +174,7 @@ export default function ImportPage() {
       if (data.error) { alert(data.error); return; }
       setSsSaved(true);
       setSsStep("done");
-      setTimeout(() => router.push("/"), 2000);
+      setTimeout(() => router.push("/dashboard"), 2000);
     } catch (e) {
       alert("Save failed");
     } finally {

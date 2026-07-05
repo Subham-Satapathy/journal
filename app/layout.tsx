@@ -35,11 +35,25 @@ export const metadata: Metadata = {
     siteName: siteConfig.name,
     title: `${siteConfig.title} | ${siteConfig.name}`,
     description: siteConfig.description,
+    images: [
+      {
+        url: "/logo.svg",
+        width: 512,
+        height: 512,
+        alt: "Pnlogix logo",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: `${siteConfig.title} | ${siteConfig.name}`,
     description: siteConfig.description,
+    images: ["/logo.svg"],
+  },
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
   },
   category: "finance",
 };

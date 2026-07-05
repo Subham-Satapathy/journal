@@ -49,7 +49,7 @@ npm run dev
 
 ---
 
-## Deploying to Vercel
+## Deployment
 
 ### Step 1 — Create a free Neon PostgreSQL database
 
@@ -62,17 +62,18 @@ npm run dev
 1. Go to [Google AI Studio](https://aistudio.google.com/apikey)
 2. Click "Create API key" → copy it
 
-### Step 3 — Deploy to Vercel
+### Step 3 — Build and start
 
 ```bash
-npx vercel
+npm run build
+npm run start
 ```
 
-Or connect via [vercel.com/new](https://vercel.com/new) by importing this repository.
+Deploy using any Node-compatible hosting platform.
 
-### Step 4 — Add environment variables in Vercel
+### Step 4 — Add environment variables
 
-In your Vercel project settings → Environment Variables, add:
+In your deployment environment variables settings, add:
 
 | Variable | Value |
 |---|---|
@@ -84,9 +85,9 @@ In your Vercel project settings → Environment Variables, add:
 | `NOWPAYMENTS_IPN_SECRET` | Your NOWPayments IPN secret (for webhook signature verification) |
 | `NOWPAYMENTS_FEE_PAID_BY_USER` | Optional (`true`/`false`) to pass NOWPayments fee flag |
 
-### Step 5 — Run the database migration on Vercel
+### Step 5 — Run the database migration
 
-After deploying, run this once to create the database tables:
+After deployment, run this once to create the database tables:
 
 ```bash
 DATABASE_URL="your_neon_url" npx prisma db push

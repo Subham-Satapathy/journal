@@ -29,7 +29,7 @@ export default function LoginPage() {
         return;
       }
       const nextPath =
-        new URLSearchParams(window.location.search).get("next") || "/";
+        new URLSearchParams(window.location.search).get("next") || "/dashboard";
       router.push(nextPath);
       router.refresh();
     } catch (err) {
