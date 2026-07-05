@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, List, Upload, BarChart3, Brain, BadgeDollarSign } from "lucide-react";
+import { LayoutDashboard, List, Upload, BarChart3, Brain, CreditCard, BadgeDollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -11,6 +11,7 @@ const navItems = [
   { href: "/import", icon: Upload, label: "Import" },
   { href: "/analytics", icon: BarChart3, label: "Stats" },
   { href: "/insights", icon: Brain, label: "AI" },
+  { href: "/billing", icon: CreditCard, label: "Billing" },
   { href: "/pricing", icon: BadgeDollarSign, label: "Plans" },
 ];
 

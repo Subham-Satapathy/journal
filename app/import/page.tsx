@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { FileUpload } from "@/components/import/FileUpload";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,6 +33,11 @@ const TRADE_FIELDS = [
 export default function ImportPage() {
   const router = useRouter();
   const [mode, setMode] = useState<ImportMode | null>(null);
+  const [notice, setNotice] = useState<{
+    tone: "error" | "info" | "success";
+    message: string;
+    action?: { label: string; href: string };
+  } | null>(null);
 
   // CSV state
   const [csvStep, setCsvStep] = useState<CsvStep>("upload");
@@ -59,6 +65,26 @@ export default function ImportPage() {
   });
   const [manualLoading, setManualLoading] = useState(false);
   const [manualDone, setManualDone] = useState(false);
+
+  const showApiError = (message: string, status?: number) => {
+    if (status === 402) {
+      setNotice({
+        tone: "info",
+        message: "Active membership required to import trades. Renew or extend your plan in Billing.",
+        action: { label: "Open Billing", href: "/billing" },
+      });
+      return;
+    }
+    if (status === 401) {
+      setNotice({
+        tone: "info",
+        message: "Please sign in again to continue.",
+        action: { label: "Go to Login", href: "/login" },
+      });
+      return;
+    }
+    setNotice({ tone: "error", message });
+  };
 
   // Smart local column guesser — used as fallback when AI mapping is unavailable
   const guessMapping = (headers: string[]): Record<string, string | null> => {
@@ -97,7 +123,10 @@ export default function ImportPage() {
       fd.append("action", "preview");
       const res = await fetch("/api/import/csv", { method: "POST", body: fd });
       const data = await res.json();
-      if (data.error) { alert(data.error); return; }
+      if (!res.ok || data.error) {
+        showApiError(data.error || "Failed to parse file preview.", res.status);
+        return;
+      }
       const headers = data.headers || [];
       setCsvHeaders(headers);
       setCsvSample(data.sampleRows || []);
@@ -111,8 +140,12 @@ export default function ImportPage() {
         setCsvAiMapped(false);
       }
       setCsvStep("mapping");
+      setNotice(null);
     } catch {
-      alert("Failed to parse file. Make sure it is a valid .csv or .xlsx file.");
+      setNotice({
+        tone: "error",
+        message: "Failed to parse file. Make sure it is a valid .csv or .xlsx file.",
+      });
     } finally {
       setCsvLoading(false);
     }
@@ -128,13 +161,17 @@ export default function ImportPage() {
       fd.append("mapping", JSON.stringify(csvMapping));
       const res = await fetch("/api/import/csv", { method: "POST", body: fd });
       const data = await res.json();
-      if (data.error) { alert(data.error); return; }
+      if (!res.ok || data.error) {
+        showApiError(data.error || "Import failed.", res.status);
+        return;
+      }
       setCsvResult(data);
       setCsvStep("done");
+      setNotice({ tone: "success", message: "Trades imported successfully." });
       // Auto-redirect to dashboard after 2 seconds
       setTimeout(() => router.push("/dashboard"), 2000);
-    } catch (e) {
-      alert("Import failed");
+    } catch {
+      setNotice({ tone: "error", message: "Import failed. Please try again." });
     } finally {
       setCsvLoading(false);
     }
@@ -151,11 +188,15 @@ export default function ImportPage() {
       fd.append("action", "extract");
       const res = await fetch("/api/import/screenshot", { method: "POST", body: fd });
       const data = await res.json();
-      if (data.error) { alert(data.error); return; }
+      if (!res.ok || data.error) {
+        showApiError(data.error || "Extraction failed.", res.status);
+        return;
+      }
       setSsExtracted(data.trades || []);
       setSsStep("review");
-    } catch (e) {
-      alert("Extraction failed");
+      setNotice(null);
+    } catch {
+      setNotice({ tone: "error", message: "Extraction failed. Please try another image." });
     } finally {
       setSsLoading(false);
     }
@@ -171,12 +212,16 @@ export default function ImportPage() {
       fd.append("trades", JSON.stringify(ssExtracted));
       const res = await fetch("/api/import/screenshot", { method: "POST", body: fd });
       const data = await res.json();
-      if (data.error) { alert(data.error); return; }
+      if (!res.ok || data.error) {
+        showApiError(data.error || "Save failed.", res.status);
+        return;
+      }
       setSsSaved(true);
       setSsStep("done");
+      setNotice({ tone: "success", message: "Extracted trades saved successfully." });
       setTimeout(() => router.push("/dashboard"), 2000);
-    } catch (e) {
-      alert("Save failed");
+    } catch {
+      setNotice({ tone: "error", message: "Save failed. Please try again." });
     } finally {
       setSsLoading(false);
     }
@@ -191,8 +236,13 @@ export default function ImportPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...manualForm, importSource: "manual" }),
       });
-      if (!res.ok) { const d = await res.json(); alert(d.error); return; }
+      if (!res.ok) {
+        const d = await res.json();
+        showApiError(d.error || "Failed to save trade.", res.status);
+        return;
+      }
       setManualDone(true);
+      setNotice({ tone: "success", message: "Manual trade saved." });
       setManualForm({
         symbol: "", side: "LONG", entryPrice: "", exitPrice: "", quantity: "1",
         pnl: "", pnlPercent: "", fees: "0", date: new Date().toISOString().slice(0, 16),
@@ -210,6 +260,32 @@ export default function ImportPage() {
         <h1 className="text-2xl font-bold text-white">Import Trades</h1>
         <p className="text-sm text-zinc-500 mt-0.5">Add trades via CSV/Excel, screenshot, or manual entry</p>
       </div>
+      {notice && (
+        <div
+          className={`rounded-xl border px-4 py-3 text-sm flex items-center justify-between gap-3 ${
+            notice.tone === "error"
+              ? "border-red-500/30 bg-red-500/10 text-red-200"
+              : notice.tone === "success"
+              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-200"
+              : "border-indigo-500/30 bg-indigo-500/10 text-indigo-200"
+          }`}
+        >
+          <span>{notice.message}</span>
+          <div className="flex items-center gap-3 shrink-0">
+            {notice.action && (
+              <Link href={notice.action.href} className="text-xs underline underline-offset-2 hover:opacity-90">
+                {notice.action.label}
+              </Link>
+            )}
+            <button
+              onClick={() => setNotice(null)}
+              className="text-xs px-2 py-0.5 rounded border border-current/30 hover:bg-white/10"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Mode selector */}
       <div className="grid grid-cols-3 gap-4">

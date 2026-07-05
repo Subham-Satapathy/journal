@@ -10,6 +10,7 @@ import {
   Brain,
   TrendingUp,
   BadgeDollarSign,
+  CreditCard,
   LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -21,6 +22,7 @@ const navItems = [
   { href: "/import", icon: Upload, label: "Import" },
   { href: "/analytics", icon: BarChart3, label: "Analytics" },
   { href: "/insights", icon: Brain, label: "AI Insights" },
+  { href: "/billing", icon: CreditCard, label: "Billing" },
   { href: "/pricing", icon: BadgeDollarSign, label: "Pricing" },
 ];
 

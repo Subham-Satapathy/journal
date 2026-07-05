@@ -365,3 +365,53 @@ Milestone delivered:
 Validation status:
 - `npm run build` passes after route and UI changes.
 - No linter errors on changed files.
+
+### Executor Update — Task 21 (Billing + Membership Visibility) Completed
+
+Implemented:
+- Added `GET /api/billing/overview` to fetch authenticated user billing summary, active/latest subscription, and invoice history.
+- Added new `/billing` page with:
+  - membership details (active/inactive + validity)
+  - quick renew/extend actions using current plan
+  - payment history table with resume links for pending checkouts.
+- Added Billing nav item to desktop and mobile navigation.
+- Updated `/pricing` to show clear return-state messages when NOWPayments redirects back:
+  - `?status=cancelled`: no membership change
+  - `?status=success`: waiting for webhook confirmation
+- Added `/billing` to sitemap.
+
+Behavior clarification for user flow:
+- If user clicks “go back/cancel” from NOWPayments, they return with `status=cancelled`.
+- Subscription is not activated unless webhook confirms a successful payment status.
+- Pending invoice can be resumed from Billing page if checkout URL still valid.
+
+Validation status:
+- `npm run build` passes.
+- No linter errors on changed files.
+
+### Executor Update — Task 21.1 (Modern Import Notifications) Completed
+
+User feedback addressed:
+- Replaced browser `alert()` popups on Import page with modern in-page notification banners (error/info/success).
+- Added contextual action links in notices (e.g., membership-required -> Billing, unauthorized -> Login).
+- Kept flow non-blocking and visually consistent with app theme.
+
+Validation:
+- `npm run build` passes after this UI/UX change.
+
+### Executor Update — Task 22 (Landing Content Expansion) Completed
+
+Implemented:
+- Expanded landing page from minimal hero to a complete marketing page with:
+  - branded top navigation
+  - richer hero + CTA
+  - feature deep-dive cards
+  - 3-step workflow section
+  - testimonials section
+  - final conversion CTA block
+  - branded footer links
+- Reused existing animation styling for smooth entry/floating effects.
+
+Validation:
+- `npm run build` passes.
+- No linter errors in updated landing file.
