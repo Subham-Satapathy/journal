@@ -22,9 +22,9 @@ export function AppFrame({ children }: { children: React.ReactNode }) {
           showShellNav ? "ml-0 md:ml-56 pb-20 md:pb-0" : "ml-0 pb-0"
         )}
       >
-        <div className="w-full p-4 sm:p-6">
+        <div className={cn("w-full", showShellNav ? "p-4 sm:p-6" : "p-0")}>
           {showBackButton && (
-            <div className="mb-3 sm:mb-4">
+            <div className={cn("mb-3 sm:mb-4", !showShellNav && "p-4 sm:p-6")}>
               <BackButton fallbackHref={showShellNav ? "/dashboard" : "/"} />
             </div>
           )}

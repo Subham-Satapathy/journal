@@ -1,20 +1,19 @@
 import type { Metadata } from "next";
 import { Card, CardContent } from "@/components/ui/card";
 import { PricingPlansClient } from "@/components/pricing/PricingPlansClient";
+import { createPublicPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPublicPageMetadata({
   title: "Pricing",
   description:
     "Choose a Pnlogix plan and subscribe with crypto payments to unlock analytics, AI insights, and premium trading journal features.",
+  path: "/pricing",
   keywords: [
     "trading journal pricing",
     "pocket option journal pricing",
     "crypto subscription trading app",
   ],
-  alternates: {
-    canonical: "/pricing",
-  },
-};
+});
 
 export default async function PricingPage({
   searchParams,

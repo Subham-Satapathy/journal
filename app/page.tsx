@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, ShieldCheck, TrendingUp, BarChart3, Upload, Quote } from "lucide-react";
 import type { Metadata } from "next";
+import { createPublicPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPublicPageMetadata({
   title: "Pnlogix — Trading Journal for Serious Traders",
   description:
     "Track trades, reveal patterns, and grow consistency with Pnlogix analytics and AI insights.",
+  path: "/",
   keywords: [
     "pocket option trading journal",
     "binary options trading journal",
@@ -13,10 +15,7 @@ export const metadata: Metadata = {
     "trading performance analytics",
     "trading psychology journal",
   ],
-  alternates: {
-    canonical: "/",
-  },
-};
+});
 
 export default function LandingPage() {
   const faqJsonLd = {
@@ -71,6 +70,7 @@ export default function LandingPage() {
         </div>
         <div className="flex flex-wrap items-center gap-2 text-xs">
           <Link href="/pricing" className="px-3 py-1.5 rounded-lg border border-zinc-700 text-zinc-300 hover:border-zinc-500">Pricing</Link>
+          <Link href="/guides" className="px-3 py-1.5 rounded-lg border border-zinc-700 text-zinc-300 hover:border-zinc-500">Guides</Link>
           <Link href="/login" className="px-3 py-1.5 rounded-lg border border-zinc-700 text-zinc-300 hover:border-zinc-500">Login</Link>
           <Link href="/signup" className="px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-500">Get Started</Link>
         </div>
@@ -241,6 +241,7 @@ export default function LandingPage() {
         <div>© {new Date().getFullYear()} Pnlogix. All rights reserved.</div>
         <div className="flex items-center gap-3">
           <Link href="/pricing" className="hover:text-zinc-300">Pricing</Link>
+          <Link href="/guides" className="hover:text-zinc-300">Guides</Link>
           <Link href="/login" className="hover:text-zinc-300">Login</Link>
           <Link href="/signup" className="hover:text-zinc-300">Sign up</Link>
         </div>

@@ -109,6 +109,7 @@ The user wants a personal trading journal/ledger web app. Key goals:
 - [ ] Task 30 (Ad-hoc): SEO hardening pass (canonical, sitemap, noindex, metadata, FAQ schema)
 - [ ] Task 31 (Ad-hoc): Landing testimonials aligned to binary Pocket Option audience
 - [ ] Task 32 (Ad-hoc): Make all pages full width
+- [ ] Task 33 (Ad-hoc): Guides section + SEO metadata template + first 3 keyword articles
 
 ## Executor's Feedback or Assistance Requests
 
@@ -362,6 +363,7 @@ Security note from dependency check:
 - Geo display rules may differ by country: return `allowedDisplayCurrencies` from API and let UI toggle only when multiple are allowed.
 - For mobile-first UX, prefer `grid-cols-1` base with breakpoint expansion and stack action buttons vertically on small screens.
 - Avoid global canonical set to `/` in root metadata; define canonicals only per indexable page to prevent duplicate-canonical signals.
+- Use a shared SEO metadata helper for public pages to keep canonical/OG/Twitter consistent and reduce drift.
 
 ### Executor Update — Task 20 (Branding + Landing Hero) Completed
 
@@ -685,3 +687,34 @@ Assistance request to user/planner:
 - Please verify on desktop and mobile that:
   1. landing and app pages now stretch full width
   2. spacing still feels readable (not too edge-clipped)
+
+### Executor Update — Task 33 (Guides + SEO Template + 3 Articles) Completed
+
+Implemented:
+- Added reusable SEO metadata helper in `lib/seo.ts`:
+  - `createPublicPageMetadata(...)` for consistent canonical, OG, Twitter, and keyword metadata on public pages.
+- Added guides/article content source in `lib/guides.ts` with 3 keyword-targeted entries.
+- Added blog/guide section scaffold:
+  - `app/guides/page.tsx` (guide listing page)
+  - `app/guides/[slug]/page.tsx` (SEO-friendly article route with `generateStaticParams`).
+- Published first 3 target pages:
+  1. `/guides/pocket-option-trading-journal-checklist`
+  2. `/guides/how-to-analyze-binary-options-losing-streaks`
+  3. `/guides/best-pocket-option-journal-metrics-to-track`
+- Refactored public page metadata to use template:
+  - `app/page.tsx`
+  - `app/pricing/page.tsx`
+- Added guides discovery links on landing page header/footer.
+- Updated `app/sitemap.ts` to include:
+  - `/guides`
+  - all 3 article URLs.
+
+Validation:
+- IDE lint checks pass for all edited files.
+- `npm run build` passes.
+
+Assistance request to user/planner:
+- Please verify in production:
+  1. `/guides` page renders with all 3 cards
+  2. each `/guides/<slug>` page loads and has expected title/description
+  3. `/sitemap.xml` includes guides index + article URLs
