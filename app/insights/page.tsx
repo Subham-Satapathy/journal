@@ -79,27 +79,10 @@ const PERIOD_LABELS: Record<Period, string> = {
 };
 
 function MarkdownContent({ content }: { content: string }) {
-  const html = content
-    .replace(/^### (.+)$/gm, "<h3>$1</h3>")
-    .replace(/^## (.+)$/gm, "<h2>$1</h2>")
-    .replace(/^# (.+)$/gm, "<h1>$1</h1>")
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*(.+?)\*/g, "<em>$1</em>")
-    .replace(/`(.+?)`/g, "<code>$1</code>")
-    .replace(/^> (.+)$/gm, "<blockquote>$1</blockquote>")
-    .replace(/^[-*] (.+)$/gm, "<li>$1</li>")
-    .replace(/(<li>[\s\S]*?<\/li>)/g, "<ul>$1</ul>")
-    .replace(/^\d+\. (.+)$/gm, "<li>$1</li>")
-    .replace(/\n\n/g, "</p><p>")
-    .replace(/^(?!<[hublc])/gm, "<p>")
-    .replace(/(?<![>])$/gm, "</p>")
-    .replace(/<p><\/p>/g, "");
-
   return (
-    <div
-      className="prose-dark"
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
+    <div className="prose-dark text-sm leading-7 text-zinc-300 whitespace-pre-wrap break-words">
+      {content}
+    </div>
   );
 }
 
