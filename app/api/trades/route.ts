@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getISTHour, getISTDay } from "@/lib/datetime";
+import { requireActiveSubscription } from "@/lib/api-auth";
 
 export async function GET(req: NextRequest) {
   try {
+    const auth = await requireActiveSubscription(req);
+    if (auth.error || !auth.user) return auth.error!;
+
     const { searchParams } = new URL(req.url);
     const symbol = searchParams.get("symbol");
     const side = searchParams.get("side");
@@ -15,7 +19,7 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "200");
     const skip = (page - 1) * limit;
 
-    const where: Record<string, unknown> = {};
+    const where: Record<string, unknown> = { userId: auth.user.id };
     if (symbol) where.symbol = { contains: symbol, mode: "insensitive" };
     if (side) where.side = { equals: side, mode: "insensitive" };
     if (from || to) {
@@ -53,6 +57,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireActiveSubscription(req);
+    if (auth.error || !auth.user) return auth.error!;
+
     const body = await req.json();
     const {
       symbol, side, entryPrice, exitPrice, quantity, pnl, pnlPercent,
@@ -65,6 +72,7 @@ export async function POST(req: NextRequest) {
 
     const trade = await prisma.trade.create({
       data: {
+        userId: auth.user.id,
         symbol: symbol.toUpperCase().trim(),
         side: side.toUpperCase().trim(),
         entryPrice: parseFloat(entryPrice),
@@ -91,12 +99,15 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
+    const auth = await requireActiveSubscription(req);
+    if (auth.error || !auth.user) return auth.error!;
+
     const { searchParams } = new URL(req.url);
     const ids = searchParams.get("ids")?.split(",");
     if (!ids || ids.length === 0) {
       return NextResponse.json({ error: "No IDs provided" }, { status: 400 });
     }
-    await prisma.trade.deleteMany({ where: { id: { in: ids } } });
+    await prisma.trade.deleteMany({ where: { id: { in: ids }, userId: auth.user.id } });
     return NextResponse.json({ deleted: ids.length });
   } catch (error) {
     console.error("DELETE /api/trades error:", error);

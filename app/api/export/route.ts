@@ -1,14 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { formatDateTimeISTExport, getISTDateKey } from "@/lib/datetime";
+import { requireActiveSubscription } from "@/lib/api-auth";
 
 export async function GET(req: NextRequest) {
   try {
+    const auth = await requireActiveSubscription(req);
+    if (auth.error || !auth.user) return auth.error!;
+
     const { searchParams } = new URL(req.url);
     const from = searchParams.get("from");
     const to = searchParams.get("to");
 
-    const where: Record<string, unknown> = {};
+    const where: Record<string, unknown> = { userId: auth.user.id };
     if (from || to) {
       where.date = {};
       if (from) (where.date as Record<string, Date>).gte = new Date(from);

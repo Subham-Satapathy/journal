@@ -94,6 +94,10 @@ The user wants a personal trading journal/ledger web app. Key goals:
 - [ ] Task 13 (Ad-hoc): Pocket Option launch potential research (executor finished initial pass; awaiting user/planner validation)
 - [ ] Task 14 (Ad-hoc): Technical SEO foundation (metadata + robots + sitemap)
 - [ ] Task 15 (Ad-hoc): Fix mobile upload filename alignment overflow
+- [ ] Task 16 (Ad-hoc): Align SEO domain config to `pnlogix.com`
+- [ ] Task 17 (Ad-hoc): Pricing page + crypto checkout initialization
+- [ ] Task 18 (Ad-hoc): Harden NOWPayments flow (validation, signature verification, persistence)
+- [ ] Task 19 (Ad-hoc): Auth + session + subscription-gated APIs
 
 ## Executor's Feedback or Assistance Requests
 
@@ -198,6 +202,135 @@ Assistance request to user/planner:
   2. close (`x`) icon stays aligned on the right
   3. no text overlaps card borders
 
+### Executor Update — Task 16 (SEO Domain Alignment) Completed
+
+Milestone implemented:
+- Updated SEO default site URL in `lib/site.ts` from previous domain to `https://pnlogix.com`.
+- Updated SEO/app brand name in site config to `Pnlogix` for metadata output consistency.
+- Updated `README.md` env docs to include `NEXT_PUBLIC_SITE_URL=https://pnlogix.com` for local/Vercel correctness.
+
+Assistance request to user/planner:
+- Please set environment variable `NEXT_PUBLIC_SITE_URL=https://pnlogix.com` in Vercel Project Settings and redeploy.
+- After deploy, verify:
+  1. canonical URL uses `https://pnlogix.com`
+  2. `/robots.txt` sitemap points to `https://pnlogix.com/sitemap.xml`
+  3. `/sitemap.xml` route URLs use `https://pnlogix.com`
+
+### Executor Update — Task 17 (Pricing + Crypto Checkout Init) Completed
+
+Milestone implemented:
+- Added shared pricing config in `lib/pricing.ts` with Starter/Pro/Elite plans and monthly/yearly pricing.
+- Added new pricing page at `app/pricing/page.tsx` with plan cards and dual crypto checkout actions (monthly/yearly).
+- Added client checkout button component `components/pricing/CryptoCheckoutButton.tsx` with loading/error UX.
+- Added backend checkout initializer endpoint `app/api/payments/crypto/checkout/route.ts`.
+- Added Pricing nav entries to desktop and mobile navigation.
+- Added `/pricing` to sitemap for indexing.
+
+Environment requirement:
+- `NOWPAYMENTS_API_KEY` must be added for live crypto checkout.
+- Optional: `NOWPAYMENTS_API_BASE_URL` for custom API base.
+
+Assistance request to user/planner:
+- Please verify milestone:
+  1. `/pricing` loads and shows all plans
+  2. pricing nav item appears on desktop/mobile
+  3. clicking crypto checkout either redirects (if key configured) or shows config error message
+- If approved, next single milestone will be auth implementation (sign up/sign in/session + route protection).
+
+### Executor Update — Task 17 Provider Change (NOWPayments)
+
+Provider switch completed per user request:
+- Replaced previous provider flow with NOWPayments invoice flow in `app/api/payments/crypto/checkout/route.ts`.
+- Added webhook placeholder endpoint `app/api/payments/crypto/webhook/route.ts` for payment callbacks.
+- Checkout now returns NOWPayments `invoice_url` redirect link.
+
+New env required:
+- `NOWPAYMENTS_API_KEY`
+- Optional: `NOWPAYMENTS_API_BASE_URL` (default `https://api.nowpayments.io/v1`)
+
+### Executor Update — Task 18 (NOWPayments Hardening) Completed
+
+Hardening delivered:
+- Added persistent billing models in Prisma: `BillingCustomer`, `Subscription`, `CryptoInvoice`.
+- Checkout now requires valid email and persists initiated invoice before calling provider.
+- Provider responses are persisted for traceability (`checkout_created`, `provider_error`, etc.).
+- Added secure NOWPayments webhook signature verification using HMAC SHA-512 (`x-nowpayments-sig`) with `NOWPAYMENTS_IPN_SECRET`.
+- Webhook now updates invoice/payment fields and auto-activates/extends subscription period on `finished`/`confirmed` statuses.
+- Added pricing email input so plan activation is tied to customer email.
+
+New env requirement:
+- `NOWPAYMENTS_IPN_SECRET` (required for webhook verification)
+
+Assistance request to user/planner:
+- Please run Prisma sync for new billing tables (`npm run db:push` with your production/staging DB).
+- Verify flow end-to-end:
+  1. open `/pricing`, enter email, start checkout
+  2. successful payment returns from NOWPayments
+  3. webhook hits `/api/payments/crypto/webhook` and subscription becomes active in DB
+
+Validation status:
+- `npm run build` passes after these changes (pricing + checkout + webhook routes compile).
+
+### Executor Update — Task 18.1 (NOWPayments Doc Alignment) Completed
+
+Adjustments made to match NOWPayments API docs behavior:
+- Updated webhook signature generation to match documented top-level key sorting approach before HMAC SHA-512.
+- Added webhook idempotency protection: subscription activation/extension runs only on the first transition into a successful state, avoiding duplicate extension on repeated callbacks.
+- Re-ran full build successfully after changes.
+
+### Executor Update — Task 18.2 (NOWPayments Strict Compliance Pass) Completed
+
+Additional compliance and safety improvements:
+- Checkout API now supports optional `pay_currency` (validated) and passes it to NOWPayments invoice creation.
+- Added optional fee behavior env support via `NOWPAYMENTS_FEE_PAID_BY_USER`.
+- Webhook now matches invoices by `order_id` and/or provider `invoice_id`.
+- Webhook validates callback amount/currency against expected USD invoice value; mismatches are marked and never activate subscriptions.
+- Build + lint re-validated after these changes.
+
+### Executor Update — Prisma Client Type Sync Fix
+
+Issue addressed:
+- IDE showed `Property 'billingCustomer' does not exist on type PrismaClient` in `lib/subscription.ts`.
+
+Fix:
+- Regenerated Prisma client (`npx prisma generate`) to sync Prisma types with current schema models.
+
+Verification:
+- Full `npm run build` passes afterward, including TypeScript checks.
+
+### Executor Update — Task 19 (Auth + Subscription Gating) Completed
+
+Implemented:
+- Added auth system with secure password hashing and JWT session cookie:
+  - `POST /api/auth/signup`
+  - `POST /api/auth/login`
+  - `POST /api/auth/logout`
+  - `GET /api/auth/me`
+- Added middleware route protection:
+- Added proxy-based route protection (Next.js 16 convention):
+  - unauthenticated users are redirected to `/login` for protected routes
+  - authenticated users are redirected away from `/login` and `/signup`
+- Added Prisma `User` model and user linkage on `Trade` (`userId`) for data isolation.
+- Updated protected data APIs to enforce auth/subscription and user scoping:
+  - trades, analytics, imports, export, insights, settings routes.
+- Updated crypto checkout to bind to authenticated user email (no arbitrary email injection).
+- Added login/signup UI pages and logout button in sidebar.
+- Refactored app shell layout to hide navigation on auth pages.
+
+Validation status:
+- Prisma client regenerated.
+- `npm run build` passes with new auth/subscription changes.
+- No linter errors on changed files.
+
+Important runbook:
+- Run `npm run db:push` to apply new `User`/trade-user schema changes.
+- Set env: `AUTH_SECRET` (required).
+
+Security note from dependency check:
+- Ran `npm audit` after installing auth deps (as required). Existing advisories remain:
+  - `xlsx` (no fix available)
+  - `postcss` via Next dependency chain (fix would require breaking downgrade path)
+
 ## Lessons
 
 - Vercel does not support persistent SQLite; always use external Postgres (Neon free tier recommended)
@@ -209,3 +342,8 @@ Assistance request to user/planner:
 - Pocket Option-focused GTM must be compliance-aware: keep messaging educational/analytics-first, not broker-promotional.
 - Treat third-party traffic and broker-review websites as directional; rely on regulator sources for compliance decisions.
 - For Next.js 16 metadata/SEO, prefer file conventions (`app/robots.ts`, `app/sitemap.ts`) and centralized metadata in `app/layout.tsx`.
+- Keep `NEXT_PUBLIC_SITE_URL` synced with live domain to avoid wrong canonical/sitemap URLs.
+- For crypto subscriptions, initialize checkout server-side with provider API keys only (never expose provider secret keys in client).
+- NOWPayments webhooks must be validated with `NOWPAYMENTS_IPN_SECRET`; reject unsigned/invalid callbacks.
+- When using `crypto.timingSafeEqual`, always check buffer lengths first to avoid runtime throw on malformed signatures.
+- Auth cookies must be HTTP-only and signed with `AUTH_SECRET`; never trust client-provided user email for subscription assignment.

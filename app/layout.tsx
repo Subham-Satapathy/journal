@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Sidebar } from "@/components/layout/Sidebar";
-import { MobileNav } from "@/components/layout/MobileNav";
 import { CurrencyProvider } from "@/lib/currency-context";
 import { getSiteUrl, siteConfig } from "@/lib/site";
+import { AppFrame } from "@/components/layout/AppFrame";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
 const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
@@ -64,15 +63,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(webAppJsonLd) }}
         />
         <CurrencyProvider>
-          <div className="flex min-h-screen">
-            <Sidebar />
-            <main className="flex-1 min-h-screen min-w-0 ml-0 md:ml-56 pb-20 md:pb-0 overflow-x-hidden">
-              <div className="max-w-7xl mx-auto p-4 sm:p-6">
-                {children}
-              </div>
-            </main>
-            <MobileNav />
-          </div>
+          <AppFrame>{children}</AppFrame>
         </CurrencyProvider>
       </body>
     </html>

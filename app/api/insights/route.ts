@@ -5,9 +5,13 @@ import { computeOverviewStats, computeMentalStateMetrics } from "@/lib/analytics
 import { subDays, subWeeks, subMonths } from "date-fns";
 import { fetchUsdInrRate } from "@/lib/exchange-rate";
 import { normalizeTradeMonetary, type TradeCurrency } from "@/lib/trade-currency";
+import { requireActiveSubscription } from "@/lib/api-auth";
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireActiveSubscription(req);
+    if (auth.error || !auth.user) return auth.error!;
+
     if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json({ error: "GEMINI_API_KEY not configured" }, { status: 503 });
     }
@@ -23,7 +27,7 @@ export async function POST(req: NextRequest) {
     else from = subDays(to, 30);
 
     const trades = await prisma.trade.findMany({
-      where: { date: { gte: from, lte: to } },
+      where: { userId: auth.user.id, date: { gte: from, lte: to } },
       orderBy: { date: "asc" },
     });
 

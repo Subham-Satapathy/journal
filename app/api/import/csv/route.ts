@@ -5,9 +5,13 @@ import { parseTradeDate } from "@/lib/datetime";
 import { normalizeTradeCurrency } from "@/lib/trade-currency";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
+import { requireActiveSubscription } from "@/lib/api-auth";
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireActiveSubscription(req);
+    if (auth.error || !auth.user) return auth.error!;
+
     const formData = await req.formData();
     const file = formData.get("file") as File;
     const mappingStr = formData.get("mapping") as string | null;
@@ -152,6 +156,7 @@ export async function POST(req: NextRequest) {
           importedCurrencies.add(currencyRaw ? currencyRaw.toUpperCase() : inferredFileCurrency);
 
           return {
+            userId: auth.user.id,
             symbol: symbol.toUpperCase().trim(),
             side: side.toUpperCase().trim(),
             entryPrice,

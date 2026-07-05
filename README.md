@@ -26,6 +26,10 @@ Edit the `.env` file:
 ```env
 DATABASE_URL="postgresql://user:password@host:5432/dbname?sslmode=require"
 GEMINI_API_KEY="your_gemini_api_key_here"
+NEXT_PUBLIC_SITE_URL="https://pnlogix.com"
+AUTH_SECRET="replace_with_long_random_secret"
+NOWPAYMENTS_API_KEY="your_nowpayments_api_key"
+NOWPAYMENTS_IPN_SECRET="your_nowpayments_ipn_secret"
 ```
 
 ### 3. Set up the database
@@ -74,6 +78,11 @@ In your Vercel project settings → Environment Variables, add:
 |---|---|
 | `DATABASE_URL` | Your Neon connection string |
 | `GEMINI_API_KEY` | Your Gemini API key |
+| `NEXT_PUBLIC_SITE_URL` | `https://pnlogix.com` |
+| `AUTH_SECRET` | Strong random secret for session JWT signing |
+| `NOWPAYMENTS_API_KEY` | Your NOWPayments API key (for crypto checkout) |
+| `NOWPAYMENTS_IPN_SECRET` | Your NOWPayments IPN secret (for webhook signature verification) |
+| `NOWPAYMENTS_FEE_PAID_BY_USER` | Optional (`true`/`false`) to pass NOWPayments fee flag |
 
 ### Step 5 — Run the database migration on Vercel
 

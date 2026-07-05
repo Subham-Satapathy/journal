@@ -1,7 +1,7 @@
-const DEFAULT_SITE_URL = "https://tradejournal.so";
+const DEFAULT_SITE_URL = "https://pnlogix.com";
 
 export const siteConfig = {
-  name: "TradeJournal",
+  name: "Pnlogix",
   title: "Pocket Option Trading Journal",
   description:
     "Track imported trades, analyze performance, and improve discipline with AI-powered trading journal analytics.",

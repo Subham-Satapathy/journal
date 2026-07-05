@@ -9,6 +9,8 @@ import {
   BarChart3,
   Brain,
   TrendingUp,
+  BadgeDollarSign,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCurrency, type Currency } from "@/lib/currency-context";
@@ -19,6 +21,7 @@ const navItems = [
   { href: "/import", icon: Upload, label: "Import" },
   { href: "/analytics", icon: BarChart3, label: "Analytics" },
   { href: "/insights", icon: Brain, label: "AI Insights" },
+  { href: "/pricing", icon: BadgeDollarSign, label: "Pricing" },
 ];
 
 function SidebarCurrencyWidget() {
@@ -54,6 +57,12 @@ function SidebarCurrencyWidget() {
 
 export function Sidebar() {
   const pathname = usePathname();
+  if (pathname === "/login" || pathname === "/signup") return null;
+
+  const logout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    window.location.href = "/login";
+  };
 
   return (
     <aside className="hidden md:flex fixed left-0 top-0 h-full w-56 bg-zinc-950 border-r border-zinc-800/50 flex-col z-50">
@@ -64,7 +73,7 @@ export function Sidebar() {
             <TrendingUp className="w-4 h-4 text-white" />
           </div>
           <div>
-            <div className="text-sm font-bold text-white">TradeJournal</div>
+            <div className="text-sm font-bold text-white">Pnlogix</div>
             <div className="text-[10px] text-zinc-500">Personal Ledger</div>
           </div>
         </div>
@@ -96,8 +105,15 @@ export function Sidebar() {
       <SidebarCurrencyWidget />
 
       {/* Footer */}
-      <div className="px-4 pb-4 pt-2">
-        <div className="text-[10px] text-zinc-700 text-center">TradeJournal v1.0</div>
+      <div className="px-4 pb-4 pt-2 space-y-2">
+        <button
+          onClick={logout}
+          className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-xs text-zinc-400 hover:text-zinc-200 border border-zinc-800 rounded-lg hover:border-zinc-700"
+        >
+          <LogOut className="w-3.5 h-3.5" />
+          Logout
+        </button>
+        <div className="text-[10px] text-zinc-700 text-center">Pnlogix v1.0</div>
       </div>
     </aside>
   );

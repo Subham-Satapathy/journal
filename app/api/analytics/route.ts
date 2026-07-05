@@ -14,6 +14,7 @@ import {
 } from "@/lib/analytics";
 import { normalizeTradeMonetary, type TradeCurrency } from "@/lib/trade-currency";
 import type { Trade } from "@prisma/client";
+import { requireActiveSubscription } from "@/lib/api-auth";
 
 function normalizeTradesForDisplay(
   trades: Trade[],
@@ -25,12 +26,15 @@ function normalizeTradesForDisplay(
 
 export async function GET(req: NextRequest) {
   try {
+    const auth = await requireActiveSubscription(req);
+    if (auth.error || !auth.user) return auth.error!;
+
     const { searchParams } = new URL(req.url);
     const type = searchParams.get("type") || "overview";
     const from = searchParams.get("from");
     const to = searchParams.get("to");
 
-    const where: Record<string, unknown> = {};
+    const where: Record<string, unknown> = { userId: auth.user.id };
     if (from || to) {
       where.date = {};
       if (from) (where.date as Record<string, Date>).gte = new Date(from);

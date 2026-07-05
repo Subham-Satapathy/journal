@@ -2,9 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { extractTradesFromImage } from "@/lib/gemini";
 import { parseTradeDate } from "@/lib/datetime";
+import { requireActiveSubscription } from "@/lib/api-auth";
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireActiveSubscription(req);
+    if (auth.error || !auth.user) return auth.error!;
+
     const formData = await req.formData();
     const file = formData.get("file") as File;
     const action = (formData.get("action") as string) || "extract";
@@ -39,6 +43,7 @@ export async function POST(req: NextRequest) {
       const validTrades = trades
         .filter((t: Record<string, unknown>) => t.symbol && t.side && t.entryPrice && t.date)
         .map((t: Record<string, unknown>) => ({
+          userId: auth.user.id,
           symbol: String(t.symbol).toUpperCase().trim(),
           side: String(t.side).toUpperCase().trim(),
           entryPrice: parseFloat(String(t.entryPrice)),

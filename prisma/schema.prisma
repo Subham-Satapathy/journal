@@ -9,6 +9,8 @@ datasource db {
 
 model Trade {
   id           String   @id @default(cuid())
+  userId       String?
+  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   symbol       String
   side         String   // "LONG" | "SHORT" | "BUY" | "SELL"
   entryPrice   Float
@@ -30,4 +32,63 @@ model Trade {
 
   // Deduplicate by broker order ID when present
   @@unique([orderId])
+  @@index([userId, date])
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  trades       Trade[]
+}
+
+model BillingCustomer {
+  id            String           @id @default(cuid())
+  email         String           @unique
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  subscriptions Subscription[]
+  invoices      CryptoInvoice[]
+}
+
+model Subscription {
+  id                 String          @id @default(cuid())
+  customerId         String
+  customer           BillingCustomer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  planId             String
+  billingCycle       String
+  status             String          @default("inactive")
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  activatedAt        DateTime?
+  cancelledAt        DateTime?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  @@index([customerId, status])
+}
+
+model CryptoInvoice {
+  id                String          @id @default(cuid())
+  customerId        String
+  customer          BillingCustomer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  provider          String
+  providerInvoiceId String?
+  orderId           String          @unique
+  planId            String
+  billingCycle      String
+  status            String          @default("created")
+  amountUsd         Float
+  checkoutUrl       String?
+  payCurrency       String?
+  paymentId         String?
+  paidAt            DateTime?
+  rawPayload        Json?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([customerId, status])
 }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, List, Upload, BarChart3, Brain } from "lucide-react";
+import { LayoutDashboard, List, Upload, BarChart3, Brain, BadgeDollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -11,10 +11,12 @@ const navItems = [
   { href: "/import", icon: Upload, label: "Import" },
   { href: "/analytics", icon: BarChart3, label: "Stats" },
   { href: "/insights", icon: Brain, label: "AI" },
+  { href: "/pricing", icon: BadgeDollarSign, label: "Plans" },
 ];
 
 export function MobileNav() {
   const pathname = usePathname();
+  if (pathname === "/login" || pathname === "/signup") return null;
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-zinc-950/95 border-t border-zinc-800/80 backdrop-blur-md pb-[max(0.5rem,env(safe-area-inset-bottom))]">
