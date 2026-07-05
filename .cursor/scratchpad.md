@@ -110,6 +110,7 @@ The user wants a personal trading journal/ledger web app. Key goals:
 - [ ] Task 31 (Ad-hoc): Landing testimonials aligned to binary Pocket Option audience
 - [ ] Task 32 (Ad-hoc): Make all pages full width
 - [ ] Task 33 (Ad-hoc): Guides section + SEO metadata template + first 3 keyword articles
+- [ ] Task 34 (Ad-hoc): Add Google Analytics (GA4 gtag) integration
 
 ## Executor's Feedback or Assistance Requests
 
@@ -718,3 +719,22 @@ Assistance request to user/planner:
   1. `/guides` page renders with all 3 cards
   2. each `/guides/<slug>` page loads and has expected title/description
   3. `/sitemap.xml` includes guides index + article URLs
+
+### Executor Update — Task 34 (Google Analytics Integration) Completed
+
+Implemented:
+- Added GA4 gtag integration in `app/layout.tsx` using `next/script`:
+  - loader script: `https://www.googletagmanager.com/gtag/js?id=...`
+  - init script with `gtag('js', new Date())` and `gtag('config', 'G-WJST62K8WJ')`.
+- Added environment override support:
+  - uses `NEXT_PUBLIC_GA_MEASUREMENT_ID` when provided
+  - falls back to `G-WJST62K8WJ` by default.
+
+Validation:
+- IDE lint checks pass.
+- `npm run build` passes.
+
+Assistance request to user/planner:
+- Please verify via GA4 Realtime report after deploy:
+  1. open site in new tab
+  2. confirm at least one active user appears in Realtime
