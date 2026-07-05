@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getSessionCookieName, readSessionToken } from "@/lib/session-token";
 
-const publicPaths = new Set(["/", "/login", "/signup", "/pricing"]);
+const publicPaths = new Set(["/", "/login", "/signup", "/verify-email", "/pricing"]);
 
 function isPublicPath(pathname: string) {
   if (publicPaths.has(pathname)) return true;

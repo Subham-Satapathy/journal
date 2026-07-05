@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
 
     const user = await prisma.user.findUnique({
       where: { email },
-      select: { id: true, email: true, name: true, passwordHash: true },
+      select: { id: true, email: true, name: true, passwordHash: true, emailVerifiedAt: true },
     });
     if (!user) {
       return NextResponse.json({ error: "Invalid credentials." }, { status: 401 });
@@ -29,6 +29,16 @@ export async function POST(req: NextRequest) {
     const valid = await verifyPassword(password, user.passwordHash);
     if (!valid) {
       return NextResponse.json({ error: "Invalid credentials." }, { status: 401 });
+    }
+    if (!user.emailVerifiedAt) {
+      return NextResponse.json(
+        {
+          error: "Email not verified. Please verify your email first.",
+          code: "EMAIL_NOT_VERIFIED",
+          email: user.email,
+        },
+        { status: 403 }
+      );
     }
 
     const token = await createSessionToken({ sub: user.id, email: user.email });

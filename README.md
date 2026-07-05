@@ -30,6 +30,11 @@ NEXT_PUBLIC_SITE_URL="https://pnlogix.com"
 AUTH_SECRET="replace_with_long_random_secret"
 NOWPAYMENTS_API_KEY="your_nowpayments_api_key"
 NOWPAYMENTS_IPN_SECRET="your_nowpayments_ipn_secret"
+SMTP_HOST="smtp.your-provider.com"
+SMTP_PORT="587"
+SMTP_USER="smtp_username"
+SMTP_PASS="smtp_password"
+EMAIL_FROM="support@pnlogix.com"
 ```
 
 ### 3. Set up the database
@@ -84,6 +89,11 @@ In your deployment environment variables settings, add:
 | `NOWPAYMENTS_API_KEY` | Your NOWPayments API key (for crypto checkout) |
 | `NOWPAYMENTS_IPN_SECRET` | Your NOWPayments IPN secret (for webhook signature verification) |
 | `NOWPAYMENTS_FEE_PAID_BY_USER` | Optional (`true`/`false`) to pass NOWPayments fee flag |
+| `SMTP_HOST` | SMTP host for OTP email delivery |
+| `SMTP_PORT` | SMTP port (e.g. `587` or `465`) |
+| `SMTP_USER` | SMTP auth username |
+| `SMTP_PASS` | SMTP auth password |
+| `EMAIL_FROM` | Sender email address (use `support@pnlogix.com`) |
 
 ### Step 5 — Run the database migration
 

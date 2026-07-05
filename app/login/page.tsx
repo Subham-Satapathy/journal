@@ -25,6 +25,10 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (!res.ok) {
+        if (res.status === 403 && data?.code === "EMAIL_NOT_VERIFIED" && data?.email) {
+          router.push(`/verify-email?email=${encodeURIComponent(data.email)}`);
+          return;
+        }
         setError(data.error || "Login failed.");
         return;
       }

@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 export function AppFrame({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isAuthPage = pathname === "/login" || pathname === "/signup";
+  const isAuthPage = pathname === "/login" || pathname === "/signup" || pathname === "/verify-email";
   const isMarketingPage = pathname === "/" || pathname === "/pricing";
   const showShellNav = !isAuthPage && !isMarketingPage;
 

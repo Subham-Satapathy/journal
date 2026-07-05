@@ -58,7 +58,7 @@ function SidebarCurrencyWidget() {
 
 export function Sidebar() {
   const pathname = usePathname();
-  if (pathname === "/login" || pathname === "/signup" || pathname === "/" || pathname === "/pricing") return null;
+  if (pathname === "/login" || pathname === "/signup" || pathname === "/verify-email" || pathname === "/" || pathname === "/pricing") return null;
 
   const logout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });

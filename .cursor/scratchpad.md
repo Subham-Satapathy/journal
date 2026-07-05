@@ -99,6 +99,7 @@ The user wants a personal trading journal/ledger web app. Key goals:
 - [ ] Task 18 (Ad-hoc): Harden NOWPayments flow (validation, signature verification, persistence)
 - [ ] Task 19 (Ad-hoc): Auth + session + subscription-gated APIs
 - [ ] Task 20 (Ad-hoc): Branded public landing page with animated hero
+- [ ] Task 23 (Ad-hoc): OTP email verification required before login
 
 ## Executor's Feedback or Assistance Requests
 
@@ -434,3 +435,30 @@ Implemented:
 
 Validation:
 - Favicon assets updated successfully (`public/favicon.png`, `public/favicon.ico`).
+
+### Executor Update — Task 23 (OTP Email Verification) Completed
+
+Implemented:
+- Added email verification schema support:
+  - `User.emailVerifiedAt`
+  - `EmailVerificationOtp` model (hashed OTP, expiry, consumed flag)
+- Signup now requires email verification:
+  - creates unverified account
+  - sends OTP email
+  - does not auto-login user
+- Login now blocks unverified accounts and returns `EMAIL_NOT_VERIFIED`.
+- Added verification APIs:
+  - `POST /api/auth/verification/resend`
+  - `POST /api/auth/verification/verify`
+- Added `/verify-email` page (OTP input + resend flow).
+- Allowed `/verify-email` in proxy public paths; hid app shell nav on verify page.
+- Added SMTP email sending utility using `nodemailer`, with sender default `support@pnlogix.com`.
+- Updated README with required SMTP and sender env variables.
+
+Validation:
+- Prisma client regenerated.
+- `npm run build` passes.
+- No linter errors on changed files.
+
+Security note:
+- Ran `npm audit` after dependency changes per project rule; existing advisories remain in pre-existing chain (`xlsx`, `postcss` via Next dependency tree).

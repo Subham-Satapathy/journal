@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth";
-import { createSessionToken, getSessionCookieName, getSessionTtlSeconds } from "@/lib/session-token";
+import { issueEmailVerificationOtp } from "@/lib/email-verification";
 
 type SignupPayload = {
   email?: string;
@@ -23,15 +23,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Password must be at least 8 characters." }, { status: 400 });
     }
 
-    const exists = await prisma.user.findUnique({ where: { email } });
+    const exists = await prisma.user.findUnique({
+      where: { email },
+      select: { id: true, email: true, emailVerifiedAt: true, name: true },
+    });
     if (exists) {
+      if (!exists.emailVerifiedAt) {
+        await issueEmailVerificationOtp(exists.id, exists.email);
+        return NextResponse.json({
+          user: { id: exists.id, email: exists.email, name: exists.name, emailVerified: false },
+          requiresVerification: true,
+          message: "Account exists but email is not verified. OTP sent again.",
+        });
+      }
       return NextResponse.json({ error: "Email is already registered." }, { status: 409 });
     }
 
     const passwordHash = await hashPassword(password);
     const user = await prisma.user.create({
       data: { email, passwordHash, name },
-      select: { id: true, email: true, name: true },
+      select: { id: true, email: true, name: true, emailVerifiedAt: true },
     });
 
     await prisma.billingCustomer.upsert({
@@ -40,16 +51,15 @@ export async function POST(req: NextRequest) {
       create: { email },
     });
 
-    const token = await createSessionToken({ sub: user.id, email: user.email });
-    const res = NextResponse.json({ user }, { status: 201 });
-    res.cookies.set(getSessionCookieName(), token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: getSessionTtlSeconds(),
-      path: "/",
-    });
-    return res;
+    await issueEmailVerificationOtp(user.id, user.email);
+
+    return NextResponse.json(
+      {
+        user: { id: user.id, email: user.email, name: user.name, emailVerified: false },
+        requiresVerification: true,
+      },
+      { status: 201 }
+    );
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Signup failed." },

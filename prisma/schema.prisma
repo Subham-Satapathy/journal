@@ -40,9 +40,23 @@ model User {
   email        String   @unique
   passwordHash String
   name         String?
+  emailVerifiedAt DateTime?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   trades       Trade[]
+  emailOtps    EmailVerificationOtp[]
+}
+
+model EmailVerificationOtp {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash   String
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime @default(now())
+
+  @@index([userId, createdAt])
 }
 
 model BillingCustomer {

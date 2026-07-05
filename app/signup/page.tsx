@@ -13,11 +13,13 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setInfo(null);
     try {
       const res = await fetch("/api/auth/signup", {
         method: "POST",
@@ -29,7 +31,8 @@ export default function SignupPage() {
         setError(data.error || "Signup failed.");
         return;
       }
-      router.push("/pricing");
+      if (data?.message) setInfo(data.message);
+      router.push(`/verify-email?email=${encodeURIComponent(email.trim().toLowerCase())}`);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Signup failed.");
@@ -76,6 +79,7 @@ export default function SignupPage() {
               />
             </div>
             {error && <p className="text-xs text-red-400">{error}</p>}
+            {info && <p className="text-xs text-indigo-300">{info}</p>}
             <Button type="submit" className="w-full" loading={loading}>
               Create Account
             </Button>
