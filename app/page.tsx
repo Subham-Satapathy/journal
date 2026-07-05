@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Sparkles, ShieldCheck, TrendingUp, Brain, BarChart3, Upload, Quote } from "lucide-react";
+import { ArrowRight, CheckCircle2, ShieldCheck, TrendingUp, BarChart3, Upload, Quote } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -36,8 +36,7 @@ export default function LandingPage() {
 
       <section className="relative px-6 py-14 sm:px-10 sm:py-16">
         <div className="max-w-4xl space-y-6 fade-up">
-          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-300">
-            <Sparkles className="h-3.5 w-3.5" />
+          <div className="inline-flex items-center rounded-full border border-indigo-500/30 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-300">
             Built for fast, disciplined trading reviews
           </div>
           <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
@@ -78,7 +77,7 @@ export default function LandingPage() {
             </p>
           </div>
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-4">
-            <Sparkles className="h-5 w-5 text-indigo-400 mb-2" />
+            <BarChart3 className="h-5 w-5 text-indigo-400 mb-2" />
             <h3 className="text-sm font-semibold text-zinc-100">AI Insights</h3>
             <p className="text-xs text-zinc-500 mt-1">
               Behavioral and psychology-based summaries to reduce repeated mistakes.
@@ -130,10 +129,7 @@ export default function LandingPage() {
 
       <section className="relative px-6 sm:px-10 pb-10">
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900/30 p-6">
-          <div className="flex items-center gap-2 mb-4 text-violet-300">
-            <Brain className="w-4 h-4" />
-            <h2 className="text-base font-semibold text-white">How Pnlogix Works</h2>
-          </div>
+          <h2 className="text-base font-semibold text-white mb-4">How Pnlogix Works</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
               { t: "1. Import", d: "Bring trades from file or screenshot in minutes." },

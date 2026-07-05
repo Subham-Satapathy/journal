@@ -100,6 +100,7 @@ The user wants a personal trading journal/ledger web app. Key goals:
 - [ ] Task 19 (Ad-hoc): Auth + session + subscription-gated APIs
 - [ ] Task 20 (Ad-hoc): Branded public landing page with animated hero
 - [ ] Task 23 (Ad-hoc): OTP email verification required before login
+- [ ] Task 24 (Ad-hoc): Branded emails + payment receipt email on successful payment webhook
 
 ## Executor's Feedback or Assistance Requests
 
@@ -462,3 +463,30 @@ Validation:
 
 Security note:
 - Ran `npm audit` after dependency changes per project rule; existing advisories remain in pre-existing chain (`xlsx`, `postcss` via Next dependency tree).
+
+### Executor Update — Task 24 (Branded Emails + Payment Receipt) Completed
+
+Implemented:
+- Added a shared branded HTML email layout in `lib/email.ts` with:
+  - logo header (`/logo.png` resolved from site URL)
+  - consistent dark theme styling
+  - support footer from `support@pnlogix.com`
+- Updated OTP verification emails to use the new branded layout so auth emails now include the logo consistently.
+- Added `sendPaymentReceiptEmail(...)` in `lib/email.ts` including:
+  - plan + billing cycle
+  - paid amount and timestamp
+  - membership expiry date
+  - transaction reference
+  - thank-you + encouraging message
+- Hooked receipt delivery into `POST /api/payments/crypto/webhook` after successful confirmation and subscription activation/extension.
+- Kept webhook idempotent behavior: receipt send is only triggered on first transition into a successful paid state.
+- Added structured webhook-side error logging for email-send failures without breaking payment processing.
+
+Validation:
+- Type/lint checks for edited files pass in IDE scope.
+
+Assistance request to user/planner:
+- Please run one end-to-end test payment in test mode and confirm:
+  1. OTP email arrives with logo/header styling
+  2. payment receipt email arrives after webhook success
+  3. receipt contains correct plan, amount, membership expiry, and transaction reference

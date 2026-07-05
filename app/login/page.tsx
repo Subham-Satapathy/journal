@@ -44,12 +44,25 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center">
-      <Card className="w-full max-w-md border-zinc-800 bg-zinc-900/60">
-        <CardHeader>
-          <CardTitle className="text-xl text-white">Sign in to Pnlogix</CardTitle>
-        </CardHeader>
-        <CardContent>
+    <div className="relative min-h-[80vh] flex items-center justify-center px-4">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute top-24 -left-12 h-56 w-56 rounded-full bg-indigo-600/20 blur-3xl" />
+        <div className="absolute bottom-16 -right-12 h-64 w-64 rounded-full bg-cyan-500/15 blur-3xl" />
+      </div>
+
+      <div className="relative w-full max-w-md space-y-4">
+        <div className="flex flex-col items-center text-center">
+          <img src="/logo.png" alt="Pnlogix logo" className="w-12 h-12 rounded-md border border-zinc-700/70 shadow-lg" />
+          <div className="mt-2 text-lg font-bold text-white">Pnlogix</div>
+          <div className="text-xs text-zinc-500">Trading Journal</div>
+        </div>
+
+        <Card className="w-full border-zinc-800 bg-zinc-900/70 backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle className="text-xl text-white">Sign in to Pnlogix</CardTitle>
+            <p className="text-xs text-zinc-500">Welcome back. Continue your review workflow.</p>
+          </CardHeader>
+          <CardContent>
           <form onSubmit={onSubmit} className="space-y-4">
             <div>
               <label className="block text-sm text-zinc-300 mb-1">Email</label>
@@ -82,8 +95,9 @@ export default function LoginPage() {
               Create an account
             </Link>
           </p>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isNowPaymentsSignatureValid, isSuccessfulPaymentStatus } from "@/lib/nowpayments";
+import { sendPaymentReceiptEmail } from "@/lib/email";
+import { findPlan } from "@/lib/pricing";
 
 function addMonths(date: Date, months: number): Date {
   const result = new Date(date);
@@ -112,6 +114,27 @@ export async function POST(req: NextRequest) {
             currentPeriodEnd: periodEnd,
             activatedAt: existingActive.activatedAt ?? now,
           },
+        });
+      }
+
+      const planName = findPlan(invoice.planId)?.name ?? invoice.planId;
+      const paidAt = invoice.paidAt ?? new Date();
+      try {
+        await sendPaymentReceiptEmail({
+          to: invoice.customer.email,
+          planName,
+          billingCycle: invoice.billingCycle,
+          amountUsd: invoice.amountUsd,
+          paidAt,
+          membershipEndsAt: periodEnd,
+          transactionRef: providerPaymentId ?? providerInvoiceId,
+        });
+      } catch (emailError) {
+        console.error("Payment receipt email failed", {
+          customerEmail: invoice.customer.email,
+          invoiceId: invoice.id,
+          orderId: invoice.orderId,
+          error: emailError instanceof Error ? emailError.message : "Unknown email error",
         });
       }
     }
