@@ -24,7 +24,7 @@ export default async function PricingPage({
   const paymentStatus = params.status;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
       <div className="space-y-2">
         <h1 className="text-2xl sm:text-3xl font-bold text-white">Simple Pricing</h1>
         <p className="text-sm text-zinc-500 max-w-2xl">

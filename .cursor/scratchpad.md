@@ -111,6 +111,7 @@ The user wants a personal trading journal/ledger web app. Key goals:
 - [ ] Task 32 (Ad-hoc): Make all pages full width
 - [ ] Task 33 (Ad-hoc): Guides section + SEO metadata template + first 3 keyword articles
 - [ ] Task 34 (Ad-hoc): Add Google Analytics (GA4 gtag) integration
+- [ ] Task 35 (Ad-hoc): Add pricing page outer padding for better spacing
 
 ## Executor's Feedback or Assistance Requests
 
@@ -738,3 +739,20 @@ Assistance request to user/planner:
 - Please verify via GA4 Realtime report after deploy:
   1. open site in new tab
   2. confirm at least one active user appears in Realtime
+
+### Executor Update — Task 35 (Pricing Page Padding) Implemented (Awaiting Manual Verification)
+
+Implemented:
+- Updated `app/pricing/page.tsx` page wrapper spacing to add responsive page padding:
+  - added horizontal padding: `px-4 sm:px-6 lg:px-8`
+  - added vertical padding: `py-4 sm:py-5`
+- This improves edge spacing on desktop and mobile while keeping existing card/grid layout unchanged.
+
+Validation:
+- IDE lint checks are clean for edited file.
+
+Assistance request to user/planner:
+- Please manually verify on `/pricing`:
+  1. content is no longer tight to the left/right edges
+  2. top spacing above `Simple Pricing` feels correct on mobile and desktop
+  3. card alignment remains unchanged
