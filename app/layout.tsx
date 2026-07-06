@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     description: siteConfig.description,
     images: [
       {
-        url: "/logo.png",
+        url: "/logo.png?v=20260706t1823",
         width: 1024,
         height: 1024,
         alt: "Pnlogix logo",
@@ -46,12 +46,12 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${siteConfig.title} | ${siteConfig.name}`,
     description: siteConfig.description,
-    images: ["/logo.png"],
+    images: ["/logo.png?v=20260706t1823"],
   },
   icons: {
-    icon: "/favicon.ico?v=20260706",
-    shortcut: "/favicon.ico?v=20260706",
-    apple: "/favicon.ico?v=20260706",
+    icon: "/favicon.ico?v=20260706t1821",
+    shortcut: "/favicon.ico?v=20260706t1821",
+    apple: "/favicon.ico?v=20260706t1821",
   },
   category: "finance",
 };

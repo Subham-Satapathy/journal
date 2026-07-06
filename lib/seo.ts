@@ -26,13 +26,13 @@ export function createPublicPageMetadata(input: PublicMetadataInput): Metadata {
       siteName: siteConfig.name,
       title: `${input.title} | ${siteConfig.name}`,
       description: input.description,
-      images: ["/logo.png"],
+      images: ["/logo.png?v=20260706t1823"],
     },
     twitter: {
       card: "summary_large_image",
       title: `${input.title} | ${siteConfig.name}`,
       description: input.description,
-      images: ["/logo.png"],
+      images: ["/logo.png?v=20260706t1823"],
     },
   };
 }

@@ -52,7 +52,7 @@ export default function LoginPage() {
 
       <div className="relative w-full max-w-md space-y-4">
         <div className="flex flex-col items-center text-center">
-          <img src="/logo.png" alt="Pnlogix logo" className="w-12 h-12 rounded-md border border-zinc-700/70 shadow-lg" />
+          <img src="/logo.png?v=20260706t1823" alt="Pnlogix logo" className="w-12 h-12 rounded-md border border-zinc-700/70 shadow-lg" />
           <div className="mt-2 text-lg font-bold text-white">Pnlogix</div>
           <div className="text-xs text-zinc-500">Trading Journal</div>
         </div>

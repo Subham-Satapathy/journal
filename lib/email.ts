@@ -43,7 +43,7 @@ function renderEmailLayout({
   bodyHtml: string;
 }) {
   const siteUrl = getSiteUrl();
-  const logoUrl = `${siteUrl}/logo.png`;
+  const logoUrl = `${siteUrl}/logo.png?v=20260706t1823`;
   const safeTitle = escapeHtml(title);
   const safeSubtitle = subtitle ? escapeHtml(subtitle) : "";
 

@@ -97,7 +97,7 @@ export function Sidebar() {
       {/* Logo */}
       <div className="p-5 pb-4 border-b border-zinc-800/50">
         <div className="flex items-center gap-2.5">
-          <img src="/logo.png" alt="Pnlogix logo" className="w-8 h-8 rounded-md border border-zinc-700/60" />
+          <img src="/logo.png?v=20260706t1823" alt="Pnlogix logo" className="w-8 h-8 rounded-md border border-zinc-700/60" />
           <div>
             <div className="text-sm font-bold text-white">Pnlogix</div>
             <div className="text-[10px] text-zinc-500">Personal Ledger</div>

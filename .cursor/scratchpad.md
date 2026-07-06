@@ -113,6 +113,8 @@ The user wants a personal trading journal/ledger web app. Key goals:
 - [ ] Task 34 (Ad-hoc): Add Google Analytics (GA4 gtag) integration
 - [ ] Task 35 (Ad-hoc): Add pricing page outer padding for better spacing
 - [ ] Task 46 (Ad-hoc): Sync favicon.ico source and force browser refresh
+- [ ] Task 47 (Ad-hoc): Apply transparent favicon asset and regenerate all icon files
+- [ ] Task 48 (Ad-hoc): Apply transparent logo asset across site branding
 
 ## Executor's Feedback or Assistance Requests
 
@@ -368,6 +370,8 @@ Security note from dependency check:
 - Avoid global canonical set to `/` in root metadata; define canonicals only per indexable page to prevent duplicate-canonical signals.
 - Use a shared SEO metadata helper for public pages to keep canonical/OG/Twitter consistent and reduce drift.
 - In Next.js App Router, `app/favicon.ico` can override expected favicon behavior; keep `app/favicon.ico` and `public/favicon.ico` in sync and add a version query when browsers cache old icons.
+- For transparent tab icons, regenerate both `.ico` and `.png` favicon assets from a source image that already has alpha; otherwise browsers may show a dark/solid background.
+- When replacing brand images like `/logo.png`, use a version query (`?v=...`) in UI and metadata/email references to avoid stale CDN/browser caches.
 
 ### Executor Update — Task 20 (Branding + Landing Hero) Completed
 
@@ -774,3 +778,47 @@ Validation:
 Assistance request to user/planner:
 - Please hard refresh browser (or open in incognito) and verify the tab icon updates.
 - If it still shows old icon, clear site favicon cache once and re-open `https://pnlogix.com`.
+
+### Executor Update — Task 47 (Transparent Favicon Asset Applied) Implemented (Awaiting Manual Verification)
+
+Implemented:
+- Used user-provided transparent icon source:
+  - `assets/ChatGPT_Image_Jul_6__2026__01_18_48_AM-removebg-preview-9afd101d-01e0-461c-bcbb-5c00a93e9ec3.png`
+- Regenerated favicon and icon assets from this source:
+  - `public/favicon.png` (transparent)
+  - `public/favicon-256.png` (transparent)
+  - `public/favicon.ico` (multi-size ICO)
+  - `app/favicon.ico` (synced, multi-size ICO)
+  - `app/icon.png` (512x512 transparent icon for App Router icon pipeline)
+- Updated icon cache-busting in `app/layout.tsx`:
+  - `?v=20260706t1821`
+
+Validation:
+- Verified transparency (`hasAlpha: yes`) for PNG icon assets.
+- Verified icon files regenerated with new timestamps and expected sizes.
+- IDE lint checks pass.
+- `npm run build` passes after icon updates.
+
+Assistance request to user/planner:
+- After deploy, open the site in a fresh tab/incognito and confirm favicon background is now transparent.
+
+### Executor Update — Task 48 (Transparent Site Logo Applied) Implemented (Awaiting Manual Verification)
+
+Implemented:
+- Replaced `public/logo.png` with user-provided transparent logo source image.
+- Updated logo references across app UI and metadata/email contexts to force refresh and consistency:
+  - landing header (`app/page.tsx`)
+  - app sidebar (`components/layout/Sidebar.tsx`)
+  - auth pages (`app/login/page.tsx`, `app/signup/page.tsx`)
+  - root metadata OG/Twitter image (`app/layout.tsx`)
+  - shared public metadata helper (`lib/seo.ts`)
+  - branded email template logo URL (`lib/email.ts`)
+- Applied logo cache-busting query: `?v=20260706t1823`.
+
+Validation:
+- Verified new `public/logo.png` includes alpha channel (`hasAlpha: yes`).
+- IDE lint checks pass for updated files.
+- `npm run build` passes after logo updates.
+
+Assistance request to user/planner:
+- After deploy, please verify the transparent logo appears consistently on landing, sidebar, login, signup, and social preview cards.
