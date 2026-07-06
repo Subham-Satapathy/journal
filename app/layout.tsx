@@ -49,9 +49,9 @@ export const metadata: Metadata = {
     images: ["/logo.png?v=20260706t1823"],
   },
   icons: {
-    icon: "/favicon.ico?v=20260706t1821",
-    shortcut: "/favicon.ico?v=20260706t1821",
-    apple: "/favicon.ico?v=20260706t1821",
+    icon: "/favicon.ico?v=20260706t1834",
+    shortcut: "/favicon.ico?v=20260706t1834",
+    apple: "/favicon.ico?v=20260706t1834",
   },
   category: "finance",
 };

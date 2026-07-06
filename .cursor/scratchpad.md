@@ -115,6 +115,7 @@ The user wants a personal trading journal/ledger web app. Key goals:
 - [ ] Task 46 (Ad-hoc): Sync favicon.ico source and force browser refresh
 - [ ] Task 47 (Ad-hoc): Apply transparent favicon asset and regenerate all icon files
 - [ ] Task 48 (Ad-hoc): Apply transparent logo asset across site branding
+- [ ] Task 49 (Ad-hoc): Increase visible favicon size in browser tab
 
 ## Executor's Feedback or Assistance Requests
 
@@ -372,6 +373,7 @@ Security note from dependency check:
 - In Next.js App Router, `app/favicon.ico` can override expected favicon behavior; keep `app/favicon.ico` and `public/favicon.ico` in sync and add a version query when browsers cache old icons.
 - For transparent tab icons, regenerate both `.ico` and `.png` favicon assets from a source image that already has alpha; otherwise browsers may show a dark/solid background.
 - When replacing brand images like `/logo.png`, use a version query (`?v=...`) in UI and metadata/email references to avoid stale CDN/browser caches.
+- If a transparent favicon looks too small in browser tabs, crop to alpha bounds and re-center on a square canvas with tighter padding before generating `.ico` sizes.
 
 ### Executor Update — Task 20 (Branding + Landing Hero) Completed
 
@@ -822,3 +824,28 @@ Validation:
 
 Assistance request to user/planner:
 - After deploy, please verify the transparent logo appears consistently on landing, sidebar, login, signup, and social preview cards.
+
+### Executor Update — Task 49 (Larger Tab Icon Visibility) Implemented (Awaiting Manual Verification)
+
+Implemented:
+- Regenerated favicon assets to make the tab icon visually larger:
+  - auto-cropped transparent source to non-empty alpha bounds
+  - re-centered on 512x512 transparent canvas with tighter padding (larger visible mark)
+- Rebuilt icon files with updated composition:
+  - `public/favicon.png`
+  - `public/favicon-256.png`
+  - `public/favicon.ico`
+  - `app/favicon.ico`
+  - `app/icon.png`
+- Bumped favicon cache version in `app/layout.tsx` to:
+  - `/favicon.ico?v=20260706t1834`
+
+Validation:
+- Verified regenerated asset dimensions and fresh mtimes:
+  - `favicon.png` now `512x512` with alpha
+  - both `.ico` files regenerated at same timestamp
+- IDE lint checks pass.
+- `npm run build` passes after icon sizing update.
+
+Assistance request to user/planner:
+- After deploy, hard refresh (or open incognito) and confirm the tab icon appears larger and more readable.
