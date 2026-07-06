@@ -112,6 +112,7 @@ The user wants a personal trading journal/ledger web app. Key goals:
 - [ ] Task 33 (Ad-hoc): Guides section + SEO metadata template + first 3 keyword articles
 - [ ] Task 34 (Ad-hoc): Add Google Analytics (GA4 gtag) integration
 - [ ] Task 35 (Ad-hoc): Add pricing page outer padding for better spacing
+- [ ] Task 46 (Ad-hoc): Sync favicon.ico source and force browser refresh
 
 ## Executor's Feedback or Assistance Requests
 
@@ -366,6 +367,7 @@ Security note from dependency check:
 - For mobile-first UX, prefer `grid-cols-1` base with breakpoint expansion and stack action buttons vertically on small screens.
 - Avoid global canonical set to `/` in root metadata; define canonicals only per indexable page to prevent duplicate-canonical signals.
 - Use a shared SEO metadata helper for public pages to keep canonical/OG/Twitter consistent and reduce drift.
+- In Next.js App Router, `app/favicon.ico` can override expected favicon behavior; keep `app/favicon.ico` and `public/favicon.ico` in sync and add a version query when browsers cache old icons.
 
 ### Executor Update — Task 20 (Branding + Landing Hero) Completed
 
@@ -756,3 +758,19 @@ Assistance request to user/planner:
   1. content is no longer tight to the left/right edges
   2. top spacing above `Simple Pricing` feels correct on mobile and desktop
   3. card alignment remains unchanged
+
+### Executor Update — Task 46 (Favicon .ico Sync) Implemented (Awaiting Manual Verification)
+
+Implemented:
+- Found root mismatch: `app/favicon.ico` was still an older icon file and can override favicon behavior in App Router.
+- Synced `app/favicon.ico` with the latest `public/favicon.ico`.
+- Added favicon cache-busting in `app/layout.tsx` metadata icons:
+  - `icon`, `shortcut`, and `apple` now use `/favicon.ico?v=20260706`.
+
+Validation:
+- IDE lint checks pass for updated layout metadata.
+- `npm run build` passes after favicon updates.
+
+Assistance request to user/planner:
+- Please hard refresh browser (or open in incognito) and verify the tab icon updates.
+- If it still shows old icon, clear site favicon cache once and re-open `https://pnlogix.com`.
