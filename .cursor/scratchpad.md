@@ -116,6 +116,7 @@ The user wants a personal trading journal/ledger web app. Key goals:
 - [ ] Task 47 (Ad-hoc): Apply transparent favicon asset and regenerate all icon files
 - [ ] Task 48 (Ad-hoc): Apply transparent logo asset across site branding
 - [ ] Task 49 (Ad-hoc): Increase visible favicon size in browser tab
+- [ ] Task 50 (Ad-hoc): Add Vercel Analytics component in root layout
 
 ## Executor's Feedback or Assistance Requests
 
@@ -374,6 +375,7 @@ Security note from dependency check:
 - For transparent tab icons, regenerate both `.ico` and `.png` favicon assets from a source image that already has alpha; otherwise browsers may show a dark/solid background.
 - When replacing brand images like `/logo.png`, use a version query (`?v=...`) in UI and metadata/email references to avoid stale CDN/browser caches.
 - If a transparent favicon looks too small in browser tabs, crop to alpha bounds and re-center on a square canvas with tighter padding before generating `.ico` sizes.
+- For Vercel page-view tracking, add `<Analytics />` from `@vercel/analytics/next` in the root `app/layout.tsx` so it runs on every route.
 
 ### Executor Update — Task 20 (Branding + Landing Hero) Completed
 
@@ -849,3 +851,20 @@ Validation:
 
 Assistance request to user/planner:
 - After deploy, hard refresh (or open incognito) and confirm the tab icon appears larger and more readable.
+
+### Executor Update — Task 50 (Vercel Analytics Component) Implemented (Awaiting Manual Verification)
+
+Implemented:
+- Added Vercel Analytics React component import in `app/layout.tsx`:
+  - `import { Analytics } from "@vercel/analytics/next";`
+- Mounted `<Analytics />` in root layout so page views are tracked across all routes.
+- Existing GA4 integration remains unchanged.
+
+Validation:
+- Dependency already present in `package.json` (`@vercel/analytics`), no install needed.
+- IDE lint checks pass.
+- `npm run build` passes after layout update.
+
+Assistance request to user/planner:
+- Deploy this update and visit a few pages.
+- If analytics dashboard is empty after ~30 seconds, disable content blockers and navigate across multiple routes.

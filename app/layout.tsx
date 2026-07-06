@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { CurrencyProvider } from "@/lib/currency-context";
 import { getSiteUrl, siteConfig } from "@/lib/site";
@@ -91,6 +92,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <CurrencyProvider>
           <AppFrame>{children}</AppFrame>
         </CurrencyProvider>
+        <Analytics />
       </body>
     </html>
   );
