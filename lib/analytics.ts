@@ -158,19 +158,19 @@ function computeMaxDrawdownDaily(dailyEntries: Array<{ date: string; pnl: number
 }
 
 function computeStreak(trades: Trade[]): StreakData {
-  // Use close chronology for streak logic (closeDate fallback to date),
-  // then stable tie-breakers for imports with identical timestamps.
-  const sorted = [...trades]
-    .filter((t) => t.pnl !== null && t.pnl !== 0)
-    .sort((a, b) => {
-      const aTs = new Date(a.closeDate ?? a.date).getTime();
-      const bTs = new Date(b.closeDate ?? b.date).getTime();
-      if (aTs !== bTs) return aTs - bTs;
-      const aCreated = new Date(a.createdAt).getTime();
-      const bCreated = new Date(b.createdAt).getTime();
-      if (aCreated !== bCreated) return aCreated - bCreated;
-      return a.id.localeCompare(b.id);
-    });
+  // Streak is defined by net result per day (user-approved rule):
+  // each day contributes one outcome: win (net > 0) or loss (net < 0).
+  const dailyMap = new Map<string, number>();
+  for (const t of trades) {
+    if (t.pnl === null) continue;
+    const key = getISTDateKey(new Date(t.closeDate ?? t.date));
+    dailyMap.set(key, (dailyMap.get(key) ?? 0) + t.pnl);
+  }
+  const dailyOutcomes = [...dailyMap.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([, pnl]) => pnl)
+    .filter((pnl) => pnl !== 0);
+
   let current = 0;
   let type: "win" | "loss" | "none" = "none";
   let longestWins = 0;
@@ -178,8 +178,8 @@ function computeStreak(trades: Trade[]): StreakData {
   let tempStreak = 0;
   let tempType: "win" | "loss" | "none" = "none";
 
-  for (const t of sorted) {
-    const isWin = (t.pnl ?? 0) > 0;
+  for (const pnl of dailyOutcomes) {
+    const isWin = pnl > 0;
     const thisType: "win" | "loss" = isWin ? "win" : "loss";
 
     if (tempType === thisType) {
@@ -194,7 +194,7 @@ function computeStreak(trades: Trade[]): StreakData {
   if (tempType === "win") longestWins = Math.max(longestWins, tempStreak);
   if (tempType === "loss") longestLosses = Math.max(longestLosses, tempStreak);
 
-  if (sorted.length > 0) {
+  if (dailyOutcomes.length > 0) {
     current = tempStreak;
     type = tempType;
   }

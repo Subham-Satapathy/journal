@@ -118,6 +118,7 @@ The user wants a personal trading journal/ledger web app. Key goals:
 - [ ] Task 49 (Ad-hoc): Increase visible favicon size in browser tab
 - [ ] Task 50 (Ad-hoc): Add Vercel Analytics component in root layout
 - [ ] Task 51 (Ad-hoc): Fix winning streak calculation ordering
+- [ ] Task 52 (Ad-hoc): Switch streak rule to per-day net result
 
 ## Executor's Feedback or Assistance Requests
 
@@ -378,6 +379,7 @@ Security note from dependency check:
 - If a transparent favicon looks too small in browser tabs, crop to alpha bounds and re-center on a square canvas with tighter padding before generating `.ico` sizes.
 - For Vercel page-view tracking, add `<Analytics />` from `@vercel/analytics/next` in the root `app/layout.tsx` so it runs on every route.
 - For streak metrics, sort trades by close chronology (`closeDate` fallback to `date`) with deterministic tie-breakers; sorting only by `date` can misreport current streaks.
+- Streak definition can vary by business rule; when user wants per-day streak, aggregate net P&L by IST date first, then compute consecutive win/loss days.
 
 ### Executor Update — Task 20 (Branding + Landing Hero) Completed
 
@@ -886,3 +888,20 @@ Validation:
 
 Assistance request to user/planner:
 - Please verify on `/analytics` and `/dashboard` that current streak now matches your latest actual trade outcomes.
+
+### Executor Update — Task 52 (Streak Rule = Per-Day Net Result) Implemented (Awaiting Manual Verification)
+
+Implemented:
+- Updated streak logic in `lib/analytics.ts` (`computeStreak`) to use daily net outcomes instead of per-trade outcomes.
+- New streak behavior:
+  - trades are grouped by IST date using close chronology key (`closeDate` fallback `date`)
+  - one net P&L outcome per day is computed
+  - streak counts consecutive winning or losing days based on that daily net sign
+  - zero-net days are excluded from streak sequence
+
+Validation:
+- Rule alignment confirmed with user-selected requirement: **per day**.
+- Code-level validation completed for deterministic daily streak behavior.
+
+Assistance request to user/planner:
+- Please verify on `/analytics` and `/dashboard` that streak now matches daily net wins/losses as expected.
