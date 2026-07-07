@@ -1147,3 +1147,17 @@ Implemented:
 
 Validation:
 - No linter errors in touched file.
+
+### Executor Update — Fixed Mixed-Currency Display Conversion Bug
+
+Implemented:
+- User-reported issue: "I have never traded this much in $".
+- Root cause: for mixed-currency accounts, analytics API was skipping conversion and returning raw values; UI then formatted raw totals as `$`/`₹`.
+- Fixed `app/api/analytics/route.ts` to always run `normalizeTradesForDisplay(...)` before all analytics aggregations.
+
+Validation:
+- Lint clean on modified API route.
+- Data sanity check:
+  - display USDT total: about `-31.79`
+  - display INR total: about `-2686.04`
+  - confirms USD and INR totals are now different (real conversion), not same number with different symbols.

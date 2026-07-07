@@ -14,7 +14,6 @@ import {
 } from "@/lib/analytics";
 import {
   normalizeTradeMonetary,
-  normalizeTradeCurrency,
   type TradeCurrency,
 } from "@/lib/trade-currency";
 import type { Trade } from "@prisma/client";
@@ -54,11 +53,7 @@ export async function GET(req: NextRequest) {
     const displayParam = searchParams.get("currency");
     const displayCurrency: TradeCurrency = normalizeRequestedDisplayCurrency(req, displayParam);
     const rate = parseFloat(searchParams.get("rate") || "") || (await fetchUsdInrRate());
-    const hasMixedCurrencies =
-      new Set(trades.map((t) => normalizeTradeCurrency(t.currency))).size > 1;
-    const normalized = hasMixedCurrencies
-      ? trades
-      : normalizeTradesForDisplay(trades, displayCurrency, rate);
+    const normalized = normalizeTradesForDisplay(trades, displayCurrency, rate);
 
     switch (type) {
       case "overview":
