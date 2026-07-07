@@ -123,6 +123,9 @@ The user wants a personal trading journal/ledger web app. Key goals:
 - [ ] Task 55 (Ad-hoc): Persist per-day P&L in DB and keep it synced on trade writes
 - [ ] Task 53 (Ad-hoc): Compute displayed streak from daily series in UI
 - [ ] Task 56 (Ad-hoc): Delete all trades data for clean reset
+- [ ] Task 57 (Ad-hoc): Delete all trades data again on user request
+- [ ] Task 58 (Ad-hoc): Add npm script to wipe all DB tables
+- [ ] Task 59 (Ad-hoc): Add table-specific DB wipe script
 
 ## Executor's Feedback or Assistance Requests
 
@@ -387,6 +390,7 @@ Security note from dependency check:
 - For UI consistency, compute displayed streak from daily/calendar series when possible so dashboard and analytics match even if overview fields are stale.
 - To prevent streak drift, use one shared helper for day-based streak logic across both API aggregation and UI rendering.
 - When introducing persisted aggregates (like per-day P&L), hook recomputation into every trade mutation/import path and apply schema with `npm run db:push` before runtime testing.
+- For destructive DB utilities, require an explicit confirmation flag (e.g., `--confirm`) in npm scripts to prevent accidental data wipes.
 
 ### Executor Update — Task 20 (Branding + Landing Hero) Completed
 
@@ -991,3 +995,68 @@ Validation:
 
 Assistance request to user/planner:
 - Please refresh `/dashboard`, `/analytics`, and `/trades` to confirm empty-state behavior after full reset.
+
+### Executor Update — Task 57 (Delete All Trades Data Again) Implemented
+
+Implemented:
+- Re-ran full data reset on user request:
+  - deleted all rows from `Trade`
+  - cleared `DailyPnl` aggregate rows for consistency
+
+Validation:
+- `beforeTrades`: `4298`
+- `deletedTrades`: `4298`
+- `afterTrades`: `0`
+- `beforeDailyPnl`: `0`
+- `deletedDailyPnl`: `0`
+- `afterDailyPnl`: `0`
+
+Assistance request to user/planner:
+- Please refresh `/trades`, `/dashboard`, and `/analytics` to verify empty-state after this second reset.
+
+### Executor Update — Task 58 (All Tables Wipe Script) Implemented
+
+Implemented:
+- Added new script file: `scripts/db-wipe-all.js`.
+- Added npm command in `package.json`:
+  - `db:wipe:all`: `node scripts/db-wipe-all.js`
+- Script behavior:
+  - requires explicit `--confirm` flag to run (safety guard)
+  - wipes all current Prisma tables in dependency-safe order:
+    - `EmailVerificationOtp`
+    - `Trade`
+    - `DailyPnl`
+    - `Subscription`
+    - `CryptoInvoice`
+    - `BillingCustomer`
+    - `User`
+  - prints deleted row counts as JSON.
+
+Validation:
+- Verified safety guard works:
+  - running without confirm exits with instruction message.
+
+Usage:
+- `npm run db:wipe:all -- --confirm`
+
+### Executor Update — Task 59 (Table-Specific Wipe Script) Implemented
+
+Implemented:
+- Added new script file: `scripts/db-wipe-table.js`.
+- Added npm command in `package.json`:
+  - `db:wipe:table`: `node scripts/db-wipe-table.js`
+- Script behavior:
+  - requires `--table <name>` and explicit `--confirm`
+  - resolves common aliases (e.g. `trades`, `daily_pnl`, `users`, `invoices`)
+  - deletes only the requested table and prints deleted count JSON
+  - includes usage/help output with allowed table names
+
+Validation:
+- Verified guard/usage works when called without args.
+
+Usage:
+- Wipe one table:
+  - `npm run db:wipe:table -- --table trade --confirm`
+- Example aliases:
+  - `npm run db:wipe:table -- --table trades --confirm`
+  - `npm run db:wipe:table -- --table daily_pnl --confirm`
