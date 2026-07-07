@@ -1085,6 +1085,26 @@ Validation:
 Assistance request to user/planner:
 - Please hard refresh `/analytics` and verify the June 30 heatmap tooltip now matches DB (`42 trades`, around `-2287.12` in base currency).
 
+### Executor Update — June 30 Still Mismatch (Mixed Currency Mode) Fixed
+
+Implemented:
+- Found the remaining mismatch source:
+  - June 30 includes mixed currencies on the same day (`USDT` and `INR`).
+  - API was converting mixed trades for display, while `DailyPnl` table stores raw summed values.
+  - This made tooltip/day P&L diverge from DB despite matching trade count.
+- Updated `app/api/analytics/route.ts`:
+  - detect mixed currencies in the fetched trade set
+  - when mixed: skip normalization conversion and use raw trade values for analytics aggregation
+  - when not mixed: keep existing display-currency normalization behavior
+
+Validation:
+- Data check for `2026-06-30`:
+  - count: `42`
+  - raw total: `-2287.12`
+  - mixed converted total: `~183.29 USDT` (previous UI behavior)
+- Lint diagnostics clean on modified API file.
+
 ### Lessons
 
 - For realized P&L analytics, always aggregate on `closeDate ?? date` (not only `date`) to avoid day-wise mismatches between UI and persisted daily totals.
+- If a day contains mixed `USDT` and `INR` trades, converted display totals can differ from raw persisted `DailyPnl`; decide and enforce one mode consistently per response.

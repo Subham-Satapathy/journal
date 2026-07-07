@@ -12,7 +12,11 @@ import {
   computeEquityCurve,
   computeSymbolDistribution,
 } from "@/lib/analytics";
-import { normalizeTradeMonetary, type TradeCurrency } from "@/lib/trade-currency";
+import {
+  normalizeTradeMonetary,
+  normalizeTradeCurrency,
+  type TradeCurrency,
+} from "@/lib/trade-currency";
 import type { Trade } from "@prisma/client";
 import { requireActiveSubscription } from "@/lib/api-auth";
 import { normalizeRequestedDisplayCurrency } from "@/lib/geo-currency";
@@ -50,7 +54,11 @@ export async function GET(req: NextRequest) {
     const displayParam = searchParams.get("currency");
     const displayCurrency: TradeCurrency = normalizeRequestedDisplayCurrency(req, displayParam);
     const rate = parseFloat(searchParams.get("rate") || "") || (await fetchUsdInrRate());
-    const normalized = normalizeTradesForDisplay(trades, displayCurrency, rate);
+    const hasMixedCurrencies =
+      new Set(trades.map((t) => normalizeTradeCurrency(t.currency))).size > 1;
+    const normalized = hasMixedCurrencies
+      ? trades
+      : normalizeTradesForDisplay(trades, displayCurrency, rate);
 
     switch (type) {
       case "overview":
