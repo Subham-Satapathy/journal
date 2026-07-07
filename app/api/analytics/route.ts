@@ -12,6 +12,7 @@ import {
   computeEquityCurve,
   computeSymbolDistribution,
 } from "@/lib/analytics";
+import { computeStreakFromDailySeries } from "@/lib/streak";
 import {
   normalizeTradeMonetary,
   type TradeCurrency,
@@ -26,6 +27,28 @@ function normalizeTradesForDisplay(
   rate: number
 ): Trade[] {
   return trades.map((t) => normalizeTradeMonetary(t, displayCurrency, rate));
+}
+
+async function getRawDailySeriesForStreak(
+  userId: string,
+  from?: string | null,
+  to?: string | null
+) {
+  const where: Record<string, unknown> = { userId };
+  if (from || to) {
+    const dateWhere: Record<string, string> = {};
+    if (from) dateWhere.gte = from.slice(0, 10);
+    if (to) dateWhere.lte = to.slice(0, 10);
+    where.date = dateWhere;
+  }
+
+  const rows = await prisma.dailyPnl.findMany({
+    where,
+    orderBy: { date: "asc" },
+    select: { date: true, pnl: true },
+  });
+
+  return rows.map((r) => ({ date: r.date, pnl: r.pnl }));
 }
 
 export async function GET(req: NextRequest) {
@@ -57,7 +80,16 @@ export async function GET(req: NextRequest) {
 
     switch (type) {
       case "overview":
-        return NextResponse.json(computeOverviewStats(normalized));
+      {
+        const overview = computeOverviewStats(normalized);
+        const rawDailySeries = await getRawDailySeriesForStreak(auth.user.id, from, to);
+        const streak = computeStreakFromDailySeries(rawDailySeries);
+        return NextResponse.json({
+          ...overview,
+          currentStreak: streak.current,
+          currentStreakType: streak.type,
+        });
+      }
       case "daily":
         return NextResponse.json(computeDailyPnl(normalized));
       case "weekly":
@@ -75,6 +107,8 @@ export async function GET(req: NextRequest) {
       case "distribution":
         return NextResponse.json(computeSymbolDistribution(normalized));
       case "all": {
+        const rawDailySeries = await getRawDailySeriesForStreak(auth.user.id, from, to);
+        const streak = computeStreakFromDailySeries(rawDailySeries);
         const [overview, daily, weekly, monthly, heatmap, mental, calendar, equity, distribution] =
           await Promise.all([
             computeOverviewStats(normalized),
@@ -87,7 +121,21 @@ export async function GET(req: NextRequest) {
             computeEquityCurve(normalized),
             computeSymbolDistribution(normalized),
           ]);
-        return NextResponse.json({ overview, daily, weekly, monthly, heatmap, mental, calendar, equity, distribution });
+        return NextResponse.json({
+          overview: {
+            ...overview,
+            currentStreak: streak.current,
+            currentStreakType: streak.type,
+          },
+          daily,
+          weekly,
+          monthly,
+          heatmap,
+          mental,
+          calendar,
+          equity,
+          distribution,
+        });
       }
       default:
         return NextResponse.json({ error: "Unknown analytics type" }, { status: 400 });

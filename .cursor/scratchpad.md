@@ -1161,3 +1161,20 @@ Validation:
   - display USDT total: about `-31.79`
   - display INR total: about `-2686.04`
   - confirms USD and INR totals are now different (real conversion), not same number with different symbols.
+
+### Executor Update — Fixed Streak Source-of-Truth Mismatch
+
+Implemented:
+- Root cause found: streak was derived from converted daily series, where mixed-currency conversion changed the June 30 day sign; this produced `4W` instead of raw daily truth `3W`.
+- Updated `app/api/analytics/route.ts`:
+  - for `overview` and `all`, `currentStreak` + `currentStreakType` now come from persisted `DailyPnl` day series (via `computeStreakFromDailySeries`).
+- Updated UI pages to consume backend streak directly:
+  - `app/dashboard/page.tsx` now uses `overview.currentStreak/currentStreakType`
+  - `app/analytics/page.tsx` now uses `overview.currentStreak/currentStreakType`
+
+Validation:
+- Lint diagnostics clean on all modified files.
+- Data verification showed:
+  - raw daily streak: `3W`
+  - converted daily streak: `4W`
+  - patch enforces raw daily streak as source of truth.

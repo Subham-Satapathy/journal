@@ -11,7 +11,6 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Flame, TrendingUp } from "lucide-react";
 import { useCurrency } from "@/lib/currency-context";
 import { CurrencyToggle } from "@/components/ui/CurrencyToggle";
-import { computeStreakFromDailySeries } from "@/lib/streak";
 
 // Stable top-level component — avoids white-screen crash from defining
 // components inside render (IIFE pattern breaks React's rules of hooks).
@@ -122,7 +121,10 @@ export default function AnalyticsPage() {
   }
 
   const { heatmap, mental, calendar, distribution, weekly, monthly, overview } = data!;
-  const streak = computeStreakFromDailySeries(calendar.map((d) => ({ date: d.date, pnl: d.pnl })));
+  const streak = {
+    current: overview.currentStreak,
+    type: overview.currentStreakType as "win" | "loss" | "none",
+  };
 
   const convertedMonthly = monthly;
 

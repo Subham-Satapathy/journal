@@ -12,7 +12,6 @@ import {
 import type { OverviewStats, DailyPnl, WeeklyPnl, MonthlyPnl } from "@/lib/analytics";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { computeStreakFromDailySeries } from "@/lib/streak";
 
 interface DashboardData {
   overview: OverviewStats;
@@ -100,7 +99,10 @@ export default function DashboardPage() {
   }
 
   const { overview, daily, weekly, monthly, equity } = data;
-  const streak = computeStreakFromDailySeries(daily.map((d) => ({ date: d.date, pnl: d.pnl })));
+  const streak = {
+    current: overview.currentStreak,
+    type: overview.currentStreakType,
+  };
   const isEmpty = overview.totalTrades === 0;
 
   return (
