@@ -1108,3 +1108,42 @@ Validation:
 
 - For realized P&L analytics, always aggregate on `closeDate ?? date` (not only `date`) to avoid day-wise mismatches between UI and persisted daily totals.
 - If a day contains mixed `USDT` and `INR` trades, converted display totals can differ from raw persisted `DailyPnl`; decide and enforce one mode consistently per response.
+
+### Executor Update — Rolled Back Latest Mixed-Currency Patch
+
+Implemented:
+- Reverted the latest analytics-route behavior that switched mixed-currency datasets to raw/no-conversion mode.
+- Restored prior API normalization path in `app/api/analytics/route.ts`:
+  - always uses `normalizeTradesForDisplay(...)` based on selected display currency and rate.
+
+Current status:
+- Rollback is applied in working tree and ready for verification.
+
+### Executor Update — Keep Latest Push, Fix Broken Calculations
+
+Implemented:
+- Kept the latest push baseline (no global revert).
+- Fixed analytics source split in `app/api/analytics/route.ts`:
+  - `overview/daily/weekly/monthly/heatmap/mental/equity/distribution` now use display-currency normalization again.
+  - `calendar` now reads from persisted `DailyPnl` (`date`, `tradeCount`, `pnl`) so June 30 heatmap value stays aligned with DB.
+  - `type=all` also returns `calendar` from `DailyPnl`.
+
+Why this fix:
+- The previous mixed-currency bypass applied raw values to every metric, which inflated/broke dashboard calculations.
+- This patch limits raw DB usage to calendar day totals only, while keeping all other calculations in selected display currency.
+
+Validation:
+- Lint diagnostics are clean for `app/api/analytics/route.ts`.
+
+### Executor Update — Restored Previous Mixed-Currency Behavior
+
+Implemented:
+- Addressed user feedback: "before it was different".
+- Updated `app/api/analytics/route.ts` so mixed-currency datasets use the same behavior as before:
+  - detect mixed currencies via `normalizeTradeCurrency`
+  - if mixed: skip display conversion and aggregate using raw trade values for all analytics types
+  - if not mixed: keep normal display-currency conversion path
+- Removed the interim calendar-from-`DailyPnl` split to keep analytics output behavior consistent across cards/charts/calendar/streak inputs.
+
+Validation:
+- No linter errors in touched file.
