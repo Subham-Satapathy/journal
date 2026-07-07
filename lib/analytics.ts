@@ -158,9 +158,19 @@ function computeMaxDrawdownDaily(dailyEntries: Array<{ date: string; pnl: number
 }
 
 function computeStreak(trades: Trade[]): StreakData {
+  // Use close chronology for streak logic (closeDate fallback to date),
+  // then stable tie-breakers for imports with identical timestamps.
   const sorted = [...trades]
     .filter((t) => t.pnl !== null && t.pnl !== 0)
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    .sort((a, b) => {
+      const aTs = new Date(a.closeDate ?? a.date).getTime();
+      const bTs = new Date(b.closeDate ?? b.date).getTime();
+      if (aTs !== bTs) return aTs - bTs;
+      const aCreated = new Date(a.createdAt).getTime();
+      const bCreated = new Date(b.createdAt).getTime();
+      if (aCreated !== bCreated) return aCreated - bCreated;
+      return a.id.localeCompare(b.id);
+    });
   let current = 0;
   let type: "win" | "loss" | "none" = "none";
   let longestWins = 0;

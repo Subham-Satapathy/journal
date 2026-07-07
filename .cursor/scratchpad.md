@@ -117,6 +117,7 @@ The user wants a personal trading journal/ledger web app. Key goals:
 - [ ] Task 48 (Ad-hoc): Apply transparent logo asset across site branding
 - [ ] Task 49 (Ad-hoc): Increase visible favicon size in browser tab
 - [ ] Task 50 (Ad-hoc): Add Vercel Analytics component in root layout
+- [ ] Task 51 (Ad-hoc): Fix winning streak calculation ordering
 
 ## Executor's Feedback or Assistance Requests
 
@@ -376,6 +377,7 @@ Security note from dependency check:
 - When replacing brand images like `/logo.png`, use a version query (`?v=...`) in UI and metadata/email references to avoid stale CDN/browser caches.
 - If a transparent favicon looks too small in browser tabs, crop to alpha bounds and re-center on a square canvas with tighter padding before generating `.ico` sizes.
 - For Vercel page-view tracking, add `<Analytics />` from `@vercel/analytics/next` in the root `app/layout.tsx` so it runs on every route.
+- For streak metrics, sort trades by close chronology (`closeDate` fallback to `date`) with deterministic tie-breakers; sorting only by `date` can misreport current streaks.
 
 ### Executor Update — Task 20 (Branding + Landing Hero) Completed
 
@@ -868,3 +870,19 @@ Validation:
 Assistance request to user/planner:
 - Deploy this update and visit a few pages.
 - If analytics dashboard is empty after ~30 seconds, disable content blockers and navigate across multiple routes.
+
+### Executor Update — Task 51 (Winning Streak Calculation Fix) Implemented (Awaiting Manual Verification)
+
+Implemented:
+- Updated streak ordering logic in `lib/analytics.ts` (`computeStreak`) to use trade close chronology instead of only open date.
+- New sort order for streak computation:
+  1. `closeDate` (fallback `date`)
+  2. `createdAt` (tie-breaker for identical timestamps)
+  3. `id` (final deterministic tie-breaker)
+- This prevents incorrect current win/loss streaks when imported trades share identical `date` values or when close time differs from open time.
+
+Validation:
+- Code-level validation completed for deterministic streak ordering behavior.
+
+Assistance request to user/planner:
+- Please verify on `/analytics` and `/dashboard` that current streak now matches your latest actual trade outcomes.
