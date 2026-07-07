@@ -78,6 +78,10 @@ export interface MentalStateMetrics {
   alerts: string[];
 }
 
+function getTradePnlDate(trade: Pick<Trade, "date" | "closeDate">): Date {
+  return new Date(trade.closeDate ?? trade.date);
+}
+
 export function computeOverviewStats(trades: Trade[]): OverviewStats {
   if (trades.length === 0) {
     return {
@@ -205,7 +209,7 @@ function computeDisciplineScore(
 
 export function groupByDay(trades: Trade[]): Record<string, Trade[]> {
   return trades.reduce<Record<string, Trade[]>>((acc, t) => {
-    const key = getISTDateKey(new Date(t.date));
+    const key = getISTDateKey(getTradePnlDate(t));
     if (!acc[key]) acc[key] = [];
     acc[key].push(t);
     return acc;
@@ -235,7 +239,7 @@ export function computeDailyPnl(trades: Trade[], days = 90): DailyPnl[] {
 export function computeWeeklyPnl(trades: Trade[]): WeeklyPnl[] {
   const closedTrades = trades.filter((t) => t.pnl !== null);
   const grouped = closedTrades.reduce<Record<string, Trade[]>>((acc, t) => {
-    const key = getISTWeekKey(new Date(t.date));
+    const key = getISTWeekKey(getTradePnlDate(t));
     if (!acc[key]) acc[key] = [];
     acc[key].push(t);
     return acc;
@@ -254,7 +258,7 @@ export function computeWeeklyPnl(trades: Trade[]): WeeklyPnl[] {
 export function computeMonthlyPnl(trades: Trade[]): MonthlyPnl[] {
   const closedTrades = trades.filter((t) => t.pnl !== null);
   const grouped = closedTrades.reduce<Record<string, Trade[]>>((acc, t) => {
-    const key = getISTMonthKey(new Date(t.date));
+    const key = getISTMonthKey(getTradePnlDate(t));
     if (!acc[key]) acc[key] = [];
     acc[key].push(t);
     return acc;
@@ -275,7 +279,7 @@ export function computeHourDayHeatmap(trades: Trade[]): HeatmapCell[] {
   const cells: Record<string, { pnl: number; trades: number; wins: number }> = {};
 
   for (const t of closedTrades) {
-    const d = new Date(t.date);
+    const d = getTradePnlDate(t);
     const hour = getISTHour(d);
     const day = getISTDay(d);
     const key = `${day}-${hour}`;
@@ -299,7 +303,7 @@ export function computeHourDayHeatmap(trades: Trade[]): HeatmapCell[] {
 
 export function computeMentalStateMetrics(trades: Trade[]): MentalStateMetrics {
   const closedTrades = trades.filter((t) => t.pnl !== null)
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    .sort((a, b) => getTradePnlDate(a).getTime() - getTradePnlDate(b).getTime());
 
   const alerts: string[] = [];
 
@@ -308,7 +312,7 @@ export function computeMentalStateMetrics(trades: Trade[]): MentalStateMetrics {
   for (let i = 1; i < closedTrades.length; i++) {
     const prev = closedTrades[i - 1];
     const curr = closedTrades[i];
-    const timeDiff = new Date(curr.date).getTime() - new Date(prev.date).getTime();
+    const timeDiff = getTradePnlDate(curr).getTime() - getTradePnlDate(prev).getTime();
     const hoursDiff = timeDiff / (1000 * 60 * 60);
     if (prev.pnl! < -50 && hoursDiff < 2 && curr.quantity > prev.quantity * 1.5) {
       revengeTradingInstances++;
@@ -335,7 +339,7 @@ export function computeMentalStateMetrics(trades: Trade[]): MentalStateMetrics {
   const hourPnl: Record<number, number> = {};
   const hourTrades: Record<number, number> = {};
   for (const t of closedTrades) {
-    const h = getISTHour(new Date(t.date));
+    const h = getISTHour(getTradePnlDate(t));
     hourPnl[h] = (hourPnl[h] || 0) + t.pnl!;
     hourTrades[h] = (hourTrades[h] || 0) + 1;
   }
@@ -347,7 +351,7 @@ export function computeMentalStateMetrics(trades: Trade[]): MentalStateMetrics {
   const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   const dayPnl: Record<number, number> = {};
   for (const t of closedTrades) {
-    const d = getISTDay(new Date(t.date));
+    const d = getISTDay(getTradePnlDate(t));
     dayPnl[d] = (dayPnl[d] || 0) + t.pnl!;
   }
   const dayEntries = Object.entries(dayPnl).sort((a, b) => b[1] - a[1]);
@@ -390,7 +394,7 @@ export function computeCalendarData(trades: Trade[]): Array<{ date: string; coun
 export function computeEquityCurve(trades: Trade[]): Array<{ date: string; equity: number; drawdown: number }> {
   const closedTrades = trades
     .filter((t) => t.pnl !== null)
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    .sort((a, b) => getTradePnlDate(a).getTime() - getTradePnlDate(b).getTime());
 
   let equity = 0;
   let peak = 0;
@@ -399,7 +403,7 @@ export function computeEquityCurve(trades: Trade[]): Array<{ date: string; equit
     if (equity > peak) peak = equity;
     const drawdown = peak > 0 ? ((peak - equity) / peak) * 100 : 0;
     return {
-      date: formatDateTimeISTExport(new Date(t.date)),
+      date: formatDateTimeISTExport(getTradePnlDate(t)),
       equity,
       drawdown,
     };

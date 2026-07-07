@@ -1060,3 +1060,31 @@ Usage:
 - Example aliases:
   - `npm run db:wipe:table -- --table trades --confirm`
   - `npm run db:wipe:table -- --table daily_pnl --confirm`
+
+### Executor Update — June 30 Calendar P&L Mismatch Fixed
+
+Implemented:
+- Root cause identified: analytics grouping used `Trade.date` (entry/open time), while persisted `DailyPnl` uses `closeDate ?? date` (close/realization time).
+- Updated `lib/analytics.ts` to use a shared helper (`closeDate ?? date`) for all P&L-time aggregations:
+  - daily grouping (`groupByDay`)
+  - weekly/monthly aggregates
+  - calendar data
+  - streak input series
+  - hour/day heatmap
+  - mental-state time windows
+  - equity curve ordering/timestamps
+- Updated `app/api/trades/route.ts` day-range and hour/day filters to use the same close-date-first logic so day drilldown remains consistent with heatmap totals.
+
+Validation:
+- Reproduced mismatch and confirmed fix target with data check:
+  - `2026-06-30` by open date: `37 trades`, `212.88`
+  - `2026-06-30` by close date: `42 trades`, `-2287.12`
+  - `DailyPnl` table: `42 trades`, `-2287.12`
+- No lint errors in modified files.
+
+Assistance request to user/planner:
+- Please hard refresh `/analytics` and verify the June 30 heatmap tooltip now matches DB (`42 trades`, around `-2287.12` in base currency).
+
+### Lessons
+
+- For realized P&L analytics, always aggregate on `closeDate ?? date` (not only `date`) to avoid day-wise mismatches between UI and persisted daily totals.

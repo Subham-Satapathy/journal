@@ -24,9 +24,14 @@ export async function GET(req: NextRequest) {
     if (symbol) where.symbol = { contains: symbol, mode: "insensitive" };
     if (side) where.side = { equals: side, mode: "insensitive" };
     if (from || to) {
-      where.date = {};
-      if (from) (where.date as Record<string, Date>).gte = new Date(from);
-      if (to) (where.date as Record<string, Date>).lte = new Date(to);
+      const dateRange: Record<string, Date> = {};
+      if (from) dateRange.gte = new Date(from);
+      if (to) dateRange.lte = new Date(to);
+
+      where.OR = [
+        { closeDate: dateRange },
+        { closeDate: null, date: dateRange },
+      ];
     }
 
     // Hour/day-of-week filter: fetch all then filter in JS (Prisma doesn't support date part queries easily)
@@ -39,7 +44,7 @@ export async function GET(req: NextRequest) {
       const hour = hourParam !== null ? parseInt(hourParam) : null;
       const dow = dayParam !== null ? parseInt(dayParam) : null;
       trades = trades.filter((t) => {
-        const d = new Date(t.date);
+        const d = new Date(t.closeDate ?? t.date);
         if (hour !== null && getISTHour(d) !== hour) return false;
         if (dow !== null && getISTDay(d) !== dow) return false;
         return true;
