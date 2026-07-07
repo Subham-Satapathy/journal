@@ -21,6 +21,22 @@ interface DashboardData {
   equity: Array<{ date: string; equity: number; drawdown: number }>;
 }
 
+function computeStreakFromDailyPnl(days: Array<{ date: string; pnl: number }>) {
+  const sorted = [...days].sort((a, b) => a.date.localeCompare(b.date));
+  let current = 0;
+  let type: "win" | "loss" | "none" = "none";
+  for (const d of sorted) {
+    if (d.pnl === 0) continue;
+    const dayType: "win" | "loss" = d.pnl > 0 ? "win" : "loss";
+    if (type === dayType) current++;
+    else {
+      type = dayType;
+      current = 1;
+    }
+  }
+  return { current, type };
+}
+
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -99,6 +115,7 @@ export default function DashboardPage() {
   }
 
   const { overview, daily, weekly, monthly, equity } = data;
+  const streak = computeStreakFromDailyPnl(daily.map((d) => ({ date: d.date, pnl: d.pnl })));
   const isEmpty = overview.totalTrades === 0;
 
   return (
@@ -186,12 +203,12 @@ export default function DashboardPage() {
               trend={overview.consistencyScore >= 60 ? "up" : "neutral"}
             />
             <StatsCard
-              title={`${overview.currentStreakType === "win" ? "🔥" : "❄️"} Current Streak`}
-              value={`${overview.currentStreak} ${overview.currentStreakType === "win" ? "W" : overview.currentStreakType === "loss" ? "L" : ""}`}
+              title={`${streak.type === "win" ? "🔥" : streak.type === "loss" ? "❄️" : "•"} Current Streak`}
+              value={`${streak.current} ${streak.type === "win" ? "W" : streak.type === "loss" ? "L" : ""}`}
               subValue={`Fees: ${fmtDisplay(overview.totalFees)}`}
               icon={TrendingUp}
-              iconColor={overview.currentStreakType === "win" ? "text-emerald-400" : "text-red-400"}
-              trend={overview.currentStreakType === "win" ? "up" : "down"}
+              iconColor={streak.type === "win" ? "text-emerald-400" : streak.type === "loss" ? "text-red-400" : "text-zinc-400"}
+              trend={streak.type === "win" ? "up" : streak.type === "loss" ? "down" : "neutral"}
             />
           </div>
 

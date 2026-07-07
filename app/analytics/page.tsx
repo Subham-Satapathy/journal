@@ -64,6 +64,22 @@ interface AnalyticsData {
   overview: { longWinRate: number; shortWinRate: number; totalTrades: number; currentStreak: number; currentStreakType: string };
 }
 
+function computeStreakFromDailyPnl(days: Array<{ date: string; pnl: number }>) {
+  const sorted = [...days].sort((a, b) => a.date.localeCompare(b.date));
+  let current = 0;
+  let type: "win" | "loss" | "none" = "none";
+  for (const d of sorted) {
+    if (d.pnl === 0) continue;
+    const dayType: "win" | "loss" = d.pnl > 0 ? "win" : "loss";
+    if (type === dayType) current++;
+    else {
+      type = dayType;
+      current = 1;
+    }
+  }
+  return { current, type };
+}
+
 export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -121,6 +137,7 @@ export default function AnalyticsPage() {
   }
 
   const { heatmap, mental, calendar, distribution, weekly, monthly, overview } = data!;
+  const streak = computeStreakFromDailyPnl(calendar.map((d) => ({ date: d.date, pnl: d.pnl })));
 
   const convertedMonthly = monthly;
 
@@ -155,11 +172,11 @@ export default function AnalyticsPage() {
         <CardContent>
           <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
             <div className="text-center">
-              <div className="text-4xl font-black" style={{ color: overview.currentStreakType === "win" ? "#10b981" : "#ef4444" }}>
-                {overview.currentStreak}
+              <div className="text-4xl font-black" style={{ color: streak.type === "win" ? "#10b981" : streak.type === "loss" ? "#ef4444" : "#a1a1aa" }}>
+                {streak.current}
               </div>
               <div className="text-xs text-zinc-500 mt-1">
-                {overview.currentStreakType === "win" ? "🔥 Win streak" : overview.currentStreakType === "loss" ? "❄️ Loss streak" : "No streak"}
+                {streak.type === "win" ? "🔥 Win streak" : streak.type === "loss" ? "❄️ Loss streak" : "No streak"}
               </div>
             </div>
           </div>

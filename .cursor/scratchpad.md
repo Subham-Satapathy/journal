@@ -119,6 +119,7 @@ The user wants a personal trading journal/ledger web app. Key goals:
 - [ ] Task 50 (Ad-hoc): Add Vercel Analytics component in root layout
 - [ ] Task 51 (Ad-hoc): Fix winning streak calculation ordering
 - [ ] Task 52 (Ad-hoc): Switch streak rule to per-day net result
+- [ ] Task 53 (Ad-hoc): Compute displayed streak from daily series in UI
 
 ## Executor's Feedback or Assistance Requests
 
@@ -380,6 +381,7 @@ Security note from dependency check:
 - For Vercel page-view tracking, add `<Analytics />` from `@vercel/analytics/next` in the root `app/layout.tsx` so it runs on every route.
 - For streak metrics, sort trades by close chronology (`closeDate` fallback to `date`) with deterministic tie-breakers; sorting only by `date` can misreport current streaks.
 - Streak definition can vary by business rule; when user wants per-day streak, aggregate net P&L by IST date first, then compute consecutive win/loss days.
+- For UI consistency, compute displayed streak from daily/calendar series when possible so dashboard and analytics match even if overview fields are stale.
 
 ### Executor Update — Task 20 (Branding + Landing Hero) Completed
 
@@ -905,3 +907,23 @@ Validation:
 
 Assistance request to user/planner:
 - Please verify on `/analytics` and `/dashboard` that streak now matches daily net wins/losses as expected.
+
+### Executor Update — Task 53 (UI Streak Source Hardening) Implemented (Awaiting Manual Verification)
+
+Implemented:
+- Updated streak display to be derived from daily series on the client UI, instead of trusting `overview.currentStreak` directly:
+  - `app/analytics/page.tsx`: streak now computed from `calendar` daily net P&L data.
+  - `app/dashboard/page.tsx`: streak now computed from `daily` P&L series.
+- Added local helper `computeStreakFromDailyPnl(...)` in both pages:
+  - sort by date
+  - ignore zero-net days
+  - count consecutive win/loss days from daily net sign
+
+Why this was added:
+- Even if backend/deployment cache returns stale overview streak fields, the UI streak now reflects the same per-day source data used by analytics charts.
+
+Validation:
+- Code-level validation completed for consistent streak output across Dashboard and Analytics pages.
+
+Assistance request to user/planner:
+- Please verify both `/analytics` and `/dashboard` show the same current streak value/type after reload.
