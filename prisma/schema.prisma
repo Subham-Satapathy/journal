@@ -44,7 +44,22 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   trades       Trade[]
+  dailyPnls    DailyPnl[]
   emailOtps    EmailVerificationOtp[]
+}
+
+model DailyPnl {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date       String   // IST day key: yyyy-MM-dd
+  pnl        Float
+  tradeCount Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, date])
+  @@index([userId, date])
 }
 
 model EmailVerificationOtp {

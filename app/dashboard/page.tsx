@@ -12,6 +12,7 @@ import {
 import type { OverviewStats, DailyPnl, WeeklyPnl, MonthlyPnl } from "@/lib/analytics";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { computeStreakFromDailySeries } from "@/lib/streak";
 
 interface DashboardData {
   overview: OverviewStats;
@@ -19,22 +20,6 @@ interface DashboardData {
   weekly: WeeklyPnl[];
   monthly: MonthlyPnl[];
   equity: Array<{ date: string; equity: number; drawdown: number }>;
-}
-
-function computeStreakFromDailyPnl(days: Array<{ date: string; pnl: number }>) {
-  const sorted = [...days].sort((a, b) => a.date.localeCompare(b.date));
-  let current = 0;
-  let type: "win" | "loss" | "none" = "none";
-  for (const d of sorted) {
-    if (d.pnl === 0) continue;
-    const dayType: "win" | "loss" = d.pnl > 0 ? "win" : "loss";
-    if (type === dayType) current++;
-    else {
-      type = dayType;
-      current = 1;
-    }
-  }
-  return { current, type };
 }
 
 export default function DashboardPage() {
@@ -115,7 +100,7 @@ export default function DashboardPage() {
   }
 
   const { overview, daily, weekly, monthly, equity } = data;
-  const streak = computeStreakFromDailyPnl(daily.map((d) => ({ date: d.date, pnl: d.pnl })));
+  const streak = computeStreakFromDailySeries(daily.map((d) => ({ date: d.date, pnl: d.pnl })));
   const isEmpty = overview.totalTrades === 0;
 
   return (

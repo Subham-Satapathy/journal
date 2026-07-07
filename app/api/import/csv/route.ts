@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { mapCsvColumns, ColumnMapping } from "@/lib/gemini";
 import { parseTradeDate } from "@/lib/datetime";
 import { normalizeTradeCurrency } from "@/lib/trade-currency";
+import { recomputeDailyPnlForUser } from "@/lib/daily-pnl";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 import { requireActiveSubscription } from "@/lib/api-auth";
@@ -184,6 +185,7 @@ export async function POST(req: NextRequest) {
         data: trades as any[],
         skipDuplicates: true,
       });
+      await recomputeDailyPnlForUser(auth.user.id);
 
       const skipped = trades.length - result.count;
       return NextResponse.json({

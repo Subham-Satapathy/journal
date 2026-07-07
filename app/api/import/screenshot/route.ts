@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { extractTradesFromImage } from "@/lib/gemini";
 import { parseTradeDate } from "@/lib/datetime";
 import { requireActiveSubscription } from "@/lib/api-auth";
+import { recomputeDailyPnlForUser } from "@/lib/daily-pnl";
 
 export async function POST(req: NextRequest) {
   try {
@@ -63,6 +64,7 @@ export async function POST(req: NextRequest) {
       }
 
       await prisma.trade.createMany({ data: validTrades, skipDuplicates: true });
+      await recomputeDailyPnlForUser(auth.user.id);
       return NextResponse.json({ saved: validTrades.length });
     }
 

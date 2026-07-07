@@ -119,7 +119,10 @@ The user wants a personal trading journal/ledger web app. Key goals:
 - [ ] Task 50 (Ad-hoc): Add Vercel Analytics component in root layout
 - [ ] Task 51 (Ad-hoc): Fix winning streak calculation ordering
 - [ ] Task 52 (Ad-hoc): Switch streak rule to per-day net result
+- [ ] Task 54 (Ad-hoc): Use shared day-streak helper across API and UI
+- [ ] Task 55 (Ad-hoc): Persist per-day P&L in DB and keep it synced on trade writes
 - [ ] Task 53 (Ad-hoc): Compute displayed streak from daily series in UI
+- [ ] Task 56 (Ad-hoc): Delete all trades data for clean reset
 
 ## Executor's Feedback or Assistance Requests
 
@@ -382,6 +385,8 @@ Security note from dependency check:
 - For streak metrics, sort trades by close chronology (`closeDate` fallback to `date`) with deterministic tie-breakers; sorting only by `date` can misreport current streaks.
 - Streak definition can vary by business rule; when user wants per-day streak, aggregate net P&L by IST date first, then compute consecutive win/loss days.
 - For UI consistency, compute displayed streak from daily/calendar series when possible so dashboard and analytics match even if overview fields are stale.
+- To prevent streak drift, use one shared helper for day-based streak logic across both API aggregation and UI rendering.
+- When introducing persisted aggregates (like per-day P&L), hook recomputation into every trade mutation/import path and apply schema with `npm run db:push` before runtime testing.
 
 ### Executor Update — Task 20 (Branding + Landing Hero) Completed
 
@@ -927,3 +932,62 @@ Validation:
 
 Assistance request to user/planner:
 - Please verify both `/analytics` and `/dashboard` show the same current streak value/type after reload.
+
+### Executor Update — Task 54 (Shared Day-Streak Helper) Implemented (Awaiting Manual Verification)
+
+Implemented:
+- Added shared streak utility `lib/streak.ts` with:
+  - `computeStreakFromDailySeries(...)`
+  - computes current streak + longest win/loss streak using the exact day-by-day sequence approach.
+- Updated backend analytics streak source (`lib/analytics.ts`) to call this shared helper.
+- Updated UI pages to reuse the same shared helper:
+  - `app/analytics/page.tsx`
+  - `app/dashboard/page.tsx`
+- Removed duplicated page-local streak helper logic to avoid drift.
+
+Validation:
+- Code-level validation completed; API and UI now use one shared streak implementation.
+
+Assistance request to user/planner:
+- Please verify streak value remains identical on Dashboard and Analytics after deploy/reload.
+
+### Executor Update — Task 55 (Persist Per-Day P&L in DB) Implemented (Awaiting Manual Verification)
+
+Implemented:
+- Added new Prisma model for persisted day-level P&L:
+  - `DailyPnl` (`userId`, `date`, `pnl`, `tradeCount`, timestamps)
+  - unique key on `[userId, date]`
+  - linked relation on `User.dailyPnls`
+- Added recompute utility `lib/daily-pnl.ts`:
+  - computes IST day net P&L from closed trades (`closeDate` fallback `date`)
+  - rewrites user day rows deterministically (`deleteMany` + `createMany`)
+- Hooked recompute into all key trade mutation paths:
+  - `POST/DELETE /api/trades`
+  - `PATCH/DELETE /api/trades/[id]`
+  - `POST /api/import/csv` (import action)
+  - `POST /api/import/screenshot` (save action)
+  - `POST /api/settings/fix-dates`
+
+Validation:
+- Code-level validation completed for mutation-path synchronization.
+
+Assistance request to user/planner:
+- Run `npm run db:push` to create the new `DailyPnl` table before testing in deployed/local runtime.
+- After that, add/edit/delete/import a trade and confirm day-level rows stay in sync.
+
+### Executor Update — Task 56 (Delete All Trades Data) Implemented
+
+Implemented:
+- Deleted all rows from `Trade` table.
+- Cleared `DailyPnl` rows to keep aggregated day metrics in sync with empty trades state.
+
+Validation:
+- `beforeTrades`: `4248`
+- `deletedTrades`: `4248`
+- `afterTrades`: `0`
+- `beforeDailyPnl`: `0`
+- `deletedDailyPnl`: `0`
+- `afterDailyPnl`: `0`
+
+Assistance request to user/planner:
+- Please refresh `/dashboard`, `/analytics`, and `/trades` to confirm empty-state behavior after full reset.

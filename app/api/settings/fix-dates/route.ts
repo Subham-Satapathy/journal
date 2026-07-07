@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/api-auth";
+import { recomputeDailyPnlForUser } from "@/lib/daily-pnl";
 
 /**
  * Fix dates imported with UTC (Z) when broker sheet uses UTC+2.
@@ -29,6 +30,7 @@ export async function POST(req: NextRequest) {
       });
       updated += 1;
     }
+    await recomputeDailyPnlForUser(auth.user.id);
 
     return NextResponse.json({ ok: true, updated });
   } catch (error) {

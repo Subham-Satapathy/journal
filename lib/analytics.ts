@@ -7,6 +7,7 @@ import {
   getISTDay,
   formatDateTimeISTExport,
 } from "@/lib/datetime";
+import { computeStreakFromDailySeries } from "@/lib/streak";
 
 export interface DailyPnl {
   date: string;
@@ -158,48 +159,16 @@ function computeMaxDrawdownDaily(dailyEntries: Array<{ date: string; pnl: number
 }
 
 function computeStreak(trades: Trade[]): StreakData {
-  // Streak is defined by net result per day (user-approved rule):
-  // each day contributes one outcome: win (net > 0) or loss (net < 0).
   const dailyMap = new Map<string, number>();
   for (const t of trades) {
     if (t.pnl === null) continue;
     const key = getISTDateKey(new Date(t.closeDate ?? t.date));
     dailyMap.set(key, (dailyMap.get(key) ?? 0) + t.pnl);
   }
-  const dailyOutcomes = [...dailyMap.entries()]
+  const dailySeries = [...dailyMap.entries()]
     .sort((a, b) => a[0].localeCompare(b[0]))
-    .map(([, pnl]) => pnl)
-    .filter((pnl) => pnl !== 0);
-
-  let current = 0;
-  let type: "win" | "loss" | "none" = "none";
-  let longestWins = 0;
-  let longestLosses = 0;
-  let tempStreak = 0;
-  let tempType: "win" | "loss" | "none" = "none";
-
-  for (const pnl of dailyOutcomes) {
-    const isWin = pnl > 0;
-    const thisType: "win" | "loss" = isWin ? "win" : "loss";
-
-    if (tempType === thisType) {
-      tempStreak++;
-    } else {
-      if (tempType === "win") longestWins = Math.max(longestWins, tempStreak);
-      if (tempType === "loss") longestLosses = Math.max(longestLosses, tempStreak);
-      tempType = thisType;
-      tempStreak = 1;
-    }
-  }
-  if (tempType === "win") longestWins = Math.max(longestWins, tempStreak);
-  if (tempType === "loss") longestLosses = Math.max(longestLosses, tempStreak);
-
-  if (dailyOutcomes.length > 0) {
-    current = tempStreak;
-    type = tempType;
-  }
-
-  return { current, type, longest: { wins: longestWins, losses: longestLosses } };
+    .map(([date, pnl]) => ({ date, pnl }));
+  return computeStreakFromDailySeries(dailySeries);
 }
 
 function computeDisciplineScore(

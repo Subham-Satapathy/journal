@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireActiveSubscription } from "@/lib/api-auth";
+import { recomputeDailyPnlForUser } from "@/lib/daily-pnl";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -21,6 +22,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ error: "Trade not found" }, { status: 404 });
     }
     const trade = await prisma.trade.findFirst({ where: { id, userId: auth.user.id } });
+    await recomputeDailyPnlForUser(auth.user.id);
     return NextResponse.json(trade);
   } catch (error) {
     console.error("PATCH /api/trades/[id] error:", error);
@@ -38,6 +40,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     if (deleted.count === 0) {
       return NextResponse.json({ error: "Trade not found" }, { status: 404 });
     }
+    await recomputeDailyPnlForUser(auth.user.id);
     return NextResponse.json({ success: true, deleted: deleted.count });
   } catch (error) {
     console.error("DELETE /api/trades/[id] error:", error);

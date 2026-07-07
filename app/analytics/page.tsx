@@ -11,6 +11,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Flame, TrendingUp } from "lucide-react";
 import { useCurrency } from "@/lib/currency-context";
 import { CurrencyToggle } from "@/components/ui/CurrencyToggle";
+import { computeStreakFromDailySeries } from "@/lib/streak";
 
 // Stable top-level component — avoids white-screen crash from defining
 // components inside render (IIFE pattern breaks React's rules of hooks).
@@ -62,22 +63,6 @@ interface AnalyticsData {
   weekly: Array<{ week: string; pnl: number; trades: number; cumulative: number }>;
   monthly: Array<{ month: string; pnl: number; trades: number; cumulative: number }>;
   overview: { longWinRate: number; shortWinRate: number; totalTrades: number; currentStreak: number; currentStreakType: string };
-}
-
-function computeStreakFromDailyPnl(days: Array<{ date: string; pnl: number }>) {
-  const sorted = [...days].sort((a, b) => a.date.localeCompare(b.date));
-  let current = 0;
-  let type: "win" | "loss" | "none" = "none";
-  for (const d of sorted) {
-    if (d.pnl === 0) continue;
-    const dayType: "win" | "loss" = d.pnl > 0 ? "win" : "loss";
-    if (type === dayType) current++;
-    else {
-      type = dayType;
-      current = 1;
-    }
-  }
-  return { current, type };
 }
 
 export default function AnalyticsPage() {
@@ -137,7 +122,7 @@ export default function AnalyticsPage() {
   }
 
   const { heatmap, mental, calendar, distribution, weekly, monthly, overview } = data!;
-  const streak = computeStreakFromDailyPnl(calendar.map((d) => ({ date: d.date, pnl: d.pnl })));
+  const streak = computeStreakFromDailySeries(calendar.map((d) => ({ date: d.date, pnl: d.pnl })));
 
   const convertedMonthly = monthly;
 

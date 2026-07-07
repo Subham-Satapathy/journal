@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getISTHour, getISTDay } from "@/lib/datetime";
 import { requireActiveSubscription } from "@/lib/api-auth";
+import { recomputeDailyPnlForUser } from "@/lib/daily-pnl";
 
 export async function GET(req: NextRequest) {
   try {
@@ -89,6 +90,7 @@ export async function POST(req: NextRequest) {
         importSource: importSource || "manual",
       },
     });
+    await recomputeDailyPnlForUser(auth.user.id);
 
     return NextResponse.json(trade, { status: 201 });
   } catch (error) {
@@ -108,6 +110,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "No IDs provided" }, { status: 400 });
     }
     await prisma.trade.deleteMany({ where: { id: { in: ids }, userId: auth.user.id } });
+    await recomputeDailyPnlForUser(auth.user.id);
     return NextResponse.json({ deleted: ids.length });
   } catch (error) {
     console.error("DELETE /api/trades error:", error);
