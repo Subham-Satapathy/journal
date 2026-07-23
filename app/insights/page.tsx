@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Brain, Sparkles, Clock, TrendingUp, AlertCircle, FlaskConical, CheckCircle2, XCircle } from "lucide-react";
@@ -80,8 +81,8 @@ const PERIOD_LABELS: Record<Period, string> = {
 
 function MarkdownContent({ content }: { content: string }) {
   return (
-    <div className="prose-dark text-sm leading-7 text-zinc-300 whitespace-pre-wrap break-words">
-      {content}
+    <div className="prose-dark text-sm leading-7 text-zinc-300">
+      <ReactMarkdown>{content}</ReactMarkdown>
     </div>
   );
 }

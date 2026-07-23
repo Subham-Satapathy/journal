@@ -83,7 +83,7 @@ async function generateText(prompt: string): Promise<string> {
   const model = await resolveModel();
   return post(model, {
     contents: [{ parts: [{ text: prompt }] }],
-    generationConfig: { temperature: 0.7, maxOutputTokens: 2048 },
+    generationConfig: { temperature: 0.7, maxOutputTokens: 4096 },
   });
 }
 
