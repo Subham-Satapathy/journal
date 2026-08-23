@@ -41,7 +41,7 @@ export function convertTradePnl(
 }
 
 /** Normalize all monetary fields on a trade clone for analytics aggregation. */
-export function normalizeTradeMonetary<T extends { pnl: number | null; fees?: number | null; currency?: string | null; entryPrice?: number; exitPrice?: number | null }>(
+export function normalizeTradeMonetary<T extends { pnl: number | null; fees?: number | null; currency?: string | null; entryPrice?: number; exitPrice?: number | null; quantity?: number }>(
   trade: T,
   to: TradeCurrency,
   rate: number
@@ -54,5 +54,8 @@ export function normalizeTradeMonetary<T extends { pnl: number | null; fees?: nu
     fees: trade.fees != null ? convertTradeAmount(trade.fees, from, to, rate) : trade.fees,
     entryPrice: trade.entryPrice != null ? convertTradeAmount(trade.entryPrice, from, to, rate) : trade.entryPrice,
     exitPrice: trade.exitPrice != null ? convertTradeAmount(trade.exitPrice!, from, to, rate) : trade.exitPrice,
+    // quantity is the stake amount for binary options — must convert alongside pnl, or
+    // pnl/quantity ratios (payout %, stake escalation) come out nonsensical for mixed accounts.
+    quantity: trade.quantity != null ? convertTradeAmount(trade.quantity, from, to, rate) : trade.quantity,
   };
 }
