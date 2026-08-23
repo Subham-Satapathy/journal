@@ -6,6 +6,7 @@ import { PnlChart } from "@/components/dashboard/PnlChart";
 import { EquityCurve } from "@/components/dashboard/EquityCurve";
 import { useCurrency } from "@/lib/currency-context";
 import { CurrencyToggle } from "@/components/ui/CurrencyToggle";
+import { InfoTooltip } from "@/components/ui/InfoTooltip";
 import {
   TrendingUp, TrendingDown, Target, Zap, Trophy, Shield, DollarSign, Scale
 } from "lucide-react";
@@ -154,6 +155,7 @@ export default function DashboardPage() {
               icon={DollarSign}
               iconColor={overview.totalPnl >= 0 ? "text-emerald-400" : "text-red-400"}
               trend={overview.totalPnl >= 0 ? "up" : "down"}
+              description="Sum of every trade's profit/loss, converted to your display currency."
             />
             <StatsCard
               title="Win Rate"
@@ -162,6 +164,7 @@ export default function DashboardPage() {
               icon={Target}
               iconColor="text-indigo-400"
               trend={overview.winRate >= 50 ? "up" : "down"}
+              description="Share of closed trades that were wins."
             />
             <StatsCard
               title={`Best Day (${currency})`}
@@ -169,6 +172,7 @@ export default function DashboardPage() {
               icon={Trophy}
               iconColor="text-amber-400"
               trend="up"
+              description="Your single most profitable day, by total P&L on that day."
             />
             <StatsCard
               title={`Max Drawdown (${currency})`}
@@ -176,6 +180,7 @@ export default function DashboardPage() {
               icon={TrendingDown}
               iconColor="text-red-400"
               trend="down"
+              description="The largest drop from a peak to a low point in your cumulative daily P&L."
             />
             <StatsCard
               title="Payout Edge"
@@ -184,15 +189,31 @@ export default function DashboardPage() {
               icon={Zap}
               iconColor="text-cyan-400"
               trend={overview.edgeVsBreakeven >= 0 ? "up" : "down"}
+              description="Binary options pay a fixed % on a win and lose the full stake — so what matters is whether your win rate clears the breakeven rate implied by that payout. This shows how many percentage points above (+) or below (-) breakeven you are."
             />
-            <StatsCard
-              title="Stake Discipline"
-              value={`${overview.stakeEscalationRatio.toFixed(2)}x`}
-              subValue="Max stake vs. avg stake"
-              icon={Scale}
-              iconColor="text-fuchsia-400"
-              trend={overview.stakeEscalationRatio <= 1.5 ? "up" : overview.stakeEscalationRatio <= 3 ? "neutral" : "down"}
-            />
+            {overview.maxStakeTrade ? (
+              <Link href={`/trades?symbol=${encodeURIComponent(overview.maxStakeTrade.symbol)}`} className="block">
+                <StatsCard
+                  title="Stake Discipline"
+                  value={`${overview.stakeEscalationRatio.toFixed(2)}x`}
+                  subValue={`Largest: ${overview.maxStakeTrade.symbol} · ${new Date(overview.maxStakeTrade.date).toLocaleDateString()} →`}
+                  icon={Scale}
+                  iconColor="text-fuchsia-400"
+                  trend={overview.stakeEscalationRatio <= 1.5 ? "up" : overview.stakeEscalationRatio <= 3 ? "neutral" : "down"}
+                  description="Your largest single stake divided by your average stake. Near 1x means flat, disciplined sizing; a high ratio flags martingale-style stake doubling after losses. Tap to find the trade driving this."
+                />
+              </Link>
+            ) : (
+              <StatsCard
+                title="Stake Discipline"
+                value={`${overview.stakeEscalationRatio.toFixed(2)}x`}
+                subValue="Max stake vs. avg stake"
+                icon={Scale}
+                iconColor="text-fuchsia-400"
+                trend={overview.stakeEscalationRatio <= 1.5 ? "up" : overview.stakeEscalationRatio <= 3 ? "neutral" : "down"}
+                description="Your largest single stake divided by your average stake. Near 1x means flat, disciplined sizing; a high ratio flags martingale-style stake doubling after losses."
+              />
+            )}
             <StatsCard
               title="Consistency"
               value={`${overview.consistencyScore.toFixed(0)}%`}
@@ -200,6 +221,7 @@ export default function DashboardPage() {
               icon={Shield}
               iconColor="text-teal-400"
               trend={overview.consistencyScore >= 60 ? "up" : "neutral"}
+              description="Share of your trading days that ended net profitable."
             />
             <StatsCard
               title={`${streak.type === "win" ? "🔥" : streak.type === "loss" ? "❄️" : "•"} Current Streak`}
@@ -208,19 +230,26 @@ export default function DashboardPage() {
               icon={TrendingUp}
               iconColor={streak.type === "win" ? "text-emerald-400" : streak.type === "loss" ? "text-red-400" : "text-zinc-400"}
               trend={streak.type === "win" ? "up" : streak.type === "loss" ? "down" : "neutral"}
+              description="Consecutive winning or losing days in a row, based on each day's net P&L."
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
-              <div className="text-xs text-zinc-500 mb-2">Call Win Rate</div>
+              <div className="flex items-center gap-1 mb-2">
+                <div className="text-xs text-zinc-500">Call Win Rate</div>
+                <InfoTooltip text="Win rate on CALL / up-direction trades only." />
+              </div>
               <div className="text-xl font-bold text-emerald-400">{overview.callWinRate.toFixed(1)}%</div>
               <div className="mt-2 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
                 <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${overview.callWinRate}%` }} />
               </div>
             </div>
             <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
-              <div className="text-xs text-zinc-500 mb-2">Put Win Rate</div>
+              <div className="flex items-center gap-1 mb-2">
+                <div className="text-xs text-zinc-500">Put Win Rate</div>
+                <InfoTooltip text="Win rate on PUT / down-direction trades only." />
+              </div>
               <div className="text-xl font-bold text-red-400">{overview.putWinRate.toFixed(1)}%</div>
               <div className="mt-2 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
                 <div className="h-full bg-red-500 rounded-full" style={{ width: `${overview.putWinRate}%` }} />

@@ -39,6 +39,12 @@ export function TradesTable() {
   const { fmt } = useCurrency();
   const limit = 20;
 
+  // Seed the symbol filter from a deep link, e.g. /trades?symbol=EURUSD from a dashboard stat.
+  useEffect(() => {
+    const symbolParam = new URLSearchParams(window.location.search).get("symbol");
+    if (symbolParam) setSearch(symbolParam);
+  }, []);
+
   const fetchTrades = useCallback(async () => {
     setLoading(true);
     try {

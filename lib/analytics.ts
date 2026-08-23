@@ -64,6 +64,8 @@ export interface OverviewStats {
   edgeVsBreakeven: number;
   /** Largest stake / average stake among closed trades — flags martingale-style stake escalation. */
   stakeEscalationRatio: number;
+  /** The trade with the largest stake, so the UI can point the user at what's driving stakeEscalationRatio. */
+  maxStakeTrade: { id: string; symbol: string; date: string } | null;
 }
 
 export interface StreakData {
@@ -98,6 +100,7 @@ export function computeOverviewStats(trades: Trade[]): OverviewStats {
       callWinRate: 0, putWinRate: 0, currentStreak: 0,
       currentStreakType: "none", consistencyScore: 0, disciplineScore: 0,
       avgPayoutRatio: 0, breakevenWinRate: 100, edgeVsBreakeven: 0, stakeEscalationRatio: 0,
+      maxStakeTrade: null,
     };
   }
 
@@ -146,10 +149,18 @@ export function computeOverviewStats(trades: Trade[]): OverviewStats {
   const breakevenWinRate = avgPayoutRatio > 0 ? 100 / (1 + avgPayoutRatio) : 100;
   const edgeVsBreakeven = winRate - breakevenWinRate;
 
-  const stakes = closedTrades.filter((t) => t.quantity > 0).map((t) => t.quantity);
+  const stakedTrades = closedTrades.filter((t) => t.quantity > 0);
+  const stakes = stakedTrades.map((t) => t.quantity);
   const avgStake = stakes.length > 0 ? stakes.reduce((a, b) => a + b, 0) / stakes.length : 0;
   const maxStake = stakes.length > 0 ? Math.max(...stakes) : 0;
   const stakeEscalationRatio = avgStake > 0 ? maxStake / avgStake : 0;
+  const maxStakeTradeRaw = stakedTrades.reduce<Trade | null>(
+    (max, t) => (!max || t.quantity > max.quantity ? t : max),
+    null
+  );
+  const maxStakeTrade = maxStakeTradeRaw
+    ? { id: maxStakeTradeRaw.id, symbol: maxStakeTradeRaw.symbol, date: getTradePnlDate(maxStakeTradeRaw).toISOString() }
+    : null;
 
   // Streaks
   const streak = computeStreak(closedTrades);
@@ -167,7 +178,7 @@ export function computeOverviewStats(trades: Trade[]): OverviewStats {
     totalFees, callWinRate, putWinRate,
     currentStreak: streak.current, currentStreakType: streak.type,
     consistencyScore, disciplineScore,
-    avgPayoutRatio, breakevenWinRate, edgeVsBreakeven, stakeEscalationRatio,
+    avgPayoutRatio, breakevenWinRate, edgeVsBreakeven, stakeEscalationRatio, maxStakeTrade,
   };
 }
 

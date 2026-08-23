@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoTooltip } from "@/components/ui/InfoTooltip";
 import { cn } from "@/lib/utils";
 import { LucideIcon } from "lucide-react";
 
@@ -11,6 +12,8 @@ interface StatsCardProps {
   iconColor?: string;
   trend?: "up" | "down" | "neutral";
   className?: string;
+  /** Short explainer shown via an info icon next to the title. */
+  description?: string;
 }
 
 export function StatsCard({
@@ -22,6 +25,7 @@ export function StatsCard({
   iconColor = "text-indigo-400",
   trend,
   className,
+  description,
 }: StatsCardProps) {
   const isPositive = trend === "up" || (change !== undefined && change > 0);
   const isNegative = trend === "down" || (change !== undefined && change < 0);
@@ -30,7 +34,10 @@ export function StatsCard({
     <Card className={cn("hover:border-zinc-700 transition-colors", className)}>
       <CardHeader className="pb-0">
         <div className="flex items-center justify-between gap-2">
-          <CardTitle className="text-xs sm:text-sm leading-tight">{title}</CardTitle>
+          <div className="flex items-center gap-1 min-w-0">
+            <CardTitle className="text-xs sm:text-sm leading-tight truncate">{title}</CardTitle>
+            {description && <InfoTooltip text={description} />}
+          </div>
           <div className={cn("w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-zinc-800 flex items-center justify-center shrink-0", iconColor)}>
             <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </div>
