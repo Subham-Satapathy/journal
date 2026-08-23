@@ -22,6 +22,8 @@ interface CurrencyContextValue {
   fmt: (amount: number, fromCurrency?: Currency | string | null) => string;
   symbol: string;
   loading: boolean;
+  /** True once the live exchange rate has been fetched (or the fetch has failed) at least once. */
+  rateReady: boolean;
   analyticsQuery: () => string;
 }
 
@@ -40,6 +42,7 @@ const CurrencyContext = createContext<CurrencyContextValue>({
   fmtDisplay: (v) => `$${v.toFixed(2)}`,
   symbol: "$",
   loading: false,
+  rateReady: false,
   analyticsQuery: () => "",
 });
 
@@ -51,6 +54,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
   const [rate, setRate] = useState(84.5);
   const [rateUpdatedAt, setRateUpdatedAt] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+  const [rateReady, setRateReady] = useState(false);
 
   useEffect(() => {
     const savedDisplay = localStorage.getItem("display_currency");
@@ -93,6 +97,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
       }
     } catch { /* use default */ } finally {
       setLoading(false);
+      setRateReady(true);
     }
   }, []);
 
@@ -146,7 +151,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
       displayCurrency, baseCurrency, allowedDisplayCurrencies, canToggleDisplayCurrency: allowedDisplayCurrencies.length > 1, rate, rateUpdatedAt, mixedCurrencies,
       setDisplayCurrency, setBaseCurrency, convert, fmt, fmtDisplay,
       symbol: displayCurrency === "INR" ? "₹" : "$",
-      loading, analyticsQuery,
+      loading, rateReady, analyticsQuery,
     }}>
       {children}
     </CurrencyContext.Provider>

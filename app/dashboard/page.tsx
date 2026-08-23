@@ -25,9 +25,13 @@ export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [mixedCurrencies, setMixedCurrencies] = useState(false);
-  const { fmtDisplay, symbol, displayCurrency: currency, analyticsQuery } = useCurrency();
+  const { fmtDisplay, symbol, displayCurrency: currency, analyticsQuery, rateReady } = useCurrency();
 
   useEffect(() => {
+    // Wait for the live FX rate to load first — fetching with the placeholder default
+    // rate produces a wrong total that then visibly jumps once the real rate arrives.
+    if (!rateReady) return;
+
     const fetchAll = async () => {
       try {
         const q = analyticsQuery();
@@ -60,7 +64,7 @@ export default function DashboardPage() {
       }
     };
     fetchAll();
-  }, [analyticsQuery]);
+  }, [analyticsQuery, rateReady]);
 
   if (loading) {
     return (

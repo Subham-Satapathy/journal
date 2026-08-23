@@ -68,9 +68,13 @@ export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [mixedCurrencies, setMixedCurrencies] = useState(false);
-  const { fmtDisplay, symbol, analyticsQuery } = useCurrency();
+  const { fmtDisplay, symbol, analyticsQuery, rateReady } = useCurrency();
 
   useEffect(() => {
+    // Wait for the live FX rate to load first — fetching with the placeholder default
+    // rate produces wrong totals that then visibly jump once the real rate arrives.
+    if (!rateReady) return;
+
     const fetchAll = async () => {
       const q = analyticsQuery();
       const [heatmapRes, mentalRes, calendarRes, distRes, weeklyRes, monthlyRes, overviewRes, detectRes] = await Promise.all([
@@ -107,7 +111,7 @@ export default function AnalyticsPage() {
       setLoading(false);
     };
     fetchAll();
-  }, [analyticsQuery]);
+  }, [analyticsQuery, rateReady]);
 
   if (loading) {
     return (
