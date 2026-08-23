@@ -65,7 +65,17 @@ export interface OverviewStats {
   /** Largest stake / average stake among closed trades — flags martingale-style stake escalation. */
   stakeEscalationRatio: number;
   /** The trade with the largest stake, so the UI can point the user at what's driving stakeEscalationRatio. */
-  maxStakeTrade: { id: string; symbol: string; date: string } | null;
+  maxStakeTrade: StakeTradeRef | null;
+  /** The trade with the smallest stake. */
+  minStakeTrade: StakeTradeRef | null;
+}
+
+export interface StakeTradeRef {
+  id: string;
+  symbol: string;
+  date: string;
+  /** Stake amount placed on this trade, in the same display currency as the rest of OverviewStats. */
+  amount: number;
 }
 
 export interface StreakData {
@@ -100,7 +110,7 @@ export function computeOverviewStats(trades: Trade[]): OverviewStats {
       callWinRate: 0, putWinRate: 0, currentStreak: 0,
       currentStreakType: "none", consistencyScore: 0, disciplineScore: 0,
       avgPayoutRatio: 0, breakevenWinRate: 100, edgeVsBreakeven: 0, stakeEscalationRatio: 0,
-      maxStakeTrade: null,
+      maxStakeTrade: null, minStakeTrade: null,
     };
   }
 
@@ -158,9 +168,14 @@ export function computeOverviewStats(trades: Trade[]): OverviewStats {
     (max, t) => (!max || t.quantity > max.quantity ? t : max),
     null
   );
-  const maxStakeTrade = maxStakeTradeRaw
-    ? { id: maxStakeTradeRaw.id, symbol: maxStakeTradeRaw.symbol, date: getTradePnlDate(maxStakeTradeRaw).toISOString() }
-    : null;
+  const minStakeTradeRaw = stakedTrades.reduce<Trade | null>(
+    (min, t) => (!min || t.quantity < min.quantity ? t : min),
+    null
+  );
+  const toStakeTradeRef = (t: Trade): StakeTradeRef =>
+    ({ id: t.id, symbol: t.symbol, date: getTradePnlDate(t).toISOString(), amount: t.quantity });
+  const maxStakeTrade = maxStakeTradeRaw ? toStakeTradeRef(maxStakeTradeRaw) : null;
+  const minStakeTrade = minStakeTradeRaw ? toStakeTradeRef(minStakeTradeRaw) : null;
 
   // Streaks
   const streak = computeStreak(closedTrades);
@@ -178,7 +193,7 @@ export function computeOverviewStats(trades: Trade[]): OverviewStats {
     totalFees, callWinRate, putWinRate,
     currentStreak: streak.current, currentStreakType: streak.type,
     consistencyScore, disciplineScore,
-    avgPayoutRatio, breakevenWinRate, edgeVsBreakeven, stakeEscalationRatio, maxStakeTrade,
+    avgPayoutRatio, breakevenWinRate, edgeVsBreakeven, stakeEscalationRatio, maxStakeTrade, minStakeTrade,
   };
 }
 

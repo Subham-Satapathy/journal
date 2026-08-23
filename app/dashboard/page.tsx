@@ -6,9 +6,8 @@ import { PnlChart } from "@/components/dashboard/PnlChart";
 import { EquityCurve } from "@/components/dashboard/EquityCurve";
 import { useCurrency } from "@/lib/currency-context";
 import { CurrencyToggle } from "@/components/ui/CurrencyToggle";
-import { InfoTooltip } from "@/components/ui/InfoTooltip";
 import {
-  TrendingUp, TrendingDown, Target, Zap, Trophy, Shield, DollarSign, Scale
+  TrendingUp, TrendingDown, Target, Zap, Trophy, Shield, DollarSign, Scale, ArrowUpRight, ArrowDownRight
 } from "lucide-react";
 import type { OverviewStats, DailyPnl, WeeklyPnl, MonthlyPnl } from "@/lib/analytics";
 import Link from "next/link";
@@ -236,25 +235,68 @@ export default function DashboardPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
-              <div className="flex items-center gap-1 mb-2">
-                <div className="text-xs text-zinc-500">Call Win Rate</div>
-                <InfoTooltip text="Win rate on CALL / up-direction trades only." />
-              </div>
-              <div className="text-xl font-bold text-emerald-400">{overview.callWinRate.toFixed(1)}%</div>
+              <div className="text-xs text-zinc-500">Call Win Rate</div>
+              <div className="text-[10px] sm:text-[11px] text-zinc-600 leading-snug mt-0.5">Win rate on CALL / up-direction trades only.</div>
+              <div className="text-xl font-bold text-emerald-400 mt-2">{overview.callWinRate.toFixed(1)}%</div>
               <div className="mt-2 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
                 <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${overview.callWinRate}%` }} />
               </div>
             </div>
             <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
-              <div className="flex items-center gap-1 mb-2">
-                <div className="text-xs text-zinc-500">Put Win Rate</div>
-                <InfoTooltip text="Win rate on PUT / down-direction trades only." />
-              </div>
-              <div className="text-xl font-bold text-red-400">{overview.putWinRate.toFixed(1)}%</div>
+              <div className="text-xs text-zinc-500">Put Win Rate</div>
+              <div className="text-[10px] sm:text-[11px] text-zinc-600 leading-snug mt-0.5">Win rate on PUT / down-direction trades only.</div>
+              <div className="text-xl font-bold text-red-400 mt-2">{overview.putWinRate.toFixed(1)}%</div>
               <div className="mt-2 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
                 <div className="h-full bg-red-500 rounded-full" style={{ width: `${overview.putWinRate}%` }} />
               </div>
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            {overview.maxStakeTrade ? (
+              <Link href={`/trades?symbol=${encodeURIComponent(overview.maxStakeTrade.symbol)}`} className="block">
+                <StatsCard
+                  title={`Highest Stake (${currency})`}
+                  value={fmtDisplay(overview.maxStakeTrade.amount)}
+                  subValue={`${overview.maxStakeTrade.symbol} · ${new Date(overview.maxStakeTrade.date).toLocaleDateString()} →`}
+                  icon={ArrowUpRight}
+                  iconColor="text-emerald-400"
+                  trend="neutral"
+                  description="The largest amount you've placed on a single trade. Tap to view it."
+                />
+              </Link>
+            ) : (
+              <StatsCard
+                title={`Highest Stake (${currency})`}
+                value={fmtDisplay(0)}
+                icon={ArrowUpRight}
+                iconColor="text-emerald-400"
+                trend="neutral"
+                description="The largest amount you've placed on a single trade."
+              />
+            )}
+            {overview.minStakeTrade ? (
+              <Link href={`/trades?symbol=${encodeURIComponent(overview.minStakeTrade.symbol)}`} className="block">
+                <StatsCard
+                  title={`Lowest Stake (${currency})`}
+                  value={fmtDisplay(overview.minStakeTrade.amount)}
+                  subValue={`${overview.minStakeTrade.symbol} · ${new Date(overview.minStakeTrade.date).toLocaleDateString()} →`}
+                  icon={ArrowDownRight}
+                  iconColor="text-zinc-400"
+                  trend="neutral"
+                  description="The smallest amount you've placed on a single trade. Tap to view it."
+                />
+              </Link>
+            ) : (
+              <StatsCard
+                title={`Lowest Stake (${currency})`}
+                value={fmtDisplay(0)}
+                icon={ArrowDownRight}
+                iconColor="text-zinc-400"
+                trend="neutral"
+                description="The smallest amount you've placed on a single trade."
+              />
+            )}
           </div>
 
           <PnlChart daily={daily} weekly={weekly} monthly={monthly} />
