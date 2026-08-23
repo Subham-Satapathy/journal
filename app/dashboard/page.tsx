@@ -7,7 +7,7 @@ import { EquityCurve } from "@/components/dashboard/EquityCurve";
 import { useCurrency } from "@/lib/currency-context";
 import { CurrencyToggle } from "@/components/ui/CurrencyToggle";
 import {
-  TrendingUp, TrendingDown, Target, Zap, Trophy, Shield, DollarSign
+  TrendingUp, TrendingDown, Target, Zap, Trophy, Shield, DollarSign, Scale
 } from "lucide-react";
 import type { OverviewStats, DailyPnl, WeeklyPnl, MonthlyPnl } from "@/lib/analytics";
 import Link from "next/link";
@@ -174,12 +174,20 @@ export default function DashboardPage() {
               trend="down"
             />
             <StatsCard
-              title="Avg R:R"
-              value={`${overview.avgRiskReward.toFixed(2)}:1`}
-              subValue={`Win ${fmtDisplay(overview.avgWin)} / Loss ${fmtDisplay(overview.avgLoss)}`}
+              title="Payout Edge"
+              value={`${overview.edgeVsBreakeven >= 0 ? "+" : ""}${overview.edgeVsBreakeven.toFixed(1)}pp`}
+              subValue={`Breakeven ${overview.breakevenWinRate.toFixed(1)}% @ ${(overview.avgPayoutRatio * 100).toFixed(0)}% payout`}
               icon={Zap}
               iconColor="text-cyan-400"
-              trend={overview.avgRiskReward >= 1.5 ? "up" : "neutral"}
+              trend={overview.edgeVsBreakeven >= 0 ? "up" : "down"}
+            />
+            <StatsCard
+              title="Stake Discipline"
+              value={`${overview.stakeEscalationRatio.toFixed(2)}x`}
+              subValue="Max stake vs. avg stake"
+              icon={Scale}
+              iconColor="text-fuchsia-400"
+              trend={overview.stakeEscalationRatio <= 1.5 ? "up" : overview.stakeEscalationRatio <= 3 ? "neutral" : "down"}
             />
             <StatsCard
               title="Consistency"
@@ -201,17 +209,17 @@ export default function DashboardPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
-              <div className="text-xs text-zinc-500 mb-2">Long Win Rate</div>
-              <div className="text-xl font-bold text-emerald-400">{overview.longWinRate.toFixed(1)}%</div>
+              <div className="text-xs text-zinc-500 mb-2">Call Win Rate</div>
+              <div className="text-xl font-bold text-emerald-400">{overview.callWinRate.toFixed(1)}%</div>
               <div className="mt-2 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
-                <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${overview.longWinRate}%` }} />
+                <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${overview.callWinRate}%` }} />
               </div>
             </div>
             <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
-              <div className="text-xs text-zinc-500 mb-2">Short Win Rate</div>
-              <div className="text-xl font-bold text-red-400">{overview.shortWinRate.toFixed(1)}%</div>
+              <div className="text-xs text-zinc-500 mb-2">Put Win Rate</div>
+              <div className="text-xl font-bold text-red-400">{overview.putWinRate.toFixed(1)}%</div>
               <div className="mt-2 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
-                <div className="h-full bg-red-500 rounded-full" style={{ width: `${overview.shortWinRate}%` }} />
+                <div className="h-full bg-red-500 rounded-full" style={{ width: `${overview.putWinRate}%` }} />
               </div>
             </div>
           </div>

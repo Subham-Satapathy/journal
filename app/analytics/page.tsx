@@ -61,7 +61,7 @@ interface AnalyticsData {
   distribution: Array<{ symbol: string; count: number; pnl: number }>;
   weekly: Array<{ week: string; pnl: number; trades: number; cumulative: number }>;
   monthly: Array<{ month: string; pnl: number; trades: number; cumulative: number }>;
-  overview: { longWinRate: number; shortWinRate: number; totalTrades: number; currentStreak: number; currentStreakType: string };
+  overview: { callWinRate: number; putWinRate: number; totalTrades: number; currentStreak: number; currentStreakType: string };
 }
 
 export default function AnalyticsPage() {
@@ -101,7 +101,7 @@ export default function AnalyticsPage() {
         weekly: Array.isArray(weekly) ? weekly : [],
         monthly: Array.isArray(monthly) ? monthly : [],
         overview: overview && typeof overview.totalTrades === "number" ? overview : {
-          longWinRate: 0, shortWinRate: 0, totalTrades: 0, currentStreak: 0, currentStreakType: "none",
+          callWinRate: 0, putWinRate: 0, totalTrades: 0, currentStreak: 0, currentStreakType: "none",
         },
       });
       setLoading(false);
@@ -128,9 +128,9 @@ export default function AnalyticsPage() {
 
   const convertedMonthly = monthly;
 
-  const longShortRatio = {
-    long: overview.totalTrades > 0 ? Math.round(overview.totalTrades * (overview.longWinRate / 100)) : 0,
-    short: overview.totalTrades > 0 ? Math.round(overview.totalTrades * (overview.shortWinRate / 100)) : 0,
+  const callPutRatio = {
+    call: overview.totalTrades > 0 ? Math.round(overview.totalTrades * (overview.callWinRate / 100)) : 0,
+    put: overview.totalTrades > 0 ? Math.round(overview.totalTrades * (overview.putWinRate / 100)) : 0,
   };
 
   return (
@@ -188,7 +188,7 @@ export default function AnalyticsPage() {
       <HourDayHeatmap data={heatmap} />
 
       {/* Distribution Charts */}
-      <DistributionCharts data={distribution} longShortRatio={longShortRatio} />
+      <DistributionCharts data={distribution} callPutRatio={callPutRatio} />
 
       {/* Mental State */}
       <MentalStateCard data={mental} />

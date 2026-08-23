@@ -13,7 +13,7 @@ interface SymbolDist {
   pnl: number;
 }
 
-export function DistributionCharts({ data, longShortRatio }: { data: SymbolDist[]; longShortRatio: { long: number; short: number } }) {
+export function DistributionCharts({ data, callPutRatio }: { data: SymbolDist[]; callPutRatio: { call: number; put: number } }) {
   const { fmtDisplay } = useCurrency();
   const pieData = data.slice(0, 8).map((d) => ({ name: d.symbol, value: d.count, pnl: d.pnl }));
 
@@ -32,9 +32,9 @@ export function DistributionCharts({ data, longShortRatio }: { data: SymbolDist[
     }
     return null;
   };
-  const lsData = [
-    { name: "Long", value: longShortRatio.long, fill: "#10b981" },
-    { name: "Short", value: longShortRatio.short, fill: "#ef4444" },
+  const cpData = [
+    { name: "Call", value: callPutRatio.call, fill: "#10b981" },
+    { name: "Put", value: callPutRatio.put, fill: "#ef4444" },
   ];
 
   return (
@@ -80,33 +80,33 @@ export function DistributionCharts({ data, longShortRatio }: { data: SymbolDist[
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base font-semibold text-white">Long vs Short</CardTitle>
+          <CardTitle className="text-base font-semibold text-white">Calls vs Puts</CardTitle>
         </CardHeader>
         <CardContent className="pt-2">
-          {longShortRatio.long + longShortRatio.short === 0 ? (
+          {callPutRatio.call + callPutRatio.put === 0 ? (
             <div className="h-40 flex items-center justify-center text-zinc-600 text-sm">No data</div>
           ) : (
             <div className="flex flex-col gap-4">
               <ResponsiveContainer width="100%" height={100}>
-                <BarChart data={lsData} layout="vertical" margin={{ left: 10, right: 20 }}>
+                <BarChart data={cpData} layout="vertical" margin={{ left: 10, right: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#27272a" horizontal={false} />
                   <XAxis type="number" tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} />
                   <YAxis type="category" dataKey="name" tick={{ fill: "#a1a1aa", fontSize: 12 }} axisLine={false} tickLine={false} width={45} />
                   <Tooltip formatter={(v) => [`${v} trades`]} contentStyle={{ background: "#18181b", border: "1px solid #3f3f46", borderRadius: 8, fontSize: 12 }} />
                   <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                    {lsData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
+                    {cpData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
               <div className="flex justify-around text-center">
                 <div>
-                  <div className="text-lg font-bold text-emerald-400">{longShortRatio.long}</div>
-                  <div className="text-xs text-zinc-500">Long trades</div>
+                  <div className="text-lg font-bold text-emerald-400">{callPutRatio.call}</div>
+                  <div className="text-xs text-zinc-500">Call trades</div>
                 </div>
                 <div className="w-px bg-zinc-800" />
                 <div>
-                  <div className="text-lg font-bold text-red-400">{longShortRatio.short}</div>
-                  <div className="text-xs text-zinc-500">Short trades</div>
+                  <div className="text-lg font-bold text-red-400">{callPutRatio.put}</div>
+                  <div className="text-xs text-zinc-500">Put trades</div>
                 </div>
               </div>
             </div>

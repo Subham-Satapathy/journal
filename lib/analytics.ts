@@ -49,14 +49,21 @@ export interface OverviewStats {
   bestDay: number;
   maxDrawdown: number;
   profitFactor: number;
-  avgRiskReward: number;
   totalFees: number;
-  longWinRate: number;
-  shortWinRate: number;
+  callWinRate: number;
+  putWinRate: number;
   currentStreak: number;
   currentStreakType: "win" | "loss" | "none";
   consistencyScore: number;
   disciplineScore: number;
+  /** Avg payout as a fraction of stake on winning trades (e.g. 0.85 = 85% payout). */
+  avgPayoutRatio: number;
+  /** Win rate (%) required just to break even, given the average payout. */
+  breakevenWinRate: number;
+  /** How far actual win rate is above/below breakeven, in percentage points. */
+  edgeVsBreakeven: number;
+  /** Largest stake / average stake among closed trades — flags martingale-style stake escalation. */
+  stakeEscalationRatio: number;
 }
 
 export interface StreakData {
@@ -87,9 +94,10 @@ export function computeOverviewStats(trades: Trade[]): OverviewStats {
     return {
       totalPnl: 0, totalTrades: 0, winRate: 0, avgWin: 0, avgLoss: 0,
       bestTrade: 0, worstTrade: 0, bestDay: 0, maxDrawdown: 0,
-      profitFactor: 0, avgRiskReward: 0, totalFees: 0,
-      longWinRate: 0, shortWinRate: 0, currentStreak: 0,
+      profitFactor: 0, totalFees: 0,
+      callWinRate: 0, putWinRate: 0, currentStreak: 0,
       currentStreakType: "none", consistencyScore: 0, disciplineScore: 0,
+      avgPayoutRatio: 0, breakevenWinRate: 100, edgeVsBreakeven: 0, stakeEscalationRatio: 0,
     };
   }
 
@@ -120,14 +128,28 @@ export function computeOverviewStats(trades: Trade[]): OverviewStats {
   const grossLoss = Math.abs(losses.reduce((a, b) => a + b, 0));
   const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : grossProfit > 0 ? Infinity : 0;
 
-  // Risk/Reward
-  const avgRiskReward = avgLoss > 0 ? avgWin / avgLoss : 0;
+  // Call/Put win rates
+  const calls = closedTrades.filter((t) => ["LONG", "BUY", "CALL"].includes(t.side.toUpperCase()));
+  const puts = closedTrades.filter((t) => ["SHORT", "SELL", "PUT"].includes(t.side.toUpperCase()));
+  const callWinRate = calls.length > 0 ? (calls.filter((t) => t.pnl! > 0).length / calls.length) * 100 : 0;
+  const putWinRate = puts.length > 0 ? (puts.filter((t) => t.pnl! > 0).length / puts.length) * 100 : 0;
 
-  // Long/Short win rates
-  const longs = closedTrades.filter((t) => ["LONG", "BUY", "CALL"].includes(t.side.toUpperCase()));
-  const shorts = closedTrades.filter((t) => ["SHORT", "SELL", "PUT"].includes(t.side.toUpperCase()));
-  const longWinRate = longs.length > 0 ? (longs.filter((t) => t.pnl! > 0).length / longs.length) * 100 : 0;
-  const shortWinRate = shorts.length > 0 ? (shorts.filter((t) => t.pnl! > 0).length / shorts.length) * 100 : 0;
+  // Binary options have a fixed payout on win and a fixed loss (the stake) on lose — there's
+  // no variable exit, so "risk/reward" doesn't apply. What matters instead is whether win rate
+  // clears the breakeven threshold implied by the payout, and whether stake sizing stays flat
+  // (vs. martingale-style doubling after losses).
+  const winTrades = closedTrades.filter((t) => t.pnl! > 0 && t.quantity > 0);
+  const payoutRatios = winTrades.map((t) => t.pnl! / t.quantity);
+  const avgPayoutRatio = payoutRatios.length > 0
+    ? payoutRatios.reduce((a, b) => a + b, 0) / payoutRatios.length
+    : 0;
+  const breakevenWinRate = avgPayoutRatio > 0 ? 100 / (1 + avgPayoutRatio) : 100;
+  const edgeVsBreakeven = winRate - breakevenWinRate;
+
+  const stakes = closedTrades.filter((t) => t.quantity > 0).map((t) => t.quantity);
+  const avgStake = stakes.length > 0 ? stakes.reduce((a, b) => a + b, 0) / stakes.length : 0;
+  const maxStake = stakes.length > 0 ? Math.max(...stakes) : 0;
+  const stakeEscalationRatio = avgStake > 0 ? maxStake / avgStake : 0;
 
   // Streaks
   const streak = computeStreak(closedTrades);
@@ -142,9 +164,10 @@ export function computeOverviewStats(trades: Trade[]): OverviewStats {
   return {
     totalPnl, totalTrades: trades.length, winRate, avgWin, avgLoss,
     bestTrade, worstTrade, bestDay, maxDrawdown, profitFactor,
-    avgRiskReward, totalFees, longWinRate, shortWinRate,
+    totalFees, callWinRate, putWinRate,
     currentStreak: streak.current, currentStreakType: streak.type,
     consistencyScore, disciplineScore,
+    avgPayoutRatio, breakevenWinRate, edgeVsBreakeven, stakeEscalationRatio,
   };
 }
 
