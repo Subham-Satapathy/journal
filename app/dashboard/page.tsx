@@ -154,7 +154,7 @@ export default function DashboardPage() {
               icon={DollarSign}
               iconColor={overview.totalPnl >= 0 ? "text-emerald-400" : "text-red-400"}
               trend={overview.totalPnl >= 0 ? "up" : "down"}
-              description="Sum of every trade's profit/loss, converted to your display currency."
+              description="Total profit/loss across all trades."
             />
             <StatsCard
               title="Win Rate"
@@ -163,7 +163,7 @@ export default function DashboardPage() {
               icon={Target}
               iconColor="text-indigo-400"
               trend={overview.winRate >= 50 ? "up" : "down"}
-              description="Share of closed trades that were wins."
+              description="% of trades that closed as a win."
             />
             <StatsCard
               title={`Best Day (${currency})`}
@@ -171,7 +171,7 @@ export default function DashboardPage() {
               icon={Trophy}
               iconColor="text-amber-400"
               trend="up"
-              description="Your single most profitable day, by total P&L on that day."
+              description="Your most profitable single day."
             />
             <StatsCard
               title={`Max Drawdown (${currency})`}
@@ -179,7 +179,7 @@ export default function DashboardPage() {
               icon={TrendingDown}
               iconColor="text-red-400"
               trend="down"
-              description="The largest drop from a peak to a low point in your cumulative daily P&L."
+              description="Largest peak-to-trough drop in P&L."
             />
             <StatsCard
               title="Payout Edge"
@@ -188,7 +188,7 @@ export default function DashboardPage() {
               icon={Zap}
               iconColor="text-cyan-400"
               trend={overview.edgeVsBreakeven >= 0 ? "up" : "down"}
-              description="Binary options pay a fixed % on a win and lose the full stake — so what matters is whether your win rate clears the breakeven rate implied by that payout. This shows how many percentage points above (+) or below (-) breakeven you are."
+              description="Win rate vs. the breakeven rate for your payout."
             />
             {overview.maxStakeTrade ? (
               <Link href={`/trades?symbol=${encodeURIComponent(overview.maxStakeTrade.symbol)}`} className="block">
@@ -199,7 +199,7 @@ export default function DashboardPage() {
                   icon={Scale}
                   iconColor="text-fuchsia-400"
                   trend={overview.stakeEscalationRatio <= 1.5 ? "up" : overview.stakeEscalationRatio <= 3 ? "neutral" : "down"}
-                  description="Your largest single stake divided by your average stake. Near 1x means flat, disciplined sizing; a high ratio flags martingale-style stake doubling after losses. Tap to find the trade driving this."
+                  description="Largest stake ÷ average stake. High = martingale-style sizing."
                 />
               </Link>
             ) : (
@@ -210,7 +210,7 @@ export default function DashboardPage() {
                 icon={Scale}
                 iconColor="text-fuchsia-400"
                 trend={overview.stakeEscalationRatio <= 1.5 ? "up" : overview.stakeEscalationRatio <= 3 ? "neutral" : "down"}
-                description="Your largest single stake divided by your average stake. Near 1x means flat, disciplined sizing; a high ratio flags martingale-style stake doubling after losses."
+                description="Largest stake ÷ average stake. High = martingale-style sizing."
               />
             )}
             <StatsCard
@@ -220,7 +220,7 @@ export default function DashboardPage() {
               icon={Shield}
               iconColor="text-teal-400"
               trend={overview.consistencyScore >= 60 ? "up" : "neutral"}
-              description="Share of your trading days that ended net profitable."
+              description="% of trading days that were profitable."
             />
             <StatsCard
               title={`${streak.type === "win" ? "🔥" : streak.type === "loss" ? "❄️" : "•"} Current Streak`}
@@ -229,7 +229,7 @@ export default function DashboardPage() {
               icon={TrendingUp}
               iconColor={streak.type === "win" ? "text-emerald-400" : streak.type === "loss" ? "text-red-400" : "text-zinc-400"}
               trend={streak.type === "win" ? "up" : streak.type === "loss" ? "down" : "neutral"}
-              description="Consecutive winning or losing days in a row, based on each day's net P&L."
+              description="Consecutive winning or losing days."
             />
           </div>
 
@@ -262,7 +262,7 @@ export default function DashboardPage() {
                   icon={ArrowUpRight}
                   iconColor="text-emerald-400"
                   trend="neutral"
-                  description="The largest amount you've placed on a single trade. Tap to view it."
+                  description="Largest amount placed on a trade."
                 />
               </Link>
             ) : (
@@ -272,7 +272,7 @@ export default function DashboardPage() {
                 icon={ArrowUpRight}
                 iconColor="text-emerald-400"
                 trend="neutral"
-                description="The largest amount you've placed on a single trade."
+                description="Largest amount placed on a trade."
               />
             )}
             {overview.minStakeTrade ? (
@@ -284,7 +284,7 @@ export default function DashboardPage() {
                   icon={ArrowDownRight}
                   iconColor="text-zinc-400"
                   trend="neutral"
-                  description="The smallest amount you've placed on a single trade. Tap to view it."
+                  description="Smallest amount placed on a trade."
                 />
               </Link>
             ) : (
@@ -294,7 +294,7 @@ export default function DashboardPage() {
                 icon={ArrowDownRight}
                 iconColor="text-zinc-400"
                 trend="neutral"
-                description="The smallest amount you've placed on a single trade."
+                description="Smallest amount placed on a trade."
               />
             )}
           </div>

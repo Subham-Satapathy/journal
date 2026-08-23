@@ -11,7 +11,7 @@ export function AppFrame({ children }: { children: React.ReactNode }) {
   const isAuthPage = pathname === "/login" || pathname === "/signup" || pathname === "/verify-email";
   const isMarketingPage = pathname === "/" || pathname === "/pricing";
   const showShellNav = !isAuthPage && !isMarketingPage;
-  const showBackButton = pathname !== "/";
+  const showBackButton = pathname !== "/" && pathname !== "/dashboard";
 
   return (
     <div className="flex min-h-screen">
