@@ -31,20 +31,20 @@ function MonthlyBarChart({
   return (
     <ResponsiveContainer width="100%" height={200}>
       <BarChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-        <XAxis dataKey="month" tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} />
+        <CartesianGrid strokeDasharray="3 3" stroke="#2e2924" />
+        <XAxis dataKey="month" tick={{ fill: "#837868", fontSize: 11 }} axisLine={false} tickLine={false} />
         <YAxis
           domain={[yMin, yMax]}
-          tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} width={48}
+          tick={{ fill: "#837868", fontSize: 11 }} axisLine={false} tickLine={false} width={48}
           tickFormatter={(v) => `${symbol}${Math.abs(v) >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`}
         />
-        <ReferenceLine y={0} stroke="#52525b" strokeDasharray="3 3" />
+        <ReferenceLine y={0} stroke="#635a4d" strokeDasharray="3 3" />
         <Tooltip
           cursor={{ fill: "rgba(255,255,255,0.04)" }}
           formatter={(v) => [fmt(Number(v ?? 0)), "P&L"]}
-          labelStyle={{ color: "#a1a1aa", fontSize: 11 }}
-          contentStyle={{ background: "#18181b", border: "1px solid #3f3f46", borderRadius: 8, fontSize: 12 }}
-          itemStyle={{ color: "#f4f4f5" }}
+          labelStyle={{ color: "#a79c8a", fontSize: 11 }}
+          contentStyle={{ background: "#1c1815", border: "1px solid #474036", borderRadius: 8, fontSize: 12 }}
+          itemStyle={{ color: "#f1eee7" }}
         />
         <Bar dataKey="pnl" radius={[4, 4, 0, 0]} maxBarSize={80}>
           {data.map((d, i) => <Cell key={i} fill={d.pnl >= 0 ? "#10b981" : "#ef4444"} />)}
@@ -163,7 +163,7 @@ export default function AnalyticsPage() {
         <CardContent>
           <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
             <div className="text-center">
-              <div className="text-4xl font-black" style={{ color: streak.type === "win" ? "#10b981" : streak.type === "loss" ? "#ef4444" : "#a1a1aa" }}>
+              <div className="text-4xl font-black" style={{ color: streak.type === "win" ? "#10b981" : streak.type === "loss" ? "#ef4444" : "#a79c8a" }}>
                 {streak.current}
               </div>
               <div className="text-xs text-zinc-500 mt-1">

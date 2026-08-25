@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCurrency } from "@/lib/currency-context";
 import { cn } from "@/lib/utils";
 
-const COLORS = ["#6366f1", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#f97316", "#84cc16", "#ec4899", "#14b8a6"];
+const COLORS = ["#c17d3a", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#f97316", "#84cc16", "#ec4899", "#14b8a6"];
 
 interface SymbolDist {
   symbol: string;
@@ -89,10 +89,10 @@ export function DistributionCharts({ data, callPutRatio }: { data: SymbolDist[];
             <div className="flex flex-col gap-4">
               <ResponsiveContainer width="100%" height={100}>
                 <BarChart data={cpData} layout="vertical" margin={{ left: 10, right: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#27272a" horizontal={false} />
-                  <XAxis type="number" tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <YAxis type="category" dataKey="name" tick={{ fill: "#a1a1aa", fontSize: 12 }} axisLine={false} tickLine={false} width={45} />
-                  <Tooltip formatter={(v) => [`${v} trades`]} contentStyle={{ background: "#18181b", border: "1px solid #3f3f46", borderRadius: 8, fontSize: 12 }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#2e2924" horizontal={false} />
+                  <XAxis type="number" tick={{ fill: "#837868", fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="name" tick={{ fill: "#a79c8a", fontSize: 12 }} axisLine={false} tickLine={false} width={45} />
+                  <Tooltip formatter={(v) => [`${v} trades`]} contentStyle={{ background: "#1c1815", border: "1px solid #474036", borderRadius: 8, fontSize: 12 }} />
                   <Bar dataKey="value" radius={[0, 4, 4, 0]}>
                     {cpData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
                   </Bar>

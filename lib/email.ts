@@ -48,20 +48,20 @@ function renderEmailLayout({
   const safeSubtitle = subtitle ? escapeHtml(subtitle) : "";
 
   return `
-    <div style="background:#09090b;padding:24px 12px;font-family:Inter,Segoe UI,Arial,sans-serif;">
-      <div style="max-width:560px;margin:0 auto;background:#111114;border:1px solid #27272a;border-radius:16px;overflow:hidden;color:#f4f4f5;">
-        <div style="padding:20px 24px;background:linear-gradient(135deg,#18181b,#111827);border-bottom:1px solid #27272a;">
+    <div style="background:#100e0c;padding:24px 12px;font-family:Inter,Segoe UI,Arial,sans-serif;">
+      <div style="max-width:560px;margin:0 auto;background:#1c1815;border:1px solid #2e2924;border-radius:16px;overflow:hidden;color:#f1eee7;">
+        <div style="padding:20px 24px;background:linear-gradient(135deg,#1c1815,#111827);border-bottom:1px solid #2e2924;">
           <img src="${logoUrl}" alt="Pnlogix" width="130" style="display:block;height:auto;" />
         </div>
         <div style="padding:24px;">
-          <h2 style="margin:0 0 8px;font-size:22px;line-height:1.3;color:#fafafa;">${safeTitle}</h2>
+          <h2 style="margin:0 0 8px;font-size:22px;line-height:1.3;color:#f5f1ea;">${safeTitle}</h2>
           ${
             safeSubtitle
-              ? `<p style="margin:0 0 16px;color:#a1a1aa;font-size:14px;line-height:1.5;">${safeSubtitle}</p>`
+              ? `<p style="margin:0 0 16px;color:#a79c8a;font-size:14px;line-height:1.5;">${safeSubtitle}</p>`
               : ""
           }
           ${bodyHtml}
-          <p style="margin:22px 0 0;color:#71717a;font-size:12px;line-height:1.5;">
+          <p style="margin:22px 0 0;color:#837868;font-size:12px;line-height:1.5;">
             Need help? Reply to this email or contact support@pnlogix.com
           </p>
         </div>
@@ -139,13 +139,13 @@ export async function sendPaymentReceiptEmail(input: {
           Keep going. Every reviewed trade sharpens your edge.
         </div>
         <table role="presentation" style="width:100%;border-collapse:collapse;font-size:14px;">
-          <tr><td style="padding:8px 0;color:#a1a1aa;">Plan</td><td style="padding:8px 0;text-align:right;color:#f4f4f5;">${safePlanName} (${cycleLabel})</td></tr>
-          <tr><td style="padding:8px 0;color:#a1a1aa;">Amount</td><td style="padding:8px 0;text-align:right;color:#f4f4f5;">${amount}</td></tr>
-          <tr><td style="padding:8px 0;color:#a1a1aa;">Paid on</td><td style="padding:8px 0;text-align:right;color:#f4f4f5;">${escapeHtml(paidOn)}</td></tr>
-          <tr><td style="padding:8px 0;color:#a1a1aa;">Membership active until</td><td style="padding:8px 0;text-align:right;color:#f4f4f5;">${escapeHtml(
+          <tr><td style="padding:8px 0;color:#a79c8a;">Plan</td><td style="padding:8px 0;text-align:right;color:#f1eee7;">${safePlanName} (${cycleLabel})</td></tr>
+          <tr><td style="padding:8px 0;color:#a79c8a;">Amount</td><td style="padding:8px 0;text-align:right;color:#f1eee7;">${amount}</td></tr>
+          <tr><td style="padding:8px 0;color:#a79c8a;">Paid on</td><td style="padding:8px 0;text-align:right;color:#f1eee7;">${escapeHtml(paidOn)}</td></tr>
+          <tr><td style="padding:8px 0;color:#a79c8a;">Membership active until</td><td style="padding:8px 0;text-align:right;color:#f1eee7;">${escapeHtml(
             membershipEnds
           )}</td></tr>
-          <tr><td style="padding:8px 0;color:#a1a1aa;">Transaction reference</td><td style="padding:8px 0;text-align:right;color:#f4f4f5;">${txRef}</td></tr>
+          <tr><td style="padding:8px 0;color:#a79c8a;">Transaction reference</td><td style="padding:8px 0;text-align:right;color:#f1eee7;">${txRef}</td></tr>
         </table>
       `,
     }),

@@ -1,8 +1,71 @@
 @import "tailwindcss";
 
+/*
+ * Editorial Premium design tokens.
+ * Overriding Tailwind's zinc/slate (neutrals) and indigo/sky (accent) scales
+ * re-skins every existing utility class (bg-zinc-900, text-indigo-400, ...)
+ * app-wide without touching component markup.
+ */
+@theme {
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-dm-mono), ui-monospace, "SFMono-Regular", monospace;
+
+  --color-white: #f5f1ea;
+
+  /* Warm neutral scale (replaces zinc + slate) */
+  --color-zinc-50: #faf9f6;
+  --color-zinc-100: #f1eee7;
+  --color-zinc-200: #e3ddd1;
+  --color-zinc-300: #cbc1b0;
+  --color-zinc-400: #a79c8a;
+  --color-zinc-500: #837868;
+  --color-zinc-600: #635a4d;
+  --color-zinc-700: #474036;
+  --color-zinc-800: #2e2924;
+  --color-zinc-900: #1c1815;
+  --color-zinc-950: #100e0c;
+
+  --color-slate-50: var(--color-zinc-50);
+  --color-slate-100: var(--color-zinc-100);
+  --color-slate-200: var(--color-zinc-200);
+  --color-slate-300: var(--color-zinc-300);
+  --color-slate-400: var(--color-zinc-400);
+  --color-slate-500: var(--color-zinc-500);
+  --color-slate-600: var(--color-zinc-600);
+  --color-slate-700: var(--color-zinc-700);
+  --color-slate-800: var(--color-zinc-800);
+  --color-slate-900: var(--color-zinc-900);
+  --color-slate-950: var(--color-zinc-950);
+
+  /* Restrained copper accent (replaces indigo + sky) */
+  --color-indigo-50: #fbf4ea;
+  --color-indigo-100: #f6e6ce;
+  --color-indigo-200: #eccea0;
+  --color-indigo-300: #e0b073;
+  --color-indigo-400: #d3924d;
+  --color-indigo-500: #c17d3a;
+  --color-indigo-600: #a8672e;
+  --color-indigo-700: #855025;
+  --color-indigo-800: #613c1c;
+  --color-indigo-900: #402813;
+  --color-indigo-950: #241609;
+
+  --color-sky-50: var(--color-indigo-50);
+  --color-sky-100: var(--color-indigo-100);
+  --color-sky-200: var(--color-indigo-200);
+  --color-sky-300: var(--color-indigo-300);
+  --color-sky-400: var(--color-indigo-400);
+  --color-sky-500: var(--color-indigo-500);
+  --color-sky-600: var(--color-indigo-600);
+  --color-sky-700: var(--color-indigo-700);
+  --color-sky-800: var(--color-indigo-800);
+  --color-sky-900: var(--color-indigo-900);
+  --color-sky-950: var(--color-indigo-950);
+}
+
 :root {
-  --background: #09090b;
-  --foreground: #fafafa;
+  --background: #100e0c;
+  --foreground: #f5f1ea;
 }
 
 * {
@@ -19,34 +82,34 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #18181b;
+  background: #1c1815;
 }
 ::-webkit-scrollbar-thumb {
-  background: #3f3f46;
+  background: #474036;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #52525b;
+  background: #635a4d;
 }
 
 /* Recharts tooltip dark overrides */
 .recharts-tooltip-wrapper .recharts-default-tooltip {
-  background: #18181b !important;
-  border: 1px solid #3f3f46 !important;
+  background: #1c1815 !important;
+  border: 1px solid #474036 !important;
   border-radius: 8px !important;
 }
 
 /* Prose styles for AI insights markdown */
-.prose-dark h1, .prose-dark h2, .prose-dark h3 { color: #f4f4f5; margin-top: 1.25em; margin-bottom: 0.5em; }
+.prose-dark h1, .prose-dark h2, .prose-dark h3 { color: #f1eee7; margin-top: 1.25em; margin-bottom: 0.5em; }
 .prose-dark h1 { font-size: 1.25rem; font-weight: 700; }
-.prose-dark h2 { font-size: 1.1rem; font-weight: 600; border-bottom: 1px solid #27272a; padding-bottom: 0.25rem; }
-.prose-dark h3 { font-size: 1rem; font-weight: 600; color: #a78bfa; }
-.prose-dark p { color: #a1a1aa; line-height: 1.7; margin-bottom: 0.75em; font-size: 0.875rem; }
-.prose-dark ul, .prose-dark ol { color: #a1a1aa; padding-left: 1.5rem; margin-bottom: 0.75em; font-size: 0.875rem; }
+.prose-dark h2 { font-size: 1.1rem; font-weight: 600; border-bottom: 1px solid #2e2924; padding-bottom: 0.25rem; }
+.prose-dark h3 { font-size: 1rem; font-weight: 600; color: #d3924d; }
+.prose-dark p { color: #a79c8a; line-height: 1.7; margin-bottom: 0.75em; font-size: 0.875rem; }
+.prose-dark ul, .prose-dark ol { color: #a79c8a; padding-left: 1.5rem; margin-bottom: 0.75em; font-size: 0.875rem; }
 .prose-dark li { margin-bottom: 0.3em; line-height: 1.6; }
-.prose-dark strong { color: #e4e4e7; font-weight: 600; }
-.prose-dark code { background: #27272a; color: #a78bfa; padding: 0.1em 0.4em; border-radius: 4px; font-size: 0.8em; }
-.prose-dark blockquote { border-left: 3px solid #6366f1; padding-left: 1rem; color: #71717a; margin: 0.75em 0; font-style: italic; }
+.prose-dark strong { color: #e3ddd1; font-weight: 600; }
+.prose-dark code { background: #2e2924; color: #d3924d; padding: 0.1em 0.4em; border-radius: 4px; font-size: 0.8em; }
+.prose-dark blockquote { border-left: 3px solid #c17d3a; padding-left: 1rem; color: #837868; margin: 0.75em 0; font-style: italic; }
 
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(14px); }

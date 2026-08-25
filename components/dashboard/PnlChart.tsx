@@ -87,23 +87,23 @@ export function PnlChart({ daily, weekly, monthly }: PnlChartProps) {
                 <stop offset="95%" stopColor="#ef4444" stopOpacity={0.02} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#2e2924" />
             <XAxis
               dataKey={getXKey()}
               tickFormatter={formatX}
-              tick={{ fill: "#71717a", fontSize: 11 }}
+              tick={{ fill: "#837868", fontSize: 11 }}
               axisLine={false}
               tickLine={false}
             />
             <YAxis
               tickFormatter={(v) => `${symbol}${Math.abs(v) >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`}
-              tick={{ fill: "#71717a", fontSize: 11 }}
+              tick={{ fill: "#837868", fontSize: 11 }}
               axisLine={false}
               tickLine={false}
               width={60}
             />
-            <Tooltip content={<CustomTooltip />} cursor={{ stroke: "#52525b", strokeWidth: 1 }} />
-            <ReferenceLine y={0} stroke="#52525b" strokeDasharray="3 3" />
+            <Tooltip content={<CustomTooltip />} cursor={{ stroke: "#635a4d", strokeWidth: 1 }} />
+            <ReferenceLine y={0} stroke="#635a4d" strokeDasharray="3 3" />
             <Area
               type="monotone"
               dataKey="cumulative"
@@ -116,11 +116,11 @@ export function PnlChart({ daily, weekly, monthly }: PnlChartProps) {
             <Area
               type="monotone"
               dataKey="pnl"
-              stroke="#6366f1"
+              stroke="#c17d3a"
               strokeWidth={1.5}
               fill="transparent"
               dot={false}
-              activeDot={{ r: 3, fill: "#6366f1" }}
+              activeDot={{ r: 3, fill: "#c17d3a" }}
             />
           </AreaChart>
         </ResponsiveContainer>

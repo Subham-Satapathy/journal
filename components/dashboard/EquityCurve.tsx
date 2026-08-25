@@ -48,14 +48,14 @@ export function EquityCurve({ data }: { data: EquityPoint[] }) {
       <CardContent className="pt-2">
         <ResponsiveContainer width="100%" height={240}>
           <ComposedChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-            <XAxis dataKey="date" tick={{ fill: "#71717a", fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => v.substring(5, 10)} />
-            <YAxis yAxisId="equity" tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} width={60}
+            <CartesianGrid strokeDasharray="3 3" stroke="#2e2924" />
+            <XAxis dataKey="date" tick={{ fill: "#837868", fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => v.substring(5, 10)} />
+            <YAxis yAxisId="equity" tick={{ fill: "#837868", fontSize: 11 }} axisLine={false} tickLine={false} width={60}
               tickFormatter={(v) => `${symbol}${Math.abs(v) >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`} />
-            <YAxis yAxisId="dd" orientation="right" tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} width={40}
+            <YAxis yAxisId="dd" orientation="right" tick={{ fill: "#837868", fontSize: 11 }} axisLine={false} tickLine={false} width={40}
               tickFormatter={(v) => `-${v.toFixed(0)}%`} />
-            <Tooltip content={<CustomTooltip />} cursor={{ stroke: "#52525b", strokeWidth: 1 }} />
-            <ReferenceLine yAxisId="equity" y={0} stroke="#52525b" strokeDasharray="3 3" />
+            <Tooltip content={<CustomTooltip />} cursor={{ stroke: "#635a4d", strokeWidth: 1 }} />
+            <ReferenceLine yAxisId="equity" y={0} stroke="#635a4d" strokeDasharray="3 3" />
             <Bar yAxisId="dd" dataKey="drawdown" fill="#ef4444" opacity={0.25} name="drawdown" />
             <Line yAxisId="equity" type="monotone" dataKey="equity" stroke="#10b981" strokeWidth={2} dot={false} name="equity" />
           </ComposedChart>

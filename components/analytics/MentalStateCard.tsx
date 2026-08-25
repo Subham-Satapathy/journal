@@ -13,7 +13,7 @@ function ScoreRing({ score, label, color }: { score: number; label: string; colo
     <div className="flex flex-col items-center gap-1">
       <div className="relative w-20 h-20">
         <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
-          <circle cx="40" cy="40" r={r} fill="none" stroke="#27272a" strokeWidth="6" />
+          <circle cx="40" cy="40" r={r} fill="none" stroke="#2e2924" strokeWidth="6" />
           <circle
             cx="40" cy="40" r={r} fill="none"
             stroke={color} strokeWidth="6"
