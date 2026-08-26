@@ -1,8 +1,8 @@
-import { PrismaClient, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getISTDateKey } from "@/lib/datetime";
 
-type DailyPnlClient = PrismaClient | Prisma.TransactionClient;
+type DailyPnlClient = typeof prisma | Prisma.TransactionClient;
 
 export async function recomputeDailyPnlForUser(
   userId: string,

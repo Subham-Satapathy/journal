@@ -13,6 +13,18 @@ export async function requireUser(req: NextRequest) {
   return { error: null, user };
 }
 
+export async function requireAdmin(req: NextRequest) {
+  const auth = await requireUser(req);
+  if (auth.error || !auth.user) return auth;
+  if (!auth.user.isAdmin) {
+    return {
+      error: NextResponse.json({ error: "Admin access required" }, { status: 403 }),
+      user: auth.user,
+    };
+  }
+  return { error: null, user: auth.user };
+}
+
 export async function requireActiveSubscription(req: NextRequest) {
   const auth = await requireUser(req);
   if (auth.error || !auth.user) return auth;

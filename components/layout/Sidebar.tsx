@@ -11,6 +11,7 @@ import {
   BadgeDollarSign,
   CreditCard,
   LogOut,
+  Trophy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCurrency, type Currency } from "@/lib/currency-context";
@@ -21,6 +22,7 @@ const navItems = [
   { href: "/import", icon: Upload, label: "Import" },
   { href: "/analytics", icon: BarChart3, label: "Analytics" },
   { href: "/insights", icon: Brain, label: "AI Insights" },
+  { href: "/quiz", icon: Trophy, label: "Quiz" },
   { href: "/billing", icon: CreditCard, label: "Billing" },
   { href: "/pricing", icon: BadgeDollarSign, label: "Pricing" },
 ];

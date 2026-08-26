@@ -11,7 +11,8 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:wipe:all": "node scripts/db-wipe-all.js",
-    "db:wipe:table": "node scripts/db-wipe-table.js"
+    "db:wipe:table": "node scripts/db-wipe-table.js",
+    "quiz:make-admin": "node scripts/make-quiz-admin.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
