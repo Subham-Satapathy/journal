@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { issueEmailVerificationOtp } from "@/lib/email-verification";
+import { issueEmailVerificationOtp, OtpRateLimitError } from "@/lib/email-verification";
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,9 +24,13 @@ export async function POST(req: NextRequest) {
     await issueEmailVerificationOtp(user.id, user.email);
     return NextResponse.json({ ok: true, message: "Verification OTP sent." });
   } catch (error) {
+    if (error instanceof OtpRateLimitError) {
+      return NextResponse.json({ error: error.message }, { status: 429 });
+    }
+    console.error("POST /api/auth/verification/resend error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to resend OTP." },
-      { status: 400 }
+      { error: "We couldn't send the verification email right now. Please try again shortly." },
+      { status: 500 }
     );
   }
 }

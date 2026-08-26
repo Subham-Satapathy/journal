@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth";
-import { issueEmailVerificationOtp } from "@/lib/email-verification";
+import { issueEmailVerificationOtp, OtpRateLimitError } from "@/lib/email-verification";
 
 type SignupPayload = {
   email?: string;
@@ -61,8 +61,12 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
+    if (error instanceof OtpRateLimitError) {
+      return NextResponse.json({ error: error.message }, { status: 429 });
+    }
+    console.error("POST /api/auth/signup error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Signup failed." },
+      { error: "We couldn't complete your signup right now. Please try again shortly." },
       { status: 500 }
     );
   }
