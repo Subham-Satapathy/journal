@@ -83,8 +83,7 @@ export default function QuizListPage() {
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
           {sessions.map((s) => {
-            const isLive = s.status === "QUESTION_ACTIVE" || s.status === "QUESTION_LOCKED";
-            const href = isAdmin && isLive ? `/quiz/${s.id}/host` : `/quiz/${s.id}`;
+            const href = isAdmin ? `/quiz/${s.id}/host` : `/quiz/${s.id}`;
             return (
               <Link key={s.id} href={href}>
                 <Card className="hover:border-zinc-700 transition-colors h-full">
